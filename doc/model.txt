@@ -1,0 +1,110 @@
+User
+-
+ID PK int
+NAME string INDEX
+ADDRESS string
+EMAIL string
+PHONE_NUMBER string
+STATUS string # NOT_INIT, NORMAL, UN_PAIED, ABNORMAL
+TYPE string # ADMIN, USER, SAAS_USER 
+DISABLE bool
+
+Event
+-
+ID PK int
+USER_ID int FK >- User.ID
+TYPE string # FUND, ADMIN, LOGIN, PASSWORD
+EVENT string # DEPOSIT, WITHDRAW ...
+INPUT string
+OUTPUT string
+
+App
+-
+ID PK int
+USER_ID int FK >- User.ID
+NAME string INDEX # HASH_QUARK, HASHING
+DESC string
+PUB_KEY string
+
+Blockchain
+-
+NAME PK string # BITCOIN, ETHEREUM
+DESC string
+CONFIRMATIONS int
+
+Asset
+-
+NAME PK string # BTC, ETH, SNT
+BLOCKCHAIN string FK >- Blockchain.NAME
+DESC string
+SMART_CONTRACT string
+WITHDRAW_SWITCH bool
+DEPOSIT_SWITCH bool
+LOW_WATER_LEVEL string
+HIGH_WATER_LEVEL string
+DECIMAL int
+
+Address
+-
+ID PK int
+APP_ID int FK >- App.ID
+ASSET string FK >- Asset.NAME
+ADDRESS string INDEX
+
+ExOrder
+-
+ID PK int
+ORDER_ID int FK >- Order.ID
+ASSET string FK >- Asset.NAME
+AMOUNT string
+FROM string
+TO string
+N int
+HASH string INDEX
+STATUS string # PENDING, DONE, FAILED
+# DONE & create Order, transactional
+TYPE string # DEPOSIT, WITHDRAW
+
+Order
+-
+ID PK int
+TO_ADDRESS_ID int FK >- Address.ID
+APP_ID int FK >- App.ID
+#EX_ORDER_ID int FK >- ExOrder.ID
+ACCOUNTING_ID int FK >- Accounting.ID
+ASSET string FK >- Asset.NAME
+AMOUNT string
+FROM string
+TO string
+N int
+HASH string INDEX
+STATUS string # INIT, PROCESSING, PROCESSED, HOLDING, PENDING, DONE, FAILED, CONTINUE, RETRY, TERMINATED
+TYPE string # DEPOSIT, WITHDRAW, INTERNAL
+
+Accounting
+-
+ID PK int
+ORDER_ID int FK >- Order.ID
+IN_AMOUNT string
+OUT_AMOUNT string
+FEE string
+BLOCKCHAIN_FEE string
+SETTLED bool
+# accounting related table
+
+Balance
+-
+ID PK int
+APP_ID int FK >- App.ID
+ASSET string FK >- Asset.NAME
+BALANCE string
+IN_LOCKED string # after order DONE, add to balance
+OUT_LOCKED string # deduct from balance and create WITHDRAWED ORDER
+
+#BLACKLIST
+
+#Log
+#-
+#ID PK int
+#APP_ID int FK >- App.ID
+#MESSAGE string
