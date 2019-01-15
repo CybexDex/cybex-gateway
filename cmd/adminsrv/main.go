@@ -12,7 +12,13 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
-var logger *utils.Logger
+var (
+	githash   string
+	buildtime string
+	branch    string
+
+	logger *utils.Logger
+)
 
 func main() {
 	// 配置初始化日志
@@ -20,6 +26,7 @@ func main() {
 	logLevel := os.Getenv("log_level")
 	utils.InitLog(logDir, logLevel)
 	logger = utils.GetLogger()
+	logger.Infof("build info: %s_%s_%s", buildtime, branch, githash)
 
 	// 配置路由
 	router := mux.NewRouter()
