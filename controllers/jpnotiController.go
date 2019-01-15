@@ -42,7 +42,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
 		return
 	}
-	utils.GetLogger().Infof("oder noti request: %s", requestBody)
+	utils.GetLogger().Infof("order noti request: %s", requestBody)
 	//todo: save log
 
 	//todo: find exorder and save/update exorder
