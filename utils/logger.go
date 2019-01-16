@@ -21,6 +21,10 @@ var (
 	logger  *Logger
 )
 
+func init() {
+	logger = NewLogger(os.Stderr, "", log.LstdFlags|log.Lshortfile, "DEBUG")
+}
+
 // InitLog init logger with log dir and log level
 func InitLog(logDir, logLevel string) {
 	if len(logLevel) == 0 {
@@ -119,6 +123,31 @@ func closeOldFile(f *os.File) {
 	if err != nil {
 		logger.Println(err.Error())
 	}
+}
+
+// Debugf print debug log
+func Debugf(format string, v ...interface{}) {
+	logger.Debugf(format, v...)
+}
+
+// Infof print info log
+func Infof(format string, v ...interface{}) {
+	logger.Infof(format, v...)
+}
+
+// Warningf print warning log
+func Warningf(format string, v ...interface{}) {
+	logger.Warningf(format, v...)
+}
+
+// Errorf print error log
+func Errorf(format string, v ...interface{}) {
+	logger.Errorf(format, v...)
+}
+
+// Fatalf print fatal log
+func Fatalf(format string, v ...interface{}) {
+	logger.Fatalf(format, v...)
 }
 
 const (

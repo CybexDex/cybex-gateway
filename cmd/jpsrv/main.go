@@ -17,8 +17,6 @@ var (
 	githash   string
 	buildtime string
 	branch    string
-
-	logger *utils.Logger
 )
 
 func main() {
@@ -26,8 +24,7 @@ func main() {
 	logDir := os.Getenv("log_dir")
 	logLevel := os.Getenv("log_level")
 	utils.InitLog(logDir, logLevel)
-	logger = utils.GetLogger()
-	logger.Infof("build info: %s_%s_%s", buildtime, branch, githash)
+	utils.Infof("build info: %s_%s_%s", buildtime, branch, githash)
 
 	// 配置路由
 	router := mux.NewRouter()
@@ -35,7 +32,7 @@ func main() {
 		w.Write([]byte("ok"))
 	}).Methods("GET")
 	router.HandleFunc("/api/order/noti", controllers.OrderNoti).Methods("POST")
-	router.Use(app.NewLoggingMiddle(logger))
+	router.Use(app.NewLoggingMiddle(utils.GetLogger()))
 
 	listenAddr := os.Getenv("listen_addr")
 	if len(listenAddr) == 0 {
@@ -50,6 +47,6 @@ func main() {
 	server.SetKeepAlivesEnabled(false)
 
 	// 启动server
-	logger.Infof("listen on: %s", listenAddr)
+	utils.Infof("listen on: %s", listenAddr)
 	gracehttp.Serve(server)
 }
