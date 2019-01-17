@@ -21,8 +21,13 @@ var (
 	logger  *Logger
 )
 
+const (
+	callDepth = 3
+)
+
 func init() {
 	logger = NewLogger(os.Stderr, "", log.LstdFlags|log.Lshortfile, "DEBUG")
+	logger.SetCallDepth(callDepth)
 }
 
 // InitLog init logger with log dir and log level
@@ -32,6 +37,7 @@ func InitLog(logDir, logLevel string) {
 	}
 	if len(logDir) == 0 {
 		logger = NewLogger(os.Stderr, "", log.LstdFlags|log.Lshortfile, logLevel)
+		logger.SetCallDepth(callDepth)
 		return
 	}
 
@@ -53,7 +59,7 @@ func InitLog(logDir, logLevel string) {
 	if logger == nil {
 		panic("new logger error")
 	}
-	logger.SetCallDepth(2)
+	logger.SetCallDepth(callDepth)
 
 	if err := syscall.Dup2(int(file.Fd()), 1); err != nil {
 		panic(err)
