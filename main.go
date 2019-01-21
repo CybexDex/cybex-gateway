@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 
-	"git.coding.net/bobxuyang/cy-gateway-BN/app"
 	"git.coding.net/bobxuyang/cy-gateway-BN/controllers"
 	"github.com/gorilla/mux"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -29,7 +28,7 @@ func main() {
 	router.HandleFunc("/api/contacts/new", controllers.CreateContact).Methods("POST")
 	router.HandleFunc("/api/me/contacts", controllers.GetContactsFor).Methods("GET") //  user/2/contacts
 
-	router.Use(app.JwtAuthentication) //attach JWT auth middleware
+	// router.Use(app.JwtAuthentication) //attach JWT auth middleware
 	router.Use(loggingMiddleware)
 
 	//router.NotFoundHandler = app.NotFoundHandler

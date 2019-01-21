@@ -10,6 +10,14 @@
   revision = "ed77733ec07dfc8a513741138419b8d9d3de9d2d"
 
 [[projects]]
+  digest = "1:8cf9e7bbf5685bb8acdeec86512ad0bfa0ae8eb68dad6aaaa003862a3ae23c06"
+  name = "github.com/cockroachdb/apd"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "bced77f817b446cc6f6453d6cab5891e43f9ba17"
+  version = "v2.0.0"
+
+[[projects]]
   digest = "1:76dc72490af7174349349838f2fe118996381b31ea83243812a97e5a0fd5ed55"
   name = "github.com/dgrijalva/jwt-go"
   packages = ["."]
@@ -116,6 +124,14 @@
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:cf31692c14422fa27c83a05292eb5cbe0fb2775972e8f1f8446a71549bd8980b"
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "ba968bfe8b2f7e042a574c888954fccecfa385b4"
+  version = "v0.8.1"
+
+[[projects]]
   branch = "master"
   digest = "1:30d7b01d02b2705c10274b5110968918c9e3a5a52dae90b40463f6923becd52a"
   name = "github.com/tomasen/realip"
@@ -125,13 +141,9 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:76c178897aff1e9a2a8cdabd93c4c2b8eaeb06affe95f2d6e0ce0c1731880e4d"
+  digest = "1:a4746994e0de90b81252c00616e6f904e5a8d03ec55da3ff3c447a7d5ddae7e1"
   name = "golang.org/x/crypto"
-  packages = [
-    "bcrypt",
-    "blowfish",
-    "sha3",
-  ]
+  packages = ["sha3"]
   pruneopts = "UT"
   revision = "ff983b9c42bc9fbf91556e191cc8efb585c16908"
 
@@ -140,6 +152,7 @@
   analyzer-version = 1
   input-imports = [
     "github.com/btcsuite/btcd/btcec",
+    "github.com/cockroachdb/apd",
     "github.com/dgrijalva/jwt-go",
     "github.com/dustin/go-humanize",
     "github.com/facebookgo/grace/gracehttp",
@@ -148,7 +161,6 @@
     "github.com/jinzhu/gorm/dialects/postgres",
     "github.com/joho/godotenv",
     "github.com/tomasen/realip",
-    "golang.org/x/crypto/bcrypt",
     "golang.org/x/crypto/sha3",
   ]
   solver-name = "gps-cdcl"
