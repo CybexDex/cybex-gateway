@@ -34,6 +34,12 @@ func init() {
 	}
 
 	db = conn
+
+	// FOR TEST USE ONLY !!!
+	// FOR TEST USE ONLY !!!
+	// FOR TEST USE ONLY !!!
+	db.DropTableIfExists(&Blockchain{}, &Asset{}, &Company{}, &Account{}, &App{}, &Jadepool{}, &Order{}, &ExOrder{}, &Event{}, &ExEvent{}, &Balance{}, &Accounting{}, &GeoAddress{}, &Address{})
+
 	db.AutoMigrate(&Blockchain{}, &Asset{}, &Company{}, &Account{}, &App{}, &Jadepool{}, &Order{}, &ExOrder{}, &Event{}, &ExEvent{}, &Balance{}, &Accounting{}, &GeoAddress{}, &Address{})
 }
 
