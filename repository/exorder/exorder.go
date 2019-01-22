@@ -2,7 +2,6 @@ package exorder
 
 import (
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
-	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/jinzhu/gorm"
 )
 
@@ -22,7 +21,6 @@ func NewRepo(db *gorm.DB) Repository {
 func (repo *Repo) FetchAll() (res []*m.ExOrder, err error) {
 	err = repo.DB.Find(&res).Error
 	if err != nil {
-		utils.Errorf("ExOrder repo FetchAll error: ", err.Error())
 		return nil, err
 	}
 
@@ -33,7 +31,6 @@ func (repo *Repo) FetchAll() (res []*m.ExOrder, err error) {
 func (repo *Repo) GetByID(id uint) (a *m.ExOrder, err error) {
 	err = repo.DB.First(&a, id).Error
 	if err != nil {
-		utils.Errorf("ExOrder repo GetByID error: ", err.Error())
 		return nil, err
 	}
 
@@ -44,7 +41,6 @@ func (repo *Repo) GetByID(id uint) (a *m.ExOrder, err error) {
 func (repo *Repo) GetByJPID(id uint) (a *m.ExOrder, err error) {
 	err = repo.DB.Where("JadepoolOrderID=?", id).First(&a).Error
 	if err != nil {
-		utils.Errorf("ExOrder repo GetByJPID error: ", err.Error())
 		return nil, err
 	}
 
@@ -60,7 +56,6 @@ func (repo *Repo) Update(a *m.ExOrder) error {
 func (repo *Repo) Create(a *m.ExOrder) (err error) {
 	err = repo.DB.Create(&a).Error
 	if err != nil {
-		utils.Errorf("ExOrder repo Create error: ", err.Error())
 		return err
 	}
 
@@ -71,7 +66,6 @@ func (repo *Repo) Create(a *m.ExOrder) (err error) {
 func (repo *Repo) DeleteByID(id uint) (err error) {
 	err = repo.DB.Where("ID=?", id).Delete(&m.ExOrder{}).Error
 	if err != nil {
-		utils.Errorf("ExOrder repo DeleteByID error: ", err.Error())
 		return err
 	}
 
@@ -82,7 +76,6 @@ func (repo *Repo) DeleteByID(id uint) (err error) {
 func (repo *Repo) Delete(a *m.ExOrder) (err error) {
 	err = repo.DB.Delete(&a).Error
 	if err != nil {
-		utils.Errorf("ExOrder repo Delete error: ", err.Error())
 		return err
 	}
 
