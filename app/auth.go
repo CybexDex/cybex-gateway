@@ -1,13 +1,10 @@
 package app
 
 import (
-	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"strings"
 
-	"git.coding.net/bobxuyang/cy-gateway-BN/models"
 	u "git.coding.net/bobxuyang/cy-gateway-BN/utils"
 	jwt "github.com/dgrijalva/jwt-go"
 )
@@ -49,7 +46,7 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		}
 
 		tokenPart := splitted[1] //Grab the token part, what we are truly interested in
-		tk := &models.Token{}
+		tk := &jwt.StandardClaims{}
 
 		token, err := jwt.ParseWithClaims(tokenPart, tk, func(token *jwt.Token) (interface{}, error) {
 			return []byte(os.Getenv("token_password")), nil
@@ -73,9 +70,9 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 
 		//Everything went well, proceed with the request and set the caller to the user retrieved from the parsed token
 		// TODO: validation check
-		fmt.Sprintf("User %", tk.UserId) //Useful for monitoring
-		ctx := context.WithValue(r.Context(), "user", tk.UserId)
-		r = r.WithContext(ctx)
+		//fmt.Sprintf("User %", tk.UserId) //Useful for monitoring
+		//ctx := context.WithValue(r.Context(), "user", tk.UserId)
+		//r = r.WithContext(ctx)
 		next.ServeHTTP(w, r) //proceed in the middleware chain!
 	})
 }
