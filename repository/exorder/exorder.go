@@ -20,33 +20,24 @@ func NewRepo(db *gorm.DB) Repository {
 //FetchAll ...
 func (repo *Repo) FetchAll() (res []*m.ExOrder, err error) {
 	err = repo.DB.Find(&res).Error
-	if err != nil {
-		return nil, err
-	}
 
-	return res, nil
+	return res, err
 }
 
 //GetByID ...
 func (repo *Repo) GetByID(id uint) (*m.ExOrder, error) {
 	a := m.ExOrder{}
 	err := repo.DB.First(&a, id).Error
-	if err != nil {
-		return nil, err
-	}
 
-	return &a, nil
+	return &a, err
 }
 
 //GetByJPID ...
 func (repo *Repo) GetByJPID(id uint) (*m.ExOrder, error) {
 	a := m.ExOrder{}
 	err := repo.DB.Where("JadepoolOrderID=?", id).First(&a).Error
-	if err != nil {
-		return nil, err
-	}
 
-	return &a, nil
+	return &a, err
 }
 
 //Update ...
@@ -56,30 +47,15 @@ func (repo *Repo) Update(a *m.ExOrder) error {
 
 //Create ...
 func (repo *Repo) Create(a *m.ExOrder) (err error) {
-	err = repo.DB.Create(&a).Error
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return repo.DB.Create(&a).Error
 }
 
 //DeleteByID ...
 func (repo *Repo) DeleteByID(id uint) (err error) {
-	err = repo.DB.Where("ID=?", id).Delete(&m.ExOrder{}).Error
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return repo.DB.Where("ID=?", id).Delete(&m.ExOrder{}).Error
 }
 
 //Delete ...
 func (repo *Repo) Delete(a *m.ExOrder) (err error) {
-	err = repo.DB.Delete(&a).Error
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return repo.DB.Delete(&a).Error
 }

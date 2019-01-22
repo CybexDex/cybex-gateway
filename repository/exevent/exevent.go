@@ -20,22 +20,16 @@ func NewRepo(db *gorm.DB) Repository {
 //FetchAll ...
 func (repo *Repo) FetchAll() (res []*m.ExEvent, err error) {
 	err = repo.DB.Find(&res).Error
-	if err != nil {
-		return nil, err
-	}
 
-	return res, nil
+	return res, err
 }
 
 //GetByID ...
 func (repo *Repo) GetByID(id uint) (*m.ExEvent, error) {
 	a := m.ExEvent{}
 	err := repo.DB.First(&a, id).Error
-	if err != nil {
-		return nil, err
-	}
 
-	return &a, nil
+	return &a, err
 }
 
 //Update ...
@@ -45,30 +39,15 @@ func (repo *Repo) Update(a *m.ExEvent) error {
 
 //Create ...
 func (repo *Repo) Create(a *m.ExEvent) (err error) {
-	err = repo.DB.Create(&a).Error
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return repo.DB.Create(&a).Error
 }
 
 //DeleteByID ...
 func (repo *Repo) DeleteByID(id uint) (err error) {
-	err = repo.DB.Where("ID=?", id).Delete(&m.ExEvent{}).Error
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return repo.DB.Where("ID=?", id).Delete(&m.ExEvent{}).Error
 }
 
 //Delete ...
 func (repo *Repo) Delete(a *m.ExEvent) (err error) {
-	err = repo.DB.Delete(&a).Error
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return repo.DB.Delete(&a).Error
 }
