@@ -31,7 +31,7 @@ func (repo *Repo) FetchAll() (res []*m.ExEvent, err error) {
 
 //GetByID ...
 func (repo *Repo) GetByID(id uint) (a *m.ExEvent, err error) {
-	err = repo.DB.Where("ID=?", id).Find(&a).Error
+	err = repo.DB.First(&a, id).Error
 	if err != nil {
 		utils.Errorf("ExEvent repo GetByID error: ", err.Error())
 		return nil, err
