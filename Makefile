@@ -1,5 +1,5 @@
 
-.PHONY: buildJP buildJP_linux
+.PHONY: buildJP buildJP_linux buildAll buildAllLinux
 
 curDir := $(shell pwd)
 date := $(shell date +%Y%m%d-%H:%M:%S)
