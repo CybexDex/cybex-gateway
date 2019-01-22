@@ -28,23 +28,25 @@ func (repo *Repo) FetchAll() (res []*m.ExOrder, err error) {
 }
 
 //GetByID ...
-func (repo *Repo) GetByID(id uint) (a *m.ExOrder, err error) {
-	err = repo.DB.First(&a, id).Error
+func (repo *Repo) GetByID(id uint) (*m.ExOrder, error) {
+	a := m.ExOrder{}
+	err := repo.DB.First(&a, id).Error
 	if err != nil {
 		return nil, err
 	}
 
-	return a, nil
+	return &a, nil
 }
 
 //GetByJPID ...
-func (repo *Repo) GetByJPID(id uint) (a *m.ExOrder, err error) {
-	err = repo.DB.Where("JadepoolOrderID=?", id).First(&a).Error
+func (repo *Repo) GetByJPID(id uint) (*m.ExOrder, error) {
+	a := m.ExOrder{}
+	err := repo.DB.Where("JadepoolOrderID=?", id).First(&a).Error
 	if err != nil {
 		return nil, err
 	}
 
-	return a, nil
+	return &a, nil
 }
 
 //Update ...
