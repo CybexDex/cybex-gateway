@@ -40,6 +40,17 @@ func (repo *Repo) GetByID(id uint) (a *m.ExOrder, err error) {
 	return a, nil
 }
 
+//GetByJPID ...
+func (repo *Repo) GetByJPID(id uint) (a *m.ExOrder, err error) {
+	err = repo.DB.Where("JadepoolOrderID=?", id).First(&a).Error
+	if err != nil {
+		utils.Errorf("ExOrder repo GetByJPID error: ", err.Error())
+		return nil, err
+	}
+
+	return a, nil
+}
+
 //Update ...
 func (repo *Repo) Update(a *m.ExOrder) error {
 	return nil

@@ -7,6 +7,7 @@ import (
 type Repository interface {
 	FetchAll() (res []*m.ExOrder, err error)
 	GetByID(id uint) (*m.ExOrder, error)
+	GetByJPID(id uint) (*m.ExOrder, error)
 	Update(a *m.ExOrder) error
 	Create(a *m.ExOrder) error
 	DeleteByID(id uint) error
