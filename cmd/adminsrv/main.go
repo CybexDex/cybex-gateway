@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"git.coding.net/bobxuyang/cy-gateway-BN/app"
+	"git.coding.net/bobxuyang/cy-gateway-BN/controllers"
 	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/facebookgo/grace/gracehttp"
 	"github.com/gorilla/mux"
@@ -30,6 +31,7 @@ func main() {
 	router.HandleFunc("/api/test", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("ok"))
 	}).Methods("GET")
+	router.HandleFunc("/api/account/new", controllers.CreateAccount).Methods("POST")
 
 	// 配置中间件
 	router.Use(app.JwtAuthentication) //attach JWT auth middleware

@@ -1,0 +1,40 @@
+{
+	"info": {
+		"_postman_id": "41122342-3487-4680-b189-961990d708e7",
+		"name": "gateway",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "localhost:8081/api/account/new",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"name\": \"xuyang\",\n\t\"passwordHash\": \"04a24e8195382cbfe6c81dda873d2be49b13c1bd09b01f0bfeeba952de3c59cd\",\n\t\"lastName\":\"XU\",\n\t\"firstName\":\"YANG\",\n\t\"email\":\"xuyang@qq.com\",\n\t\"phone\":\"13917341760\"\n}"
+				},
+				"url": {
+					"raw": "localhost:8081/api/account/new",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"account",
+						"new"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
