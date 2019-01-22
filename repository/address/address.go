@@ -28,13 +28,14 @@ func (repo *Repo) FetchAll() (res []*m.Address, err error) {
 }
 
 //GetByID ...
-func (repo *Repo) GetByID(id uint) (a *m.Address, err error) {
-	err = repo.DB.First(&a, id).Error
+func (repo *Repo) GetByID(id uint) (*m.Address, error) {
+	a := m.Address{}
+	err := repo.DB.First(&a, id).Error
 	if err != nil {
 		return nil, err
 	}
 
-	return a, nil
+	return &a, nil
 }
 
 //Update ...
