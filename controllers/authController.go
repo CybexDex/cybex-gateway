@@ -49,7 +49,7 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 
 	// return data to client
 	account.PasswordHash = ""
-	u.RespondObj(w, account)
+	u.Respond(w, u.Message(true, "OK", account))
 }
 
 //Authenticate ...
