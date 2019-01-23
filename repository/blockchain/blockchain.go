@@ -52,8 +52,8 @@ func (repo *Repo) GetByID(id uint) (*m.Blockchain, error) {
 }
 
 //Update ...
-func (repo *Repo) Update(a *m.Blockchain) error {
-	return repo.DB.Save(a).Error
+func (repo *Repo) Update(id uint, v *m.Blockchain) error {
+	return repo.DB.Model(m.Blockchain{}).Where("ID=?", id).UpdateColumns(v).Error
 }
 
 //Create ...

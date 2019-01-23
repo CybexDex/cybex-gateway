@@ -51,8 +51,8 @@ func (repo *Repo) GetByID(id uint) (*m.ExEvent, error) {
 }
 
 //Update ...
-func (repo *Repo) Update(a *m.ExEvent) error {
-	return nil
+func (repo *Repo) Update(id uint, v *m.ExEvent) error {
+	return repo.DB.Model(m.ExEvent{}).Where("ID=?", id).UpdateColumns(v).Error
 }
 
 //Create ...

@@ -62,8 +62,8 @@ func (repo *Repo) GetByName(name string) (*m.Account, error) {
 }
 
 //Update ...
-func (repo *Repo) Update(a *m.Account) error {
-	return nil
+func (repo *Repo) Update(id uint, v *m.Account) error {
+	return repo.DB.Model(m.Account{}).Where("ID=?", id).UpdateColumns(v).Error
 }
 
 //Create ...

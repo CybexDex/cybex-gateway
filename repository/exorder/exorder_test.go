@@ -26,7 +26,7 @@ func TestOne(t *testing.T) {
 	fmt.Println(res)
 
 	o := m.ExOrder{
-		Status: "DONE",
+		Status: "PENDING",
 	}
 	err := repo.Update((*(res[0])).ID, &o)
 	fmt.Println(err)

@@ -51,8 +51,8 @@ func (repo *Repo) GetByID(id uint) (*m.Accounting, error) {
 }
 
 //Update ...
-func (repo *Repo) Update(a *m.Accounting) error {
-	return nil
+func (repo *Repo) Update(id uint, v *m.Account) error {
+	return repo.DB.Model(m.Accounting{}).Where("ID=?", id).UpdateColumns(v).Error
 }
 
 //Create ...

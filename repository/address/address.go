@@ -50,8 +50,8 @@ func (repo *Repo) GetByID(id uint) (*m.Address, error) {
 }
 
 //Update ...
-func (repo *Repo) Update(a *m.Address) error {
-	return nil
+func (repo *Repo) Update(id uint, v *m.Address) error {
+	return repo.DB.Model(m.Address{}).Where("ID=?", id).UpdateColumns(v).Error
 }
 
 //Create ...

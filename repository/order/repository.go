@@ -10,7 +10,7 @@ type Repository interface {
 	FetchAll() (res []*m.Order, err error)
 	Fetch(p r.Page) (res []*m.Order, err error)
 	GetByID(id uint) (*m.Order, error)
-	Update(a *m.Order) error
+	Update(id uint, v *m.Order) error
 	Create(a *m.Order) error
 	DeleteByID(id uint) error
 	Delete(a *m.Order) error

@@ -11,7 +11,7 @@ type Repository interface {
 	Fetch(p r.Page) (res []*m.Account, err error)
 	GetByName(name string) (*m.Account, error)
 	GetByID(id uint) (*m.Account, error)
-	Update(a *m.Account) error
+	Update(id uint, v *m.Account) error
 	Create(a *m.Account) error
 	DeleteByID(id uint) error
 	Delete(a *m.Account) error
