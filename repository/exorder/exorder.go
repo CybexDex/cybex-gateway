@@ -63,8 +63,8 @@ func (repo *Repo) GetByJPID(id uint) (*m.ExOrder, error) {
 }
 
 //Update ...
-func (repo *Repo) Update(a *m.ExOrder) error {
-	return nil
+func (repo *Repo) Update(id uint, v *m.ExOrder) error {
+	return repo.DB.Model(m.ExOrder{}).Where("ID=?", id).UpdateColumns(&v).Error
 }
 
 //Create ...

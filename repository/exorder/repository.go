@@ -11,7 +11,7 @@ type Repository interface {
 	Fetch(p r.Page) (res []*m.ExOrder, err error)
 	GetByID(id uint) (*m.ExOrder, error)
 	GetByJPID(id uint) (*m.ExOrder, error)
-	Update(a *m.ExOrder) error
+	Update(id uint, v *m.ExOrder) error
 	Create(a *m.ExOrder) error
 	DeleteByID(id uint) error
 	Delete(a *m.ExOrder) error

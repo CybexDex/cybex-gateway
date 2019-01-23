@@ -15,6 +15,7 @@ func main() {
 	tAccount()
 	tApp()
 	tAddress()
+	tExOrder()
 	tQueryPreload()
 	tQueryPreload2()
 }
@@ -160,6 +161,28 @@ func tAddress() {
 		Status:  "NORMAL",
 	}
 	err := db.Create(&address).Error
+	fmt.Println(err)
+}
+
+func tExOrder() {
+	var db = m.GetDB()
+
+	a, _, _ := new(apd.Decimal).SetString("100.0")
+
+	exorder := m.ExOrder{
+		AssetID:         1,
+		JadepoolID:      1,
+		JadepoolOrderID: 100,
+		From:            "0x5b19816a9be1aaea3664f583f9e5fd76188d1402",
+		To:              "0xb45a9e7878e74117509653538d7bb7f4122352d2",
+		Amount:          a,
+		Index:           0,
+		Hash:            "0xd949dd10db2c5a5c45b0f4b2899851783546ffe4d71f848d9b1505933d01cd37",
+		UUHash:          "ETHEREUM:0xd949dd10db2c5a5c45b0f4b2899851783546ffe4d71f848d9b1505933d01cd37",
+		Status:          "PENDING",
+		Type:            "DEPOSIT",
+	}
+	err := db.Create(&exorder).Error
 	fmt.Println(err)
 }
 
