@@ -21,12 +21,11 @@ func GetAllBlockchain(w http.ResponseWriter, r *http.Request) {
 	blockchains, err := blockchainRepo.FetchAll()
 	if err != nil {
 		utils.Errorf("Update error: %v", err)
-		w.WriteHeader(400)
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
 
-	resp := utils.Message(true, "success")
-	resp["data"] = blockchains
+	resp := utils.Message(true, "success", blockchains)
 	utils.Respond(w, resp)
 }
 
@@ -35,7 +34,7 @@ func CreateBlockchain(w http.ResponseWriter, r *http.Request) {
 	requestBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		utils.Errorf("ReadAll error: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
+		utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
 		return
 	}
 	utils.Debugf("request:\n %s", requestBody)
@@ -44,7 +43,7 @@ func CreateBlockchain(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(requestBody, &blockchainEntity)
 	if err != nil {
 		utils.Errorf("json.Unmarshal error: %v", err)
-		w.WriteHeader(400)
+		utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
 		return
 	}
 
@@ -52,7 +51,7 @@ func CreateBlockchain(w http.ResponseWriter, r *http.Request) {
 	err = blockchainRepo.Create(&blockchainEntity)
 	if err != nil {
 		utils.Errorf("Update error: %v", err)
-		w.WriteHeader(400)
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
 
@@ -66,7 +65,7 @@ func GetBlockchain(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		utils.Errorf("Atoi error: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
+		utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
 		return
 	}
 
@@ -74,12 +73,11 @@ func GetBlockchain(w http.ResponseWriter, r *http.Request) {
 	blockchain, err := blockchainRepo.GetByID(uint(id))
 	if err != nil && !gorm.IsRecordNotFoundError(err) {
 		utils.Errorf("GetByID error: %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
 
-	resp := utils.Message(true, "success")
-	resp["data"] = blockchain
+	resp := utils.Message(true, "success", blockchain)
 	utils.Respond(w, resp)
 }
 
@@ -89,14 +87,14 @@ func UpdateBlockchain(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		utils.Errorf("Atoi error: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
+		utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
 		return
 	}
 
 	requestBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		utils.Errorf("ReadAll error: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
+		utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
 		return
 	}
 	utils.Debugf("request: %s", requestBody)
@@ -105,7 +103,7 @@ func UpdateBlockchain(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(requestBody, &blockchainEntity)
 	if err != nil {
 		utils.Errorf("json.Unmarshal error: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
+		utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
 		return
 	}
 
@@ -113,7 +111,7 @@ func UpdateBlockchain(w http.ResponseWriter, r *http.Request) {
 	err = blockchainRepo.Update(uint(id), &blockchainEntity)
 	if err != nil {
 		utils.Errorf("Update error: %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
 
@@ -127,7 +125,7 @@ func DeleteBlockchain(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		utils.Errorf("Atoi error: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
+		utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
 		return
 	}
 
@@ -135,7 +133,7 @@ func DeleteBlockchain(w http.ResponseWriter, r *http.Request) {
 	err = blockchainRepo.DeleteByID(uint(id))
 	if err != nil {
 		utils.Errorf("Update error: %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
 

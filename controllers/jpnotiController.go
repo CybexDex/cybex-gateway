@@ -68,7 +68,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 	requestBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		utils.Errorf("ReadAll error: %v", err)
-		w.WriteHeader(400)
+		utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
 		return
 	}
 	utils.Infof("order noti request:\n %s", requestBody)
@@ -77,7 +77,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(requestBody, &request)
 	if err != nil {
 		utils.Errorf("Unmarshal error: %v", err)
-		w.WriteHeader(400)
+		utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
 		return
 	}
 
@@ -90,12 +90,12 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		ok, err := verifySign(result, request.Sig, pubKey)
 		if err != nil {
 			utils.Errorf("verifySign error: %v", err)
-			w.WriteHeader(400)
+			utils.Respond(w, utils.Message(false, "Sign error"), http.StatusForbidden)
 			return
 		}
 		if !ok {
 			utils.Errorf("verify result: %v", ok)
-			w.WriteHeader(400)
+			utils.Respond(w, utils.Message(false, "Sign error"), http.StatusForbidden)
 			return
 		}
 	}
@@ -121,7 +121,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		tx.Rollback()
 		utils.Errorf("error: %v", err)
-		w.WriteHeader(400)
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
 
@@ -130,7 +130,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		tx.Rollback()
 		utils.Errorf("atoi error: %v, id: %s", err, result.ID)
-		w.WriteHeader(400)
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
 	exorderRepo := exorder.NewRepo(tx)
@@ -138,7 +138,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 	if err != nil && !gorm.IsRecordNotFoundError(err) {
 		tx.Rollback()
 		utils.Errorf("get exorder error: %v", err)
-		w.WriteHeader(400)
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
 
@@ -167,7 +167,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		if err != nil || condition.Any() {
 			tx.Rollback()
 			utils.Errorf("apd.NewFromString error: %v, condition: %s", err, condition.String())
-			w.WriteHeader(400)
+			utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 			return
 		}
 		exorderEntity.Amount = amount
@@ -175,7 +175,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			tx.Rollback()
 			utils.Errorf("create exorder error: %v", err)
-			w.WriteHeader(400)
+			utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 			return
 		}
 	} else {
@@ -195,7 +195,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			tx.Rollback()
 			utils.Errorf("Update exorder error: %v", err)
-			w.WriteHeader(400)
+			utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 			return
 		}
 	}
@@ -219,7 +219,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			tx.Rollback()
 			utils.Errorf("create order error: %v", err)
-			w.WriteHeader(400)
+			utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 			return
 		}
 	}
