@@ -1,5 +1,5 @@
 
-.PHONY: buildJPSrv buildJPSrvLinux startJPSrv buildAll buildAllLinux
+.PHONY: buildJPSrv buildJPSrvLinux startJPSrv buildAdminSrv buildAdminSrvLinux startAdminSrv buildAll buildAllLinux
 
 curDir := $(shell pwd)
 date := $(shell date +%Y%m%d-%H:%M:%S)
@@ -10,6 +10,7 @@ buildAll: buildJPSrv
 	
 buildAllLinux: buildJPSrvLinux
 
+#######################################jpSrv#####################################
 buildJPSrv:
 	@echo "build jpsrv......"
 	@(cd ${curDir}/cmd/jpsrv;\
@@ -24,3 +25,19 @@ startJPSrv: buildJPSrv
 	@echo "start jpsrv......"
 	@(cd ${curDir}/config/jpsrv; \
 	${curDir}/bin/jpsrv;)
+
+#######################################adminSrv#####################################
+buildAdminSrv:
+	@echo "build adminsrv......"
+	@(cd ${curDir}/cmd/adminsrv;\
+	go build -v -ldflags "-X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/adminsrv)
+
+buildAdminSrvLinux:
+	@echo "build adminsrv linux......"
+	@(cd ${curDir}/cmd/adminsrv;\
+	GOOS=linux GOARCH=amd64 go build -v -ldflags "-X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/adminsrv_linux_amd64)
+
+startAdminSrv: buildAdminSrv
+	@echo "start adminsrv......"
+	@(cd ${curDir}/config/adminsrv; \
+	${curDir}/bin/adminsrv;)

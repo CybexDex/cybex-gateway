@@ -32,14 +32,15 @@ func main() {
 		w.Write([]byte("ok"))
 	}).Methods("GET")
 	router.HandleFunc("/api/account/new", controllers.CreateAccount).Methods("POST")
+	router.HandleFunc("/api/blockchain/new", controllers.CreateBlockchain).Methods("POST")
 
 	// 配置中间件
-	router.Use(app.JwtAuthentication) //attach JWT auth middleware
+	//router.Use(app.JwtAuthentication) //attach JWT auth middleware
 	router.Use(app.NewLoggingMiddle(utils.GetLogger()))
 
 	listenAddr := os.Getenv("listen_addr")
 	if len(listenAddr) == 0 {
-		listenAddr = ":8081"
+		listenAddr = ":8082"
 	}
 	server := &http.Server{
 		Addr:         listenAddr,

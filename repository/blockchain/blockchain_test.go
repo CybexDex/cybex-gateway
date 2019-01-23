@@ -1,4 +1,4 @@
-package exorder
+package blockchain
 
 import (
 	"fmt"
@@ -19,10 +19,10 @@ func TestOne(t *testing.T) {
 
 	// fetch by pagination
 	res, _ = repo.Fetch(p.Page{
-		Offset:1,
-		Amount:1,
-		OrderBy:"ID",
-		Sort:"asc",
+		Offset:  1,
+		Amount:  1,
+		OrderBy: "ID",
+		Sort:    "asc",
 	})
 	fmt.Println(*(res[0]))
 
