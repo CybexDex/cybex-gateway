@@ -1,4 +1,4 @@
-package exorder
+package order
 
 import (
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
