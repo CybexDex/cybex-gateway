@@ -54,7 +54,7 @@ func (repo *Repo) GetByID(id uint) (*m.ExOrder, error) {
 //GetByJPID ...
 func (repo *Repo) GetByJPID(id uint) (*m.ExOrder, error) {
 	a := m.ExOrder{}
-	err := repo.DB.Where(&m.ExOrder{JadepoolID: id}).First(&a).Error
+	err := repo.DB.Where(&m.ExOrder{JadepoolOrderID: id}).First(&a).Error
 	if err != nil {
 		return nil, err
 	}
