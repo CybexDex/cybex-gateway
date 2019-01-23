@@ -24,10 +24,12 @@ func tBlockchain() {
 
 	// blockchain
 	bc := m.Blockchain{Name: "Ethereum", Description: "Ethereum", Confirmation: 30}
-	db.Create(&bc)
+	err := db.Create(&bc).Error
+	fmt.Println(err)
 
 	bc = m.Blockchain{Name: "Bitcoin", Description: "Bitcoin", Confirmation: 6}
-	db.Create(&bc)
+	err = db.Create(&bc).Error
+	fmt.Println(err)
 }
 
 func tAsset() {
@@ -53,7 +55,8 @@ func tAsset() {
 		Decimal:        18,
 	}
 
-	db.Create(&asset)
+	err := db.Create(&asset).Error
+	fmt.Println(err)
 }
 
 func tJadepool() {
@@ -71,7 +74,8 @@ func tJadepool() {
 		Status:      "NORMAL",
 		Type:        "DEFAULT",
 	}
-	db.Create(&jp)
+	err := db.Create(&jp).Error
+	fmt.Println(err)
 }
 
 func tCompany() {
@@ -98,7 +102,8 @@ func tCompany() {
 			Phone:     "13912300000",
 		},
 	}
-	db.Create(&company)
+	err := db.Create(&company).Error
+	fmt.Println(err)
 }
 
 func tAccount() {
@@ -106,25 +111,25 @@ func tAccount() {
 
 	// Account
 	account := m.Account{
-		CompanyID:       1,
+		CompanyID: 1,
+		// Name:      &sql.NullString{String: "xuyang", Valid: true},
 		Name:            "xuyang",
 		LastName:        "XU",
 		FirstName:       "YANG",
 		Email:           "xuyang@nbltrust.com",
-		EmailEnable:     true,
+		EmailEnable:     false,
 		EmailVerified:   false,
 		Phone:           "13912300000",
-		PhoneEnabled:    true,
+		PhoneEnabled:    false,
 		PhoneVerified:   false,
 		AuthKey:         "139123000001391230000013912300000",
-		AuthKeyEnabled:  true,
-		AuthKeyVerified: true,
-		PasswordHash:    "139123000001391230000013912300000139123000001391230000013912300000139123000001391230000013912300000",
-		Status:          "NORMAL",
-		Type:            "ADMIN",
+		AuthKeyEnabled:  false,
+		AuthKeyVerified: false,
+		PasswordHash:    "04a24e8195382cbfe6c81dda873d2be49b13c1bd09b01f0bfeeba952de3c59cd",
 		Disable:         false,
 	}
-	db.Create(&account)
+	err := db.Create(&account).Error
+	fmt.Println(err)
 }
 
 func tApp() {
@@ -141,7 +146,8 @@ func tApp() {
 		Status:      "NORMAL",
 		Type:        "professional",
 	}
-	db.Create(&app)
+	err := db.Create(&app).Error
+	fmt.Println(err)
 }
 
 func tAddress() {
@@ -153,7 +159,8 @@ func tAddress() {
 		Address: "0xa48d73341885e6bce0252cb05b31a8a00720cdb2",
 		Status:  "NORMAL",
 	}
-	db.Create(&address)
+	err := db.Create(&address).Error
+	fmt.Println(err)
 }
 
 func tQueryPreload() {
