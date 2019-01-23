@@ -149,7 +149,12 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		exorderEntity.From = result.From
 		exorderEntity.To = result.To
 		exorderEntity.Hash = result.Hash
-		exorderEntity.UUHash = fmt.Sprintf("%s:%s:%d", result.CoinType, result.Hash, n)
+		if n > 0 {
+			exorderEntity.UUHash = fmt.Sprintf("%s:%s:%d", result.CoinType, result.Hash, n)
+		} else {
+			exorderEntity.UUHash = fmt.Sprintf("%s:%s", result.CoinType, result.Hash)
+		}
+
 		exorderEntity.Index = n
 		exorderEntity.JadepoolOrderID = uint(jpOrderID)
 		exorderEntity.Status = result.State
@@ -183,8 +188,16 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// todo: save state
+		updateEntity := &model.ExOrder{}
+		updateEntity.Status = result.State
 		exorderEntity.Status = result.State
+		err = exorderRepo.Update(exorderEntity.ID, updateEntity)
+		if err != nil {
+			tx.Rollback()
+			utils.Errorf("Update exorder error: %v", err)
+			w.WriteHeader(400)
+			return
+		}
 	}
 
 	// 链上已经确认，可以创建order
