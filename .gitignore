@@ -5,3 +5,4 @@ main
 vendor
 bin
 *.log
+node_modules
