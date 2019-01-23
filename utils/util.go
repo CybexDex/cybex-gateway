@@ -20,6 +20,11 @@ func Respond(w http.ResponseWriter, data map[string]interface{}) {
 	json.NewEncoder(w).Encode(data)
 }
 
+func RespondObj(w http.ResponseWriter, data interface{}) {
+	w.Header().Add("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(data)
+}
+
 // BuildMsg 将对象按照key字符顺序序列化字符串
 func BuildMsg(val interface{}) string {
 	if val == nil {
