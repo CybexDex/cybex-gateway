@@ -1,16 +1,16 @@
-
-.PHONY: buildJPSrv buildJPSrvLinux startJPSrv buildAdminSrv buildAdminSrvLinux startAdminSrv buildAll buildAllLinux
-
 curDir := $(shell pwd)
 date := $(shell date +%Y%m%d-%H:%M:%S)
 githash := $(shell git log -1 --format="%h")
 gitbranch := $(shell git rev-parse --abbrev-ref HEAD)
 
-buildAll: buildJPSrv
-	
-buildAllLinux: buildJPSrvLinux
+#######################################buildall#####################################
+.PHONY: buildAll buildAllLinux
+buildAll: buildJPSrv buildAdminSrv
+
+buildAllLinux: buildJPSrvLinux buildAdminSrvLinux
 
 #######################################jpSrv#####################################
+.PHONY: buildJPSrv buildJPSrvLinux startJPSrv 
 buildJPSrv:
 	@echo "build jpsrv......"
 	@(cd ${curDir}/cmd/jpsrv;\
@@ -27,6 +27,7 @@ startJPSrv: buildJPSrv
 	${curDir}/bin/jpsrv;)
 
 #######################################adminSrv#####################################
+.PHONY: buildAdminSrv buildAdminSrvLinux startAdminSrv
 buildAdminSrv:
 	@echo "build adminsrv......"
 	@(cd ${curDir}/cmd/adminsrv;\
