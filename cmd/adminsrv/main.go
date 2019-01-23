@@ -33,6 +33,7 @@ func main() {
 	}).Methods("GET")
 	router.HandleFunc("/api/account/new", controllers.CreateAccount).Methods("POST")
 	router.HandleFunc("/api/account/login", controllers.Authenticate).Methods("POST")
+	router.HandleFunc("/api/debug/info", controllers.DebugInfo).Methods("GET")
 
 	router.HandleFunc("/api/blockchain/new", controllers.CreateBlockchain).Methods("POST")
 	router.HandleFunc("/api/blockchain/{id}", controllers.UpdateBlockchain).Methods("PUT")
@@ -41,7 +42,7 @@ func main() {
 	router.HandleFunc("/api/blockchain/{id}", controllers.DeleteBlockchain).Methods("DELETE")
 
 	// 配置中间件
-	//router.Use(app.JwtAuthentication) //attach JWT auth middleware
+	router.Use(app.JwtAuthentication) //attach JWT auth middleware
 	router.Use(app.NewLoggingMiddle(utils.GetLogger()))
 
 	listenAddr := os.Getenv("listen_addr")

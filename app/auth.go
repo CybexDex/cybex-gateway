@@ -1,14 +1,21 @@
 package app
 
 import (
+	"context"
 	"net/http"
-	"os"
 	"strings"
 
 	u "git.coding.net/bobxuyang/cy-gateway-BN/utils"
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
+//Token ...
+type Token struct {
+	UserID uint
+	jwt.StandardClaims
+}
+
+//JwtAuthentication ...
 var JwtAuthentication = func(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -25,54 +32,43 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 			}
 		}
 
-		response := make(map[string]interface{})
 		tokenHeader := r.Header.Get("Authorization") //Grab the token from the header
 
 		if tokenHeader == "" { //Token is missing, returns with error code 403 Unauthorized
-			response = u.Message(false, "Missing auth token")
-			w.WriteHeader(http.StatusForbidden)
-			w.Header().Add("Content-Type", "application/json")
-			u.Respond(w, response)
+			u.Respond(w, u.Message(false, "Missing auth token"), http.StatusForbidden)
 			return
 		}
 
 		splitted := strings.Split(tokenHeader, " ") //The token normally comes in format `Bearer {token-body}`, we check if the retrieved token matched this requirement
 		if len(splitted) != 2 {
-			response = u.Message(false, "Invalid/Malformed auth token")
-			w.WriteHeader(http.StatusForbidden)
-			w.Header().Add("Content-Type", "application/json")
-			u.Respond(w, response)
+			u.Respond(w, u.Message(false, "Invalid/Malformed auth token"), http.StatusForbidden)
 			return
 		}
 
 		tokenPart := splitted[1] //Grab the token part, what we are truly interested in
-		tk := &jwt.StandardClaims{}
+		tk := &Token{}
 
 		token, err := jwt.ParseWithClaims(tokenPart, tk, func(token *jwt.Token) (interface{}, error) {
-			return []byte(os.Getenv("token_password")), nil
+			// TODO: need to remove hard code
+			// TODO: need to remove hard code
+			return []byte("token_password"), nil
 		})
 
 		if err != nil { //Malformed token, returns with http code 403 as usual
-			response = u.Message(false, "Malformed authentication token")
-			w.WriteHeader(http.StatusForbidden)
-			w.Header().Add("Content-Type", "application/json")
-			u.Respond(w, response)
+			u.Respond(w, u.Message(false, "Malformed authentication token"), http.StatusForbidden)
 			return
 		}
 
 		if !token.Valid { //Token is invalid, maybe not signed on this server
-			response = u.Message(false, "Token is not valid.")
-			w.WriteHeader(http.StatusForbidden)
-			w.Header().Add("Content-Type", "application/json")
-			u.Respond(w, response)
+			u.Respond(w, u.Message(false, "Token is not valid"), http.StatusForbidden)
 			return
 		}
 
 		//Everything went well, proceed with the request and set the caller to the user retrieved from the parsed token
 		// TODO: validation check
-		//fmt.Sprintf("User %", tk.UserId) //Useful for monitoring
-		//ctx := context.WithValue(r.Context(), "user", tk.UserId)
-		//r = r.WithContext(ctx)
+		//u.Infof("User [%s] login", tk.UserID)
+		ctx := context.WithValue(r.Context(), "UserID", tk.UserID)
+		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r) //proceed in the middleware chain!
 	})
 }
