@@ -84,18 +84,20 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 	result := request.Result
 	result.Timestamp = request.Timestamp
 
-	// 签名验证
-	pubKey := os.Getenv("pub_key")
-	ok, err := verifySign(result, request.Sig, pubKey)
-	if err != nil {
-		utils.Errorf("verifySign error: %v", err)
-		w.WriteHeader(400)
-		return
-	}
-	if !ok {
-		utils.Errorf("verify result: %v", ok)
-		w.WriteHeader(400)
-		return
+	if os.Getenv("env") != "dev" && os.Getenv("env") != "staging" {
+		// 签名验证
+		pubKey := os.Getenv("pub_key")
+		ok, err := verifySign(result, request.Sig, pubKey)
+		if err != nil {
+			utils.Errorf("verifySign error: %v", err)
+			w.WriteHeader(400)
+			return
+		}
+		if !ok {
+			utils.Errorf("verify result: %v", ok)
+			w.WriteHeader(400)
+			return
+		}
 	}
 
 	// 开启事务处理
@@ -259,7 +261,7 @@ func verifySign(result *OrderNotiResult, sign *Sig, pubkey string) (bool, error)
 
 func parseIndexFromResult(result *OrderNotiResult) int {
 	n := 0
-	if result.CoinType == "BTC" {
+	if result.CoinType == "BTC" || result.CoinType == "QTUM" {
 		toes := result.Data["to"]
 		switch toes.(type) {
 		case []interface{}:
