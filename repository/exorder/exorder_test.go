@@ -31,6 +31,9 @@ func TestOne(t *testing.T) {
 	err := repo.Update((*(res[0])).ID, &o)
 	fmt.Println(err)
 
+	eo, _ := repo.GetByJPID(o.JadepoolID)
+	fmt.Println(*eo)
+
 	// delete by ID
 	// fmt.Println(repo.DeleteByID(4))
 }
