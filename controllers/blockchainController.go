@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/jinzhu/gorm"
+
 	"git.coding.net/bobxuyang/cy-gateway-BN/models"
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/blockchain"
 	"github.com/gorilla/mux"
@@ -70,8 +72,8 @@ func GetBlockchain(w http.ResponseWriter, r *http.Request) {
 
 	blockchainRepo := blockchain.NewRepo(model.GetDB())
 	blockchain, err := blockchainRepo.GetByID(uint(id))
-	if err != nil {
-		utils.Errorf("Update error: %v", err)
+	if err != nil && !gorm.IsRecordNotFoundError(err) {
+		utils.Errorf("GetByID error: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -109,6 +111,28 @@ func UpdateBlockchain(w http.ResponseWriter, r *http.Request) {
 
 	blockchainRepo := blockchain.NewRepo(model.GetDB())
 	err = blockchainRepo.Update(uint(id), &blockchainEntity)
+	if err != nil {
+		utils.Errorf("Update error: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	resp := utils.Message(true, "success")
+	utils.Respond(w, resp)
+}
+
+//DeleteBlockchain ...
+func DeleteBlockchain(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		utils.Errorf("Atoi error: %v", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	blockchainRepo := blockchain.NewRepo(model.GetDB())
+	err = blockchainRepo.DeleteByID(uint(id))
 	if err != nil {
 		utils.Errorf("Update error: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
