@@ -9,6 +9,7 @@ import (
 type Repository interface {
 	FetchAll() (res []*m.Account, err error)
 	Fetch(p r.Page) (res []*m.Account, err error)
+	GetByName(name string) (*m.Account, error)
 	GetByID(id uint) (*m.Account, error)
 	Update(a *m.Account) error
 	Create(a *m.Account) error

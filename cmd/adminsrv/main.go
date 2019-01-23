@@ -32,6 +32,7 @@ func main() {
 		w.Write([]byte("ok"))
 	}).Methods("GET")
 	router.HandleFunc("/api/account/new", controllers.CreateAccount).Methods("POST")
+	router.HandleFunc("/api/account/login", controllers.Authenticate).Methods("POST")
 
 	// 配置中间件
 	router.Use(app.JwtAuthentication) //attach JWT auth middleware

@@ -50,6 +50,17 @@ func (repo *Repo) GetByID(id uint) (*m.Account, error) {
 	return &a, err
 }
 
+//GetByName ...
+func (repo *Repo) GetByName(name string) (*m.Account, error) {
+	a := m.Account{}
+	err := repo.DB.Where("name=?", name).First(&a).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &a, err
+}
+
 //Update ...
 func (repo *Repo) Update(a *m.Account) error {
 	return nil
