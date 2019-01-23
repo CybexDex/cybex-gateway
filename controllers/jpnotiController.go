@@ -98,6 +98,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 开启事务处理
 	tx := model.GetDB().Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -138,12 +139,10 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
 		return
 	}
-	fmt.Println("GetByJPID", exorderEntity, err)
 
 	if exorderEntity == nil {
 		// btc类的，如果订单发送给多个地址，n放在data结构里，需要解析取出来
 		n := parseIndexFromResult(result)
-
 		exorderEntity = new(model.ExOrder)
 		exorderEntity.From = result.From
 		exorderEntity.To = result.To
@@ -173,6 +172,15 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
+		if exorderEntity.Status == result.State {
+			// 重复请求，返回正常结果，不执行后面创建order的操作
+			utils.Infof("repeat request, jadepool order id: %d", exorderEntity.JadepoolOrderID)
+			tx.Commit()
+			resp := utils.Message(true, "success")
+			utils.Respond(w, resp)
+			return
+		}
+
 		// todo: save state
 		exorderEntity.Status = result.State
 	}
