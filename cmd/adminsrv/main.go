@@ -33,7 +33,12 @@ func main() {
 	}).Methods("GET")
 	router.HandleFunc("/api/account/new", controllers.CreateAccount).Methods("POST")
 	router.HandleFunc("/api/account/login", controllers.Authenticate).Methods("POST")
+
 	router.HandleFunc("/api/blockchain/new", controllers.CreateBlockchain).Methods("POST")
+	router.HandleFunc("/api/blockchain/{id}", controllers.UpdateBlockchain).Methods("PUT")
+	router.HandleFunc("/api/blockchain/{id}", controllers.GetBlockchain).Methods("GET")
+	router.HandleFunc("/api/blockchain/all", controllers.GetAllBlockchain).Methods("GET")
+	router.HandleFunc("/api/blockchain/{id}", controllers.DeleteBlockchain).Methods("DELETE")
 
 	// 配置中间件
 	//router.Use(app.JwtAuthentication) //attach JWT auth middleware
