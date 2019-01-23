@@ -11,16 +11,31 @@ import (
 	"github.com/btcsuite/btcd/btcec"
 )
 
+//Message ...
 func Message(status bool, message string) map[string]interface{} {
 	return map[string]interface{}{"status": status, "message": message}
 }
 
-func Respond(w http.ResponseWriter, data map[string]interface{}) {
+//Respond ...
+func Respond(w http.ResponseWriter, data map[string]interface{}, s ...int) {
+	status := http.StatusOK
+	if len(s) == 1 {
+		status = s[0]
+	}
+
+	w.WriteHeader(status)
 	w.Header().Add("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(data)
 }
 
-func RespondObj(w http.ResponseWriter, data interface{}) {
+//RespondObj ...
+func RespondObj(w http.ResponseWriter, data interface{}, s ...int) {
+	status := http.StatusOK
+	if len(s) == 1 {
+		status = s[0]
+	}
+
+	w.WriteHeader(status)
 	w.Header().Add("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(data)
 }

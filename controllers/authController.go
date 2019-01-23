@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -20,7 +21,7 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 	account.Password = ""
 	if err != nil {
 		u.Errorf("Invalid request: %v, %s", account, err.Error())
-		u.Respond(w, u.Message(false, "Invalid request"))
+		u.Respond(w, u.Message(false, "Invalid request"), http.StatusBadRequest)
 		return
 	}
 
@@ -28,7 +29,7 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		u.Errorf("Operation failed when compute hash of password, %s", err.Error())
-		u.Respond(w, u.Message(false, "Invalid request"))
+		u.Respond(w, u.Message(false, "Invalid request"), http.StatusInternalServerError)
 		return
 	}
 
@@ -37,8 +38,12 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 	repo := accRepo.NewRepo(m.GetDB())
 	err = repo.Create(account)
 	if err != nil {
-		u.Errorf("Create account error, %s", err.Error())
-		u.Respond(w, u.Message(false, "Create account error"))
+		u.Errorf("Create account error, \"%s\"", err.Error())
+		if !strings.Contains(err.Error(), "pq: duplicate key value violates unique constraint") {
+			u.Respond(w, u.Message(false, "Create account error"), http.StatusInternalServerError)
+		} else {
+			u.Respond(w, u.Message(false, "Username or email is duplicated"), http.StatusBadRequest)
+		}
 		return
 	}
 
@@ -54,7 +59,7 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(account)
 	if err != nil {
 		u.Errorf("Invalid request: %v, %s", account, err.Error())
-		u.Respond(w, u.Message(false, "Invalid request"))
+		u.Respond(w, u.Message(false, "Invalid request"), http.StatusBadRequest)
 		return
 	}
 
@@ -66,14 +71,14 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 	account, err = repo.GetByName(name)
 	if err != nil {
 		u.Errorf("Fetch account data error, %s", err.Error())
-		u.Respond(w, u.Message(false, "Fetch account data error"))
+		u.Respond(w, u.Message(false, "Fetch account data error"), http.StatusInternalServerError)
 		return
 	}
 
 	// Comparing the password with the hash
 	if err := bcrypt.CompareHashAndPassword([]byte(account.PasswordHash), []byte(password)); err != nil {
 		u.Errorf("Passord incorrect, %s", err.Error())
-		u.Respond(w, u.Message(false, "Passord incorrect"))
+		u.Respond(w, u.Message(false, "Passord incorrect"), http.StatusUnauthorized)
 		return
 	}
 
