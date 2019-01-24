@@ -8,7 +8,7 @@ type ExEvent struct {
 
 	JadepoolID uint `gorm:"index;not null" json:"jadepoolID"`
 
-	Log string `gorm:"type:text;not null" json:"log"` // store the whole json result into Log
+	Log string `gorm:"type:json;not null" json:"log"` // store the whole json result into Log
 
 	AssetID uint   `json:"assetID"`
 	Hash    string `gorm:"index;type:varchar(128)" json:"hash"`

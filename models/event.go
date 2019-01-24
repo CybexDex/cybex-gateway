@@ -14,7 +14,7 @@ type Event struct {
 	UserAgent  string `json:"userAgent"`
 	IPAddress  string `json:"ipAddress"`
 	Input      string `json:"input"`
-	Output     string `json:"output"`
+	Output     string `gorm:"type:json" json:"output"`
 }
 
 //UpdateColumns ...
