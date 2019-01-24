@@ -40,6 +40,12 @@ func CreateBlockchain(w http.ResponseWriter, r *http.Request) {
 	utils.Debugf("request:\n %s", requestBody)
 
 	blockchainEntity := model.Blockchain{}
+	if len(blockchainEntity.Name) == 0 {
+		utils.Errorf("error: %v", err)
+		utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
+		return
+	}
+
 	err = json.Unmarshal(requestBody, &blockchainEntity)
 	if err != nil {
 		utils.Errorf("json.Unmarshal error: %v", err)
@@ -48,7 +54,17 @@ func CreateBlockchain(w http.ResponseWriter, r *http.Request) {
 	}
 
 	blockchainRepo := blockchain.NewRepo(model.GetDB())
-	err = blockchainRepo.Create(&blockchainEntity)
+	blockchain, err := blockchainRepo.FetchWith(&model.Blockchain{Name: blockchainEntity.Name})
+	if err != nil && !gorm.IsRecordNotFoundError(err) {
+		utils.Errorf("Update error: %v", err)
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
+	if len(blockchain) != 0 {
+		utils.Respond(w, utils.Message(false, "find one"), http.StatusBadRequest)
+		return
+	}
+	err = blockchainEntity.Create()
 	if err != nil {
 		utils.Errorf("Update error: %v", err)
 		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
@@ -107,8 +123,9 @@ func UpdateBlockchain(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	blockchainRepo := blockchain.NewRepo(model.GetDB())
-	err = blockchainRepo.Update(uint(id), &blockchainEntity)
+	//blockchainRepo := blockchain.NewRepo(model.GetDB())
+	blockchainEntity.ID = uint(id)
+	err = blockchainEntity.UpdateColumns(&blockchainEntity)
 	if err != nil {
 		utils.Errorf("Update error: %v", err)
 		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)

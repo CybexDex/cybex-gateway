@@ -20,13 +20,13 @@ var (
 )
 
 func main() {
-	// 配置初始化日志
+	// init loggger
 	logDir := os.Getenv("log_dir")
 	logLevel := os.Getenv("log_level")
 	utils.InitLog(logDir, logLevel)
 	utils.Infof("build info: %s_%s_%s", buildtime, branch, githash)
 
-	// 配置路由
+	// init route
 	router := mux.NewRouter()
 	router.HandleFunc("/api/test", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("ok"))
@@ -46,7 +46,7 @@ func main() {
 	}
 	server.SetKeepAlivesEnabled(false)
 
-	// 启动server
+	// start server
 	utils.Infof("listen on: %s", listenAddr)
 	gracehttp.Serve(server)
 }

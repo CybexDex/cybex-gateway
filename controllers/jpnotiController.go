@@ -19,9 +19,7 @@ import (
 	"github.com/cockroachdb/apd"
 
 	model "git.coding.net/bobxuyang/cy-gateway-BN/models"
-	exevent "git.coding.net/bobxuyang/cy-gateway-BN/repository/exevent"
 	exorder "git.coding.net/bobxuyang/cy-gateway-BN/repository/exorder"
-	order "git.coding.net/bobxuyang/cy-gateway-BN/repository/order"
 	utils "git.coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/btcsuite/btcd/btcec"
 	"golang.org/x/crypto/sha3"
@@ -116,8 +114,8 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 	exeventEntity.JadepoolID = 1
 	exeventEntity.Status = result.State
 	exeventEntity.Log = string(requestBody)
-	exeventRepo := exevent.NewRepo(tx)
-	err = exeventRepo.Create(exeventEntity)
+	//exeventRepo := exevent.NewRepo(tx)
+	err = exeventEntity.Create()
 	if err != nil {
 		tx.Rollback()
 		utils.Errorf("error: %v", err)
@@ -171,7 +169,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		exorderEntity.Amount = amount
-		err = exorderRepo.Create(exorderEntity)
+		err = exorderEntity.Create()
 		if err != nil {
 			tx.Rollback()
 			utils.Errorf("create exorder error: %v", err)
@@ -191,7 +189,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		updateEntity := &model.ExOrder{}
 		updateEntity.Status = result.State
 		exorderEntity.Status = result.State
-		err = exorderRepo.Update(exorderEntity.ID, updateEntity)
+		err = exorderEntity.UpdateColumns(updateEntity)
 		if err != nil {
 			tx.Rollback()
 			utils.Errorf("Update exorder error: %v", err)
@@ -202,7 +200,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 
 	// 链上已经确认，可以创建order
 	if exorderEntity.Status == "done" {
-		orderRepo := order.NewRepo(tx)
+		//orderRepo := order.NewRepo(tx)
 		orderEntity := new(model.Order)
 		orderEntity.From = exorderEntity.From
 		orderEntity.Hash = exorderEntity.Hash
@@ -215,7 +213,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		orderEntity.Amount = exorderEntity.Amount
 		//todo: 查询实际的id
 		orderEntity.AppID = 1
-		err = orderRepo.Create(orderEntity)
+		err = orderEntity.Create()
 		if err != nil {
 			tx.Rollback()
 			utils.Errorf("create order error: %v", err)

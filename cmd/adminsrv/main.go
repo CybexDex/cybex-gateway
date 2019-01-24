@@ -20,13 +20,13 @@ var (
 )
 
 func main() {
-	// 配置初始化日志
+	// init logger
 	logDir := os.Getenv("log_dir")
 	logLevel := os.Getenv("log_level")
 	utils.InitLog(logDir, logLevel)
 	utils.Infof("build info: %s_%s_%s", buildtime, branch, githash)
 
-	// 配置路由
+	// init route
 	router := mux.NewRouter()
 	router.HandleFunc("/api/test", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("ok"))
@@ -41,7 +41,7 @@ func main() {
 	router.HandleFunc("/api/blockchain", controllers.GetAllBlockchain).Methods("GET")
 	router.HandleFunc("/api/blockchain/{id}", controllers.DeleteBlockchain).Methods("DELETE")
 
-	// 配置中间件
+	// init middleware
 	router.Use(app.JwtAuthentication) //attach JWT auth middleware
 	router.Use(app.NewLoggingMiddle(utils.GetLogger()))
 
@@ -57,7 +57,7 @@ func main() {
 	}
 	server.SetKeepAlivesEnabled(false)
 
-	// 启动server
+	// start server
 	utils.Infof("listen on: %s", listenAddr)
 	gracehttp.Serve(server)
 }
