@@ -1,5 +1,5 @@
 (async () => {
-    const priKey = Buffer.from('vxKZb+6qKXe2yg0zoOi9LM/EhExvin5tFcCZ+NpKJVw=', 'base64')
+    const priKey = Buffer.from('axKZb+6qKXe2yg0zoOi9LM/EhExvin5tFcCZ+NpKJVw=', 'base64')
     const crypto = require('@jadepool/crypto')
     const moment = require('moment')
     const axios = require('axios')
@@ -60,17 +60,12 @@
     data.result = msg
 
     let result = null
-    try {
-        result = await axios({
-            method: 'POST',
-            url: 'http://127.0.0.1:8081/api/order/noti',
-            data: data,
-            proxy: false
-        })
-    } catch (err) {
-        console.error(err)
-        return
-    }
+    result = await axios({
+        method: 'POST',
+        url: 'http://127.0.0.1:8081/api/order/noti',
+        data: data,
+        proxy: false
+    })
 
     console.log('result', result.data)
 })()
