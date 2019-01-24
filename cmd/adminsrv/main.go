@@ -41,6 +41,12 @@ func main() {
 	router.HandleFunc("/api/blockchain", controllers.GetAllBlockchain).Methods("GET")
 	router.HandleFunc("/api/blockchain/{id}", controllers.DeleteBlockchain).Methods("DELETE")
 
+	router.HandleFunc("/api/asset/new", controllers.CreateAsset).Methods("POST")
+	router.HandleFunc("/api/asset/{id}", controllers.UpdateAsset).Methods("PUT")
+	router.HandleFunc("/api/asset/{id}", controllers.GetAsset).Methods("GET")
+	router.HandleFunc("/api/asset", controllers.GetAllAsset).Methods("GET")
+	router.HandleFunc("/api/asset/{id}", controllers.DeleteAsset).Methods("DELETE")
+
 	// init middleware
 	router.Use(app.NewLoggingMiddle(utils.GetLogger()))
 	router.Use(app.JwtAuthentication) //attach JWT auth middleware
