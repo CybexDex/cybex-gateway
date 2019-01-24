@@ -44,8 +44,8 @@ func main() {
 	router.HandleFunc("/api/blockchain/{id}", controllers.DeleteBlockchain).Methods("DELETE")
 
 	// init middleware
-	router.Use(app.JwtAuthentication) //attach JWT auth middleware
 	router.Use(app.NewLoggingMiddle(utils.GetLogger()))
+	router.Use(app.JwtAuthentication) //attach JWT auth middleware
 
 	router.Use(app.NewLogEventMiddle(m.GetDB()))
 
