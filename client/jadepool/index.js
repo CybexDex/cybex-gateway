@@ -68,7 +68,7 @@
             proxy: false
         })
     } catch (err) {
-        console.error(null, err.response.status)
+        console.error(err)
         return
     }
 

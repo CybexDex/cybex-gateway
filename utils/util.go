@@ -73,5 +73,5 @@ func PriToPub(prikey string) string {
 		return ""
 	}
 	_, pubKey := btcec.PrivKeyFromBytes(btcec.S256(), pkBytes)
-	return string(pubKey.SerializeCompressed())
+	return hex.EncodeToString(pubKey.SerializeCompressed())
 }
