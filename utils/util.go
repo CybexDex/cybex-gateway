@@ -31,7 +31,7 @@ func Respond(w http.ResponseWriter, data map[string]interface{}, s ...int) {
 	json.NewEncoder(w).Encode(data)
 }
 
-// BuildMsg 将对象按照key字符顺序序列化字符串
+// BuildMsg ...
 func BuildMsg(val interface{}) string {
 	if val == nil {
 		return ""
@@ -66,7 +66,7 @@ func BuildMsg(val interface{}) string {
 	return msg
 }
 
-// PriToPub 私钥串导出公钥串
+// PriToPub ...
 func PriToPub(prikey string) string {
 	pkBytes, err := hex.DecodeString(prikey)
 	if err != nil {

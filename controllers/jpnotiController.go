@@ -83,7 +83,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 	result.Timestamp = request.Timestamp
 
 	if os.Getenv("env") != "dev" && os.Getenv("env") != "staging" {
-		// 签名验证
+		// verify sig
 		pubKey := os.Getenv("pub_key")
 		ok, err := verifySign(result, request.Sig, pubKey)
 		if err != nil {
@@ -98,7 +98,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 开启事务处理
+	// begin transaction
 	tx := model.GetDB().Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -141,7 +141,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if exorderEntity == nil {
-		// btc类的，如果订单发送给多个地址，n放在data结构里，需要解析取出来
+		// parse tx index from result
 		n := parseIndexFromResult(result)
 		exorderEntity = new(model.ExOrder)
 		exorderEntity.From = result.From
@@ -157,9 +157,9 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		exorderEntity.JadepoolOrderID = uint(jpOrderID)
 		exorderEntity.Status = result.State
 		exorderEntity.Type = result.BizType
-		//todo: 查询实际的id
+		//todo:
 		exorderEntity.AssetID = 1
-		//todo: 查询实际的id
+		//todo:
 		exorderEntity.JadepoolID = 1
 		amount, condition, err := apd.NewFromString(result.Value)
 		if err != nil || condition.Any() {
@@ -178,7 +178,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		if exorderEntity.Status == result.State {
-			// 重复请求，返回正常结果，不执行后面创建order的操作
+			// repeat request
 			utils.Infof("repeat request, jadepool order id: %d", exorderEntity.JadepoolOrderID)
 			tx.Commit()
 			resp := utils.Message(true, "success")
@@ -198,8 +198,9 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 链上已经确认，可以创建order
+	// exorder has done, so create order
 	if exorderEntity.Status == "done" {
+		// exorder has done, so create order
 		//orderRepo := order.NewRepo(tx)
 		orderEntity := new(model.Order)
 		orderEntity.From = exorderEntity.From
@@ -211,7 +212,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		orderEntity.UUHash = exorderEntity.UUHash
 		orderEntity.AssetID = exorderEntity.AssetID
 		orderEntity.Amount = exorderEntity.Amount
-		//todo: 查询实际的id
+		//todo:
 		orderEntity.AppID = 1
 		err = orderEntity.Create()
 		if err != nil {

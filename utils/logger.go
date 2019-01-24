@@ -13,7 +13,7 @@ import (
 )
 
 /*
-	日志模块，按日期记录日志
+	logger
 */
 var (
 	logPath string
@@ -337,7 +337,6 @@ func (l *Logger) Debugln(v ...interface{}) {
 	if l.level > debugFlag {
 		return
 	}
-
 	l.Output(calldepth, fmt.Sprintln("[DEBUG]", v))
 }
 

@@ -123,7 +123,6 @@ func UpdateBlockchain(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//blockchainRepo := blockchain.NewRepo(model.GetDB())
 	blockchainEntity.ID = uint(id)
 	err = blockchainEntity.UpdateColumns(&blockchainEntity)
 	if err != nil {
