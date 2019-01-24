@@ -30,3 +30,23 @@ type Asset struct {
 	SweepTo        *apd.Decimal `gorm:"type:numeric(30,10)" json:"SweepTo"`        // use for GATEWAY mode
 	Decimal        uint         `json:"decimal"`
 }
+
+//UpdateColumns ...
+func (a *Asset) UpdateColumns(b *Asset) error {
+	return GetDB().Model(Asset{}).Where("ID=?", a.ID).UpdateColumns(b).Error
+}
+
+//Create ...
+func (a *Asset) Create() (err error) {
+	return GetDB().Create(&a).Error
+}
+
+//Save ...
+func (a *Asset) Save() (err error) {
+	return GetDB().Save(&a).Error
+}
+
+//Delete ...
+func (a *Asset) Delete() (err error) {
+	return GetDB().Delete(&a).Error
+}

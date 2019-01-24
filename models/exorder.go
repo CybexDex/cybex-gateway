@@ -22,3 +22,23 @@ type ExOrder struct {
 	Status          string       `gorm:"type:varchar(32);not null" json:"status"`  // PENDING, DONE, FAILED
 	Type            string       `gorm:"type:varchar(32);not null" json:"type"`    // DEPOSIT, WITHDRAW
 }
+
+//UpdateColumns ...
+func (a *ExOrder) UpdateColumns(b *ExOrder) error {
+	return GetDB().Model(ExOrder{}).Where("ID=?", a.ID).UpdateColumns(b).Error
+}
+
+//Create ...
+func (a *ExOrder) Create() (err error) {
+	return GetDB().Create(&a).Error
+}
+
+//Save ...
+func (a *ExOrder) Save() (err error) {
+	return GetDB().Save(&a).Error
+}
+
+//Delete ...
+func (a *ExOrder) Delete() (err error) {
+	return GetDB().Delete(&a).Error
+}

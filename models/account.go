@@ -32,65 +32,22 @@ type Account struct {
 	Disable         bool   `gorm:"default:false" json:"disable"`
 }
 
-//FetchAll ...
-func (acc *Account) FetchAll() ([]*Account, error) {
-	var res []*Account
-	err := GetDB().Find(&res).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return res, err
-}
-
-//Fetch ...
-func (acc *Account) Fetch(p Page) (res []*Account, err error) {
-	err = GetDB().Order(p.OrderBy + " " + p.Sort).Offset(p.Offset).Find(&res).Limit(p.Amount).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return res, err
-}
-
-//GetByID ...
-func (acc *Account) GetByID(id uint) (*Account, error) {
-	a := Account{}
-	err := GetDB().First(&a, id).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return &a, err
-}
-
-//GetByName ...
-func (acc *Account) GetByName(name string) (*Account, error) {
-	a := Account{}
-	err := GetDB().Where("name=?", name).First(&a).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return &a, err
-}
-
-//Update ...
-func (acc *Account) Update(id uint, v *Account) error {
-	return GetDB().Model(Account{}).Where("ID=?", id).UpdateColumns(v).Error
+//UpdateColumns ...
+func (a *Account) UpdateColumns(b *Account) error {
+	return GetDB().Model(Account{}).Where("ID=?", a.ID).UpdateColumns(b).Error
 }
 
 //Create ...
-func (acc *Account) Create(a *Account) (err error) {
+func (a *Account) Create() (err error) {
 	return GetDB().Create(&a).Error
 }
 
-//DeleteByID ...
-func (acc *Account) DeleteByID(id uint) (err error) {
-	return GetDB().Where("ID=?", id).Delete(&Account{}).Error
+//Save ...
+func (a *Account) Save() (err error) {
+	return GetDB().Save(&a).Error
 }
 
 //Delete ...
-func (acc *Account) Delete(a *Account) (err error) {
+func (a *Account) Delete() (err error) {
 	return GetDB().Delete(&a).Error
 }

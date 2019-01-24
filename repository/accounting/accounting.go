@@ -6,6 +6,16 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+//Repository ...
+type Repository interface {
+	FetchAll() ([]*m.Accounting, error)
+	Fetch(p r.Page) ([]*m.Accounting, error)
+	FetchWith(o *m.Accounting) ([]*m.Accounting, error)
+	GetByName(name string) (*m.Accounting, error)
+	GetByID(id uint) (*m.Accounting, error)
+	DeleteByID(id uint) error
+}
+
 //Repo ...
 type Repo struct {
 	DB *gorm.DB
@@ -39,6 +49,16 @@ func (repo *Repo) Fetch(p r.Page) (res []*m.Accounting, err error) {
 	return res, err
 }
 
+//FetchWith ...
+func (repo *Repo) FetchWith(o *m.Accounting) (res []*m.Accounting, err error) {
+	err = repo.DB.Where(o).Find(&res).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return res, err
+}
+
 //GetByID ...
 func (repo *Repo) GetByID(id uint) (*m.Accounting, error) {
 	a := m.Accounting{}
@@ -50,22 +70,18 @@ func (repo *Repo) GetByID(id uint) (*m.Accounting, error) {
 	return &a, err
 }
 
-//Update ...
-func (repo *Repo) Update(id uint, v *m.Account) error {
-	return repo.DB.Model(m.Accounting{}).Where("ID=?", id).UpdateColumns(v).Error
-}
+//GetByName ...
+func (repo *Repo) GetByName(name string) (*m.Accounting, error) {
+	a := m.Accounting{}
+	err := repo.DB.Where("name=?", name).First(&a).Error
+	if err != nil {
+		return nil, err
+	}
 
-//Create ...
-func (repo *Repo) Create(a *m.Accounting) (err error) {
-	return repo.DB.Create(&a).Error
+	return &a, err
 }
 
 //DeleteByID ...
-func (repo *Repo) DeleteByID(id uint) (err error) {
+func (repo *Repo) DeleteByID(id uint) error {
 	return repo.DB.Where("ID=?", id).Delete(&m.Accounting{}).Error
-}
-
-//Delete ...
-func (repo *Repo) Delete(a *m.Accounting) (err error) {
-	return repo.DB.Delete(&a).Error
 }

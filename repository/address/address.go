@@ -6,6 +6,16 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+//Repository ...
+type Repository interface {
+	FetchAll() ([]*m.Address, error)
+	Fetch(p r.Page) ([]*m.Address, error)
+	FetchWith(o *m.Address) ([]*m.Address, error)
+	GetByName(name string) (*m.Address, error)
+	GetByID(id uint) (*m.Address, error)
+	DeleteByID(id uint) error
+}
+
 //Repo ...
 type Repo struct {
 	DB *gorm.DB
@@ -19,8 +29,9 @@ func NewRepo(db *gorm.DB) Repository {
 }
 
 //FetchAll ...
-func (repo *Repo) FetchAll() (res []*m.Address, err error) {
-	err = repo.DB.Find(&res).Error
+func (repo *Repo) FetchAll() ([]*m.Address, error) {
+	var res []*m.Address
+	err := repo.DB.Find(&res).Error
 	if err != nil {
 		return nil, err
 	}
@@ -31,6 +42,16 @@ func (repo *Repo) FetchAll() (res []*m.Address, err error) {
 //Fetch ...
 func (repo *Repo) Fetch(p r.Page) (res []*m.Address, err error) {
 	err = repo.DB.Order(p.OrderBy + " " + p.Sort).Offset(p.Offset).Find(&res).Limit(p.Amount).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return res, err
+}
+
+//FetchWith ...
+func (repo *Repo) FetchWith(o *m.Address) (res []*m.Address, err error) {
+	err = repo.DB.Where(o).Find(&res).Error
 	if err != nil {
 		return nil, err
 	}
@@ -49,22 +70,18 @@ func (repo *Repo) GetByID(id uint) (*m.Address, error) {
 	return &a, err
 }
 
-//Update ...
-func (repo *Repo) Update(id uint, v *m.Address) error {
-	return repo.DB.Model(m.Address{}).Where("ID=?", id).UpdateColumns(v).Error
-}
+//GetByName ...
+func (repo *Repo) GetByName(name string) (*m.Address, error) {
+	a := m.Address{}
+	err := repo.DB.Where("name=?", name).First(&a).Error
+	if err != nil {
+		return nil, err
+	}
 
-//Create ...
-func (repo *Repo) Create(a *m.Address) (err error) {
-	return repo.DB.Create(&a).Error
+	return &a, err
 }
 
 //DeleteByID ...
-func (repo *Repo) DeleteByID(id uint) (err error) {
+func (repo *Repo) DeleteByID(id uint) error {
 	return repo.DB.Where("ID=?", id).Delete(&m.Address{}).Error
-}
-
-//Delete ...
-func (repo *Repo) Delete(a *m.Address) (err error) {
-	return repo.DB.Delete(&a).Error
 }

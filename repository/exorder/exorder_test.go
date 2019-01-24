@@ -28,14 +28,15 @@ func TestOne(t *testing.T) {
 	o := m.ExOrder{
 		Status: "PENDING",
 	}
-	err := repo.Update((*(res[0])).ID, &o)
+	order := *(res[0])
+	err := order.UpdateColumns(&o)
 	fmt.Println(err)
 
 	eo, _ := repo.GetByJPID(o.JadepoolID)
 	fmt.Println(*eo)
 
 	o = m.ExOrder{
-		Status:"PENDING",
+		Status: "PENDING",
 	}
 	os, _ := repo.FetchWith(&o)
 	fmt.Println(*(os[0]))

@@ -3,9 +3,18 @@ package blockchain
 import (
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	r "git.coding.net/bobxuyang/cy-gateway-BN/repository"
-
 	"github.com/jinzhu/gorm"
 )
+
+//Repository ...
+type Repository interface {
+	FetchAll() ([]*m.Blockchain, error)
+	Fetch(p r.Page) ([]*m.Blockchain, error)
+	FetchWith(o *m.Blockchain) ([]*m.Blockchain, error)
+	GetByName(name string) (*m.Blockchain, error)
+	GetByID(id uint) (*m.Blockchain, error)
+	DeleteByID(id uint) error
+}
 
 //Repo ...
 type Repo struct {
@@ -40,6 +49,16 @@ func (repo *Repo) Fetch(p r.Page) (res []*m.Blockchain, err error) {
 	return res, err
 }
 
+//FetchWith ...
+func (repo *Repo) FetchWith(o *m.Blockchain) (res []*m.Blockchain, err error) {
+	err = repo.DB.Where(o).Find(&res).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return res, err
+}
+
 //GetByID ...
 func (repo *Repo) GetByID(id uint) (*m.Blockchain, error) {
 	a := m.Blockchain{}
@@ -51,22 +70,18 @@ func (repo *Repo) GetByID(id uint) (*m.Blockchain, error) {
 	return &a, err
 }
 
-//Update ...
-func (repo *Repo) Update(id uint, v *m.Blockchain) error {
-	return repo.DB.Model(m.Blockchain{}).Where("ID=?", id).UpdateColumns(v).Error
-}
+//GetByName ...
+func (repo *Repo) GetByName(name string) (*m.Blockchain, error) {
+	a := m.Blockchain{}
+	err := repo.DB.Where("name=?", name).First(&a).Error
+	if err != nil {
+		return nil, err
+	}
 
-//Create ...
-func (repo *Repo) Create(a *m.Blockchain) (err error) {
-	return repo.DB.Create(&a).Error
+	return &a, err
 }
 
 //DeleteByID ...
-func (repo *Repo) DeleteByID(id uint) (err error) {
+func (repo *Repo) DeleteByID(id uint) error {
 	return repo.DB.Where("ID=?", id).Delete(&m.Blockchain{}).Error
-}
-
-//Delete ...
-func (repo *Repo) Delete(a *m.Blockchain) (err error) {
-	return repo.DB.Delete(&a).Error
 }

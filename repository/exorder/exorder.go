@@ -7,6 +7,17 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+//Repository ...
+type Repository interface {
+	FetchAll() ([]*m.ExOrder, error)
+	Fetch(p r.Page) ([]*m.ExOrder, error)
+	FetchWith(o *m.ExOrder) ([]*m.ExOrder, error)
+	GetByJPID(id uint) (*m.ExOrder, error)
+	GetByName(name string) (*m.ExOrder, error)
+	GetByID(id uint) (*m.ExOrder, error)
+	DeleteByID(id uint) error
+}
+
 //Repo ...
 type Repo struct {
 	DB *gorm.DB
@@ -72,22 +83,18 @@ func (repo *Repo) GetByJPID(id uint) (*m.ExOrder, error) {
 	return &a, err
 }
 
-//Update ...
-func (repo *Repo) Update(id uint, v *m.ExOrder) error {
-	return repo.DB.Model(m.ExOrder{}).Where("ID=?", id).UpdateColumns(v).Error
-}
+//GetByName ...
+func (repo *Repo) GetByName(name string) (*m.ExOrder, error) {
+	a := m.ExOrder{}
+	err := repo.DB.Where("name=?", name).First(&a).Error
+	if err != nil {
+		return nil, err
+	}
 
-//Create ...
-func (repo *Repo) Create(a *m.ExOrder) (err error) {
-	return repo.DB.Create(&a).Error
+	return &a, err
 }
 
 //DeleteByID ...
-func (repo *Repo) DeleteByID(id uint) (err error) {
+func (repo *Repo) DeleteByID(id uint) error {
 	return repo.DB.Where("ID=?", id).Delete(&m.ExOrder{}).Error
-}
-
-//Delete ...
-func (repo *Repo) Delete(a *m.ExOrder) (err error) {
-	return repo.DB.Delete(&a).Error
 }

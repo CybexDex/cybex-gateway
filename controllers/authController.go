@@ -38,8 +38,8 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 
 	// save data to DB
 	account.PasswordHash = string(hash)
-	repo := accRepo.NewRepo(m.GetDB())
-	err = repo.Create(account)
+	//repo := accRepo.NewRepo(m.GetDB())
+	err = account.Save()
 	if err != nil {
 		u.Errorf("Create account error, \"%s\"", err.Error())
 		if !strings.Contains(err.Error(), "pq: duplicate key value violates unique constraint") {

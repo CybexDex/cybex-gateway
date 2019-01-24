@@ -21,3 +21,23 @@ type Jadepool struct {
 	Status      string `gorm:"type:varchar(32);not null" json:"status"` // INIT, NORMAL, ABNORMAL
 	Type        string `gorm:"type:varchar(32)" json:"type"`            // DEFAULT, SAAS-VIP
 }
+
+//UpdateColumns ...
+func (a *Jadepool) UpdateColumns(b *Jadepool) error {
+	return GetDB().Model(Jadepool{}).Where("ID=?", a.ID).UpdateColumns(b).Error
+}
+
+//Create ...
+func (a *Jadepool) Create() (err error) {
+	return GetDB().Create(&a).Error
+}
+
+//Save ...
+func (a *Jadepool) Save() (err error) {
+	return GetDB().Save(&a).Error
+}
+
+//Delete ...
+func (a *Jadepool) Delete() (err error) {
+	return GetDB().Delete(&a).Error
+}

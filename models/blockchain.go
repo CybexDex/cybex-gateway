@@ -13,54 +13,22 @@ type Blockchain struct {
 	Confirmation uint   `gorm:"default:20;not null" json:"confirmation"`
 }
 
-//FetchAll ...
-func (blockchain *Blockchain) FetchAll() ([]*Blockchain, error) {
-	var res []*Blockchain
-	err := GetDB().Find(&res).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return res, err
-}
-
-//Fetch ...
-func (blockchain *Blockchain) Fetch(p Page) (res []*Blockchain, err error) {
-	err = GetDB().Order(p.OrderBy + " " + p.Sort).Offset(p.Offset).Find(&res).Limit(p.Amount).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return res, err
-}
-
-//GetByID ...
-func (blockchain *Blockchain) GetByID(id uint) (*Blockchain, error) {
-	a := Blockchain{}
-	err := GetDB().First(&a, id).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return &a, err
-}
-
-//Update ...
-func (blockchain *Blockchain) Update(id uint, v *Blockchain) error {
-	return GetDB().Model(Blockchain{}).Where("ID=?", id).UpdateColumns(v).Error
+//UpdateColumns ...
+func (a *Blockchain) UpdateColumns(b *Blockchain) error {
+	return GetDB().Model(Blockchain{}).Where("ID=?", a.ID).UpdateColumns(b).Error
 }
 
 //Create ...
-func (blockchain *Blockchain) Create(a *Blockchain) (err error) {
+func (a *Blockchain) Create() (err error) {
 	return GetDB().Create(&a).Error
 }
 
-//DeleteByID ...
-func (blockchain *Blockchain) DeleteByID(id uint) (err error) {
-	return GetDB().Where("ID=?", id).Delete(&Blockchain{}).Error
+//Save ...
+func (a *Blockchain) Save() (err error) {
+	return GetDB().Save(&a).Error
 }
 
 //Delete ...
-func (blockchain *Blockchain) Delete(a *Blockchain) (err error) {
+func (a *Blockchain) Delete() (err error) {
 	return GetDB().Delete(&a).Error
 }

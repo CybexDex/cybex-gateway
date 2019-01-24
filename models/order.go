@@ -24,3 +24,23 @@ type Order struct {
 	Status string       `gorm:"type:varchar(32);not null" json:"status"`  // INIT, PROCESSING, PROCESSED, HOLDING, PENDING, DONE, FAILED, CONTINUE, RETRY, TERMINATED
 	Type   string       `gorm:"type:varchar(32);not null" json:"type"`    // DEPOSIT, WITHDRAW, RECHARGE, INTERNAL
 }
+
+//UpdateColumns ...
+func (a *Order) UpdateColumns(b *Order) error {
+	return GetDB().Model(Order{}).Where("ID=?", a.ID).UpdateColumns(b).Error
+}
+
+//Create ...
+func (a *Order) Create() (err error) {
+	return GetDB().Create(&a).Error
+}
+
+//Save ...
+func (a *Order) Save() (err error) {
+	return GetDB().Save(&a).Error
+}
+
+//Delete ...
+func (a *Order) Delete() (err error) {
+	return GetDB().Delete(&a).Error
+}

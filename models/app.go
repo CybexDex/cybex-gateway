@@ -20,3 +20,23 @@ type App struct {
 	Status      string `gorm:"type:varchar(32);not null" json:"status"` // INIT, NORMAL, UN_PAIED, ABNORMAL, DELETED
 	Type        string `gorm:"type:varchar(32)" json:"type"`            // ??
 }
+
+//UpdateColumns ...
+func (a *App) UpdateColumns(b *App) error {
+	return GetDB().Model(App{}).Where("ID=?", a.ID).UpdateColumns(b).Error
+}
+
+//Create ...
+func (a *App) Create() (err error) {
+	return GetDB().Create(&a).Error
+}
+
+//Save ...
+func (a *App) Save() (err error) {
+	return GetDB().Save(&a).Error
+}
+
+//Delete ...
+func (a *App) Delete() (err error) {
+	return GetDB().Delete(&a).Error
+}
