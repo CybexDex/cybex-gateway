@@ -117,6 +117,6 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 //DebugInfo ...
 var DebugInfo = func(w http.ResponseWriter, r *http.Request) {
 	id := r.Context().Value("UserID")
-	u.Infof("Login UserID:", id)
+	u.Infof("Login UserID: %d", id)
 	u.Respond(w, u.Message(true, "Login OK", map[string]interface{}{"UserID": id}))
 }
