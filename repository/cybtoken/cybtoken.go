@@ -11,7 +11,6 @@ type Repository interface {
 	FetchAll() ([]*m.CybToken, error)
 	Fetch(p r.Page) ([]*m.CybToken, error)
 	FetchWith(o *m.CybToken) ([]*m.CybToken, error)
-	GetByName(name string) (*m.CybToken, error)
 	GetByID(id uint) (*m.CybToken, error)
 	DeleteByID(id uint) error
 }
@@ -63,17 +62,6 @@ func (repo *Repo) FetchWith(o *m.CybToken) (res []*m.CybToken, err error) {
 func (repo *Repo) GetByID(id uint) (*m.CybToken, error) {
 	a := m.CybToken{}
 	err := repo.DB.First(&a, id).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return &a, err
-}
-
-//GetByName ...
-func (repo *Repo) GetByName(name string) (*m.CybToken, error) {
-	a := m.CybToken{}
-	err := repo.DB.Where("name=?", name).First(&a).Error
 	if err != nil {
 		return nil, err
 	}

@@ -3,6 +3,8 @@ package model
 import (
 	"github.com/cockroachdb/apd"
 	"github.com/jinzhu/gorm"
+
+	u "git.coding.net/bobxuyang/cy-gateway-BN/utils"
 )
 
 //ExOrder ...
@@ -41,4 +43,15 @@ func (a *ExOrder) Save() (err error) {
 //Delete ...
 func (a *ExOrder) Delete() (err error) {
 	return GetDB().Delete(&a).Error
+}
+
+//AfterSave ...
+func (a ExOrder) AfterSave(tx *gorm.DB) (err error) {
+	if a.Status == "DONE" {
+		u.Debugln("from exorder after save hook and the order status is DONE")
+	}
+
+	return nil
+
+	// return errors.New("test error for rollback")
 }

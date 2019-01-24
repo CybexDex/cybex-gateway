@@ -11,7 +11,6 @@ type Repository interface {
 	FetchAll() ([]*m.Order, error)
 	Fetch(p r.Page) ([]*m.Order, error)
 	FetchWith(o *m.Order) ([]*m.Order, error)
-	GetByName(name string) (*m.Order, error)
 	GetByID(id uint) (*m.Order, error)
 	DeleteByID(id uint) error
 	Create(a *m.Order) (err error)
@@ -64,17 +63,6 @@ func (repo *Repo) FetchWith(o *m.Order) (res []*m.Order, err error) {
 func (repo *Repo) GetByID(id uint) (*m.Order, error) {
 	a := m.Order{}
 	err := repo.DB.First(&a, id).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return &a, err
-}
-
-//GetByName ...
-func (repo *Repo) GetByName(name string) (*m.Order, error) {
-	a := m.Order{}
-	err := repo.DB.Where("name=?", name).First(&a).Error
 	if err != nil {
 		return nil, err
 	}

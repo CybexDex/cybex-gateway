@@ -13,7 +13,6 @@ type Repository interface {
 	Fetch(p r.Page) ([]*m.ExOrder, error)
 	FetchWith(o *m.ExOrder) ([]*m.ExOrder, error)
 	GetByJPID(id uint) (*m.ExOrder, error)
-	GetByName(name string) (*m.ExOrder, error)
 	GetByID(id uint) (*m.ExOrder, error)
 	DeleteByID(id uint) error
 	Create(a *m.ExOrder) (err error)
@@ -77,17 +76,6 @@ func (repo *Repo) GetByID(id uint) (*m.ExOrder, error) {
 func (repo *Repo) GetByJPID(id uint) (*m.ExOrder, error) {
 	a := m.ExOrder{}
 	err := repo.DB.Where(&m.ExOrder{JadepoolOrderID: id}).First(&a).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return &a, err
-}
-
-//GetByName ...
-func (repo *Repo) GetByName(name string) (*m.ExOrder, error) {
-	a := m.ExOrder{}
-	err := repo.DB.Where("name=?", name).First(&a).Error
 	if err != nil {
 		return nil, err
 	}

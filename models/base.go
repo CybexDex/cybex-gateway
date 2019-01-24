@@ -25,11 +25,6 @@ func init() {
 	dbName := os.Getenv("db_name")
 	dbHost := os.Getenv("db_host")
 
-	// username := "alexxu"
-	// password := "postgres"
-	// dbName := "xuyang"
-	// dbHost := "127.0.0.1"
-
 	dbURI := fmt.Sprintf("host=%s user=%s dbname=%s sslmode=disable password=%s", dbHost, username, dbName, password)
 	fmt.Println(dbURI)
 
