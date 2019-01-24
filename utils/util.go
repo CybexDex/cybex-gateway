@@ -26,9 +26,8 @@ func Respond(w http.ResponseWriter, data map[string]interface{}, s ...int) {
 	if len(s) == 1 {
 		status = s[0]
 	}
-
-	w.WriteHeader(status)
 	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(data)
 }
 
