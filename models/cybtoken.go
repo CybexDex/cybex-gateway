@@ -22,7 +22,7 @@ func (a *CybToken) Create() (err error) {
 	return GetDB().Create(&a).Error
 }
 
-//Save ...
+//SaveUniqueBy ...
 func (a *CybToken) SaveUniqueBy(uniq CybToken) (err error) {
 	return GetDB().Where(uniq).Assign(*a).FirstOrCreate(&a).Error
 }

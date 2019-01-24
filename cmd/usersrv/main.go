@@ -29,10 +29,6 @@ func main() {
 	}
 	logDir := os.Getenv("log_dir")
 	logLevel := os.Getenv("log_level")
-	ss := os.Getenv("sss")
-	if ss == "" {
-		fmt.Println("nil")
-	}
 	utils.InitLog(logDir, logLevel)
 	utils.Infof("build info: %s_%s_%s", buildtime, branch, githash)
 	// 配置路由

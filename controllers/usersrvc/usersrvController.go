@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	rep "git.coding.net/bobxuyang/cy-gateway-BN/help/singleton"
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	u "git.coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/gorilla/mux"
@@ -78,8 +79,51 @@ func Asset(w http.ResponseWriter, r *http.Request) {
 	msg := findAsset()
 	u.Respond(w, msg, 200)
 }
-func findUserAddr(user string, asset string) string {
-	return "nil"
+func createCybexUserApp(user string) *m.App {
+	fmt.Println("create app")
+	return &m.App{}
+}
+func createCybexUserAddress(addrQ *m.Address) *m.Address {
+	fmt.Println("create address")
+	return &m.Address{
+		Address: "ox123444444",
+	}
+}
+func findAppOrCreate(user string) *m.App {
+	appQ := &m.App{
+		CybAccount: user,
+	}
+	apps, err := rep.App.FetchWith(appQ)
+	if err != nil {
+
+	}
+	var app1 *m.App
+	if len(apps) == 0 {
+		app1 = createCybexUserApp(user)
+	} else {
+		app1 = apps[0]
+	}
+	return app1
+}
+func findAssetByName(name string) *m.Asset {
+	asset1, _ := rep.Asset.GetByName(name)
+	return asset1
+}
+func findAddrOrCreate(app *m.App, asset *m.Asset) *m.Address {
+	app.ID = 1
+	asset.ID = 2
+	addrQ := &m.Address{
+		AppID:   app.ID,
+		AssetID: asset.ID,
+	}
+	addrs, _ := rep.Address.FetchWith(addrQ)
+	var addr1 *m.Address
+	if len(addrs) == 0 {
+		addr1 = createCybexUserAddress(addrQ)
+	} else {
+		addr1 = addrs[0]
+	}
+	return addr1
 }
 
 // DepositAddress ...
@@ -87,15 +131,15 @@ func DepositAddress(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	user := vars["user"]
 	asset := vars["asset"]
-	addr := findUserAddr(user, asset)
-	// if addr == nil {
-	// 	addr = createUserAddr(user, asset)
-	// }
+	app1 := findAppOrCreate(user)
+	asset1 := findAssetByName(asset)
+	addr := findAddrOrCreate(app1, asset1)
 	msg := map[string]interface{}{
 		"code": 200, // 200:ok  400:fail
 		"data": map[string]interface{}{
-			"address": addr,
-			"asset":   "BTC",
+			"address": addr.Address,
+			"asset":   asset1.Name, //TODO: cyb链的资产名
+			"type":    asset1.Name,
 		},
 	}
 	u.Respond(w, msg, 200)
