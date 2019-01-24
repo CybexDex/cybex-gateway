@@ -6,7 +6,7 @@
 	},
 	"item": [
 		{
-			"name": "localhost:8081/api/account/new",
+			"name": "localhost:8082/api/account/new",
 			"request": {
 				"method": "POST",
 				"header": [
@@ -19,18 +19,83 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"name\": \"xuyang\",\n\t\"passwordHash\": \"04a24e8195382cbfe6c81dda873d2be49b13c1bd09b01f0bfeeba952de3c59cd\",\n\t\"lastName\":\"XU\",\n\t\"firstName\":\"YANG\",\n\t\"email\":\"xuyang@qq.com\",\n\t\"phone\":\"13917341760\"\n}"
+					"raw": "{\n\t\"name\":\"xuyang\",\n\t\"password\": \"12345678\",\n\t\"lastName\":\"XU\",\n\t\"firstName\":\"YANG\",\n\t\"email\":\"zhangyi@qq.com\",\n\t\"phone\":\"13917341760\"\n}"
 				},
 				"url": {
-					"raw": "localhost:8081/api/account/new",
+					"raw": "localhost:8082/api/account/new",
 					"host": [
 						"localhost"
 					],
-					"port": "8081",
+					"port": "8082",
 					"path": [
 						"api",
 						"account",
 						"new"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8082/api/account/login",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"name\":\"xuyang\",\n\t\"password\": \"12345678\"\n}"
+				},
+				"url": {
+					"raw": "localhost:8082/api/account/login",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"api",
+						"account",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8082/api/debug/info",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOjF9.dFUoXr7pL-W0Yf9JZ-NltSH4Zn4iXDyQfTa26_dDPi0",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "localhost:8082/api/debug/info",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"api",
+						"debug",
+						"info"
 					]
 				}
 			},

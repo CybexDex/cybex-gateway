@@ -70,11 +70,3 @@ func TestBuildJPNotiMsg(t *testing.T) {
 		t.Fail()
 	}
 }
-
-func TestPriToPub(t *testing.T) {
-	pri := "bf12996feeaa2977b6ca0d33a0e8bd2ccfc4844c6f8a7e6d15c099f8da4a255c"
-	pub := PriToPub(pri)
-	if pub != "03ace32532c90652e1bae916248e427a7ab10aeeea1067949669a3f4da10965ef9" {
-		t.Fail()
-	}
-}
