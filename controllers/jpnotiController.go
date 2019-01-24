@@ -13,16 +13,18 @@ import (
 	"reflect"
 	"runtime/debug"
 	"strconv"
+	"strings"
 
-	"github.com/jinzhu/gorm"
-
+	"github.com/btcsuite/btcd/btcec"
 	"github.com/cockroachdb/apd"
+	"github.com/jinzhu/gorm"
+	"golang.org/x/crypto/sha3"
 
 	model "git.coding.net/bobxuyang/cy-gateway-BN/models"
+	"git.coding.net/bobxuyang/cy-gateway-BN/repository/exevent"
 	exorder "git.coding.net/bobxuyang/cy-gateway-BN/repository/exorder"
+	"git.coding.net/bobxuyang/cy-gateway-BN/repository/order"
 	utils "git.coding.net/bobxuyang/cy-gateway-BN/utils"
-	"github.com/btcsuite/btcd/btcec"
-	"golang.org/x/crypto/sha3"
 )
 
 //OrderNotiResult ...
@@ -97,6 +99,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	result.State = strings.ToUpper(result.State)
 
 	// begin transaction
 	tx := model.GetDB().Begin()
@@ -114,8 +117,8 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 	exeventEntity.JadepoolID = 1
 	exeventEntity.Status = result.State
 	exeventEntity.Log = string(requestBody)
-	//exeventRepo := exevent.NewRepo(tx)
-	err = exeventEntity.Create()
+	exeventRepo := exevent.NewRepo(tx)
+	err = exeventRepo.Create(exeventEntity)
 	if err != nil {
 		tx.Rollback()
 		utils.Errorf("error: %v", err)
@@ -169,7 +172,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		exorderEntity.Amount = amount
-		err = exorderEntity.Create()
+		err = exorderRepo.Create(exorderEntity)
 		if err != nil {
 			tx.Rollback()
 			utils.Errorf("create exorder error: %v", err)
@@ -189,7 +192,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		updateEntity := &model.ExOrder{}
 		updateEntity.Status = result.State
 		exorderEntity.Status = result.State
-		err = exorderEntity.UpdateColumns(updateEntity)
+		err = exorderRepo.UpdateColumns(exorderEntity.ID, updateEntity)
 		if err != nil {
 			tx.Rollback()
 			utils.Errorf("Update exorder error: %v", err)
@@ -199,14 +202,13 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// exorder has done, so create order
-	if exorderEntity.Status == "done" {
-		// exorder has done, so create order
-		//orderRepo := order.NewRepo(tx)
+	if exorderEntity.Status == model.ExorderStatusDone {
+		orderRepo := order.NewRepo(tx)
 		orderEntity := new(model.Order)
 		orderEntity.From = exorderEntity.From
 		orderEntity.Hash = exorderEntity.Hash
 		orderEntity.Index = exorderEntity.Index
-		orderEntity.Status = "done"
+		orderEntity.Status = model.OrderStatusInit
 		orderEntity.To = exorderEntity.To
 		orderEntity.Type = exorderEntity.Type
 		orderEntity.UUHash = exorderEntity.UUHash
@@ -214,7 +216,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		orderEntity.Amount = exorderEntity.Amount
 		//todo:
 		orderEntity.AppID = 1
-		err = orderEntity.Create()
+		err = orderRepo.Create(orderEntity)
 		if err != nil {
 			tx.Rollback()
 			utils.Errorf("create order error: %v", err)
@@ -273,33 +275,34 @@ func verifySign(result *OrderNotiResult, sign *Sig, pubkey string) (bool, error)
 
 func parseIndexFromResult(result *OrderNotiResult) int {
 	n := 0
-	if result.CoinType == "BTC" || result.CoinType == "QTUM" {
-		toes := result.Data["to"]
-		switch toes.(type) {
-		case []interface{}:
-			toesMap := toes.([]interface{})
-			if len(toesMap) <= 1 {
-				break
-			}
-			for _, v := range toesMap {
-				val := v.(map[string]interface{})
-				if val["address"].(string) != result.To {
-					continue
-				}
-				switch val["n"].(type) {
-				case float64:
-					n = int(val["n"].(float64))
-				case int64:
-					n = int(val["n"].(int64))
-				case int32:
-					n = int(val["n"].(int32))
-				}
-				break
-			}
-		default:
-			utils.Errorf("data.to type  is: %v", reflect.TypeOf(toes))
-		}
+	if result.CoinType != "BTC" && result.CoinType != "QTUM" {
+		return n
 	}
 
+	toes := result.Data["to"]
+	switch toes.(type) {
+	case []interface{}:
+		toesMap := toes.([]interface{})
+		if len(toesMap) <= 1 {
+			break
+		}
+		for _, v := range toesMap {
+			val := v.(map[string]interface{})
+			if val["address"].(string) != result.To {
+				continue
+			}
+			switch val["n"].(type) {
+			case float64:
+				n = int(val["n"].(float64))
+			case int64:
+				n = int(val["n"].(int64))
+			case int32:
+				n = int(val["n"].(int32))
+			}
+			break
+		}
+	default:
+		utils.Errorf("data.to type  is: %v", reflect.TypeOf(toes))
+	}
 	return n
 }

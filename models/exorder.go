@@ -5,6 +5,15 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+const (
+	// ExorderStatusPending ...
+	ExorderStatusPending = "PENDING"
+	// ExorderStatusDone ...
+	ExorderStatusDone = "DONE"
+	// ExorderStatusFailed ...
+	ExorderStatusFailed = "FAILED"
+)
+
 //ExOrder ...
 type ExOrder struct {
 	gorm.Model
