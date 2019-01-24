@@ -8,11 +8,13 @@ type Event struct {
 
 	AccountID uint `json:"accountID"`
 
-	Type      string `json:"type"` // login / change password / get address ...
-	Input     string `json:"input"`
-	Output    string `json:"output"`
-	Result    int    `json:"result"` // same as http result code
-	ResultStr string `gorm:"type:text"`
+	Route      string `gorm:"index;not null" json:"route"`
+	Type       string `json:"type"` // login / change password / get address ...
+	StatusCode int    `gorm:"not null" json:"statusCode"`
+	UserAgent  string `json:"userAgent"`
+	IPAddress  string `json:"ipAddress"`
+	Input      string `json:"input"`
+	Output     string `json:"output"`
 }
 
 //UpdateColumns ...
