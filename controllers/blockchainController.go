@@ -17,6 +17,11 @@ import (
 
 //GetAllBlockchain ...
 func GetAllBlockchain(w http.ResponseWriter, r *http.Request) {
+	if !checkAccount(r) {
+		utils.Respond(w, utils.Message(false, "Unauthorized"), http.StatusUnauthorized)
+		return
+	}
+
 	blockchainRepo := blockchain.NewRepo(model.GetDB())
 	blockchains, err := blockchainRepo.FetchAll()
 	if err != nil {
@@ -31,6 +36,11 @@ func GetAllBlockchain(w http.ResponseWriter, r *http.Request) {
 
 //CreateBlockchain ...
 func CreateBlockchain(w http.ResponseWriter, r *http.Request) {
+	if !checkAccount(r) {
+		utils.Respond(w, utils.Message(false, "Unauthorized"), http.StatusUnauthorized)
+		return
+	}
+
 	requestBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		utils.Errorf("ReadAll error: %v", err)
@@ -40,15 +50,14 @@ func CreateBlockchain(w http.ResponseWriter, r *http.Request) {
 	utils.Debugf("request:\n %s", requestBody)
 
 	blockchainEntity := model.Blockchain{}
-	if len(blockchainEntity.Name) == 0 {
-		utils.Errorf("error: %v", err)
-		utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
-		return
-	}
-
 	err = json.Unmarshal(requestBody, &blockchainEntity)
 	if err != nil {
 		utils.Errorf("json.Unmarshal error: %v", err)
+		utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
+		return
+	}
+	if len(blockchainEntity.Name) == 0 {
+		utils.Errorf("error: %v", err)
 		utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
 		return
 	}
@@ -77,6 +86,11 @@ func CreateBlockchain(w http.ResponseWriter, r *http.Request) {
 
 //GetBlockchain ...
 func GetBlockchain(w http.ResponseWriter, r *http.Request) {
+	if !checkAccount(r) {
+		utils.Respond(w, utils.Message(false, "Unauthorized"), http.StatusUnauthorized)
+		return
+	}
+
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -99,6 +113,11 @@ func GetBlockchain(w http.ResponseWriter, r *http.Request) {
 
 //UpdateBlockchain ...
 func UpdateBlockchain(w http.ResponseWriter, r *http.Request) {
+	if !checkAccount(r) {
+		utils.Respond(w, utils.Message(false, "Unauthorized"), http.StatusUnauthorized)
+		return
+	}
+
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -137,6 +156,11 @@ func UpdateBlockchain(w http.ResponseWriter, r *http.Request) {
 
 //DeleteBlockchain ...
 func DeleteBlockchain(w http.ResponseWriter, r *http.Request) {
+	if !checkAccount(r) {
+		utils.Respond(w, utils.Message(false, "Unauthorized"), http.StatusUnauthorized)
+		return
+	}
+
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -155,4 +179,21 @@ func DeleteBlockchain(w http.ResponseWriter, r *http.Request) {
 
 	resp := utils.Message(true, "success")
 	utils.Respond(w, resp)
+}
+
+func checkAccount(r *http.Request) bool {
+	/*id := r.Context().Value("UserID")
+	if id == nil {
+		return false
+	}
+	accountRepo := account.NewRepo(model.GetDB())
+	_, err := accountRepo.GetByID(id.(uint))
+	if err != nil {
+		utils.Errorf("Update error: %v", err)
+		return false
+	}*/
+
+	// todo: check account role
+
+	return true
 }
