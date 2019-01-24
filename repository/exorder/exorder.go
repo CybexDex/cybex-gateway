@@ -40,6 +40,16 @@ func (repo *Repo) Fetch(p r.Page) (res []*m.ExOrder, err error) {
 	return res, err
 }
 
+//FetchWith ...
+func (repo *Repo) FetchWith(o *m.ExOrder) (res []*m.ExOrder, err error) {
+	err = repo.DB.Where(o).Find(&res).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return res, err
+}
+
 //GetByID ...
 func (repo *Repo) GetByID(id uint) (*m.ExOrder, error) {
 	a := m.ExOrder{}

@@ -34,6 +34,12 @@ func TestOne(t *testing.T) {
 	eo, _ := repo.GetByJPID(o.JadepoolID)
 	fmt.Println(*eo)
 
+	o = m.ExOrder{
+		Status:"PENDING",
+	}
+	os, _ := repo.FetchWith(&o)
+	fmt.Println(*(os[0]))
+
 	// delete by ID
 	// fmt.Println(repo.DeleteByID(4))
 }

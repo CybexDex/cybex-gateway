@@ -7,11 +7,12 @@ import (
 
 //Repository ...
 type Repository interface {
-	FetchAll() (res []*m.ExOrder, err error)
-	Fetch(p r.Page) (res []*m.ExOrder, err error)
+	FetchAll() ([]*m.ExOrder, error)
+	Fetch(p r.Page) ([]*m.ExOrder, error)
+	FetchWith(o *m.ExOrder) ([]*m.ExOrder, error)
 	GetByID(id uint) (*m.ExOrder, error)
 	GetByJPID(id uint) (*m.ExOrder, error)
-	Update(id uint, v *m.ExOrder) error
+	Update(id uint, o *m.ExOrder) error
 	Create(a *m.ExOrder) error
 	DeleteByID(id uint) error
 	Delete(a *m.ExOrder) error
