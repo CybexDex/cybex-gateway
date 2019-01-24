@@ -3,8 +3,6 @@ package model
 import (
 	"github.com/cockroachdb/apd"
 	"github.com/jinzhu/gorm"
-
-	u "git.coding.net/bobxuyang/cy-gateway-BN/utils"
 )
 
 const (
@@ -14,6 +12,10 @@ const (
 	ExorderStatusDone = "DONE"
 	// ExorderStatusFailed ...
 	ExorderStatusFailed = "FAILED"
+	// ExorderTypeDeposit ...
+	ExorderTypeDeposit = "DEPOSIT"
+	// ExorderTypeWithdraw ...
+	ExorderTypeWithdraw = "WITHDRAW"
 )
 
 //ExOrder ...
@@ -32,6 +34,7 @@ type ExOrder struct {
 	UUHash          string       `gorm:"type:varchar(256);not null" json:"uuhash"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
 	Status          string       `gorm:"type:varchar(32);not null" json:"status"`  // PENDING, DONE, FAILED
 	Type            string       `gorm:"type:varchar(32);not null" json:"type"`    // DEPOSIT, WITHDRAW
+	Settled         bool         `gorm:"not null;default:false" json:"settled"`    // if order is created and count amount to balance, then Settled = true
 }
 
 //UpdateColumns ...
@@ -54,11 +57,83 @@ func (a *ExOrder) Delete() (err error) {
 	return GetDB().Delete(&a).Error
 }
 
-//AfterSave ...
+//AfterSave ... will be called each time after CREATE / SAVE / UPDATE
 func (a ExOrder) AfterSave(tx *gorm.DB) (err error) {
-	if a.Status == "DONE" {
-		u.Debugln("from exorder after save hook and the order status is DONE")
+	if a.Settled == true {
+		if a.Status == ExorderStatusDone {
+			if a.Type == ExorderTypeDeposit {
+				// DEPOSIT exorder settled before
+				// status: PENDING -> DONE
+				// balance: InLock -= amount, balance += amount
+
+			} else if a.Type == ExorderTypeWithdraw {
+				// WITHDRAW exorder settled before
+				// status: PENDING -> DONE
+				// balance: OutLock -= amount, balance -= 0
+
+			}
+		} else if a.Status == ExorderStatusFailed {
+			if a.Type == ExorderTypeDeposit {
+				// DEPOSIT exorder settled before
+				// status: PENDING -> FAILED
+				// balance: InLock -= amount, balance += 0
+
+			} else if a.Type == ExorderTypeWithdraw {
+				// WITHDRAW exorder settled before
+				// status: PENDING -> FAILED
+				// balance: OutLock -= amount, balance += amount
+
+			}
+		} else if a.Status == ExorderStatusPending {
+			// exorder was settled before
+			// status is still PENDING
+			// then do nothing
+		}
+	} else if a.Settled == false {
+		// set exorder Settled = true and SAVE to DB
+
+		if a.Status == ExorderStatusDone {
+			if a.Type == ExorderTypeDeposit {
+				// DEPOSIT exorder NOT settled before
+				// status: -> DONE
+				// balance: InLock -= 0, balance += amount
+
+			} else if a.Type == ExorderTypeWithdraw {
+				// WITHDRAW exorder NOT settled before
+				// status: -> DONE
+				// balance: OutLock -= 0, balance -= amount
+
+			}
+		} else if a.Status == ExorderStatusFailed {
+			if a.Type == ExorderTypeDeposit {
+				// DEPOSIT exorder NOT settled before
+				// status: -> FAILED
+				// balance: InLock -= 0, balance += 0
+				// do NOTHING
+			} else if a.Type == ExorderTypeWithdraw {
+				// WITHDRAW exorder NOT settled before
+				// status: -> FAILED
+				// balance: OutLock -= 0, balance += 0
+				// do NOTHING
+			}
+		} else if a.Status == ExorderStatusPending {
+			if a.Type == ExorderTypeDeposit {
+				// DEPOSIT exorder NOT settled before
+				// status: -> PENDING
+				// balance: InLock += amount, balance += 0
+
+			} else if a.Type == ExorderTypeWithdraw {
+				// WITHDRAW exorder NOT settled before
+				// status: -> PENDING
+				// balance: OutLock += amount, balance -= amount
+
+			}
+		}
 	}
+
+	// if a.Status != ExorderStatusDone {
+	// 	u.Debugln("from exorder after save hook and the order status is DONE")
+	// }
 
 	return nil
 
