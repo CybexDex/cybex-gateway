@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	model "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
 	humanize "github.com/dustin/go-humanize"
 	"github.com/tomasen/realip"
@@ -14,6 +15,7 @@ type wrapper struct {
 	http.ResponseWriter
 	written int
 	status  int
+	data    []byte
 }
 
 // capture status.
@@ -26,6 +28,7 @@ func (w *wrapper) WriteHeader(code int) {
 func (w *wrapper) Write(b []byte) (int, error) {
 	n, err := w.ResponseWriter.Write(b)
 	w.written += n
+	w.data = append(w.data, b[:n]...)
 	return n, err
 }
 
@@ -34,9 +37,8 @@ func NewLoggingMiddle(logger *utils.Logger) func(http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()
-			res := &wrapper{w, 0, 200}
+			res := &wrapper{w, 0, 200, []byte{}}
 			ip := realip.RealIP(r)
-
 			logger.Infof("[%s] >>> %s %s", ip, r.Method, r.RequestURI)
 			h.ServeHTTP(res, r)
 			size := humanize.Bytes(uint64(res.written))
@@ -52,6 +54,24 @@ func NewLoggingMiddle(logger *utils.Logger) func(http.Handler) http.Handler {
 				logger.Infof("[%s] << %s %s %d (%s) in %s", ip, r.Method, r.RequestURI,
 					res.status, size, time.Since(start))
 			}
+
+			// save event
+			event := &model.Event{}
+			route := r.RequestURI
+			userAgent := r.UserAgent()
+			userID := r.Context().Value("UserID")
+
+			accountID := uint(0)
+			if userID != nil {
+				accountID = userID.(uint)
+			}
+			event.AccountID = accountID
+			event.IPAddress = ip
+			event.Route = route
+			event.StatusCode = res.status
+			event.UserAgent = userAgent
+			event.Output = string(res.data)
+			event.Create()
 		})
 	}
 }
