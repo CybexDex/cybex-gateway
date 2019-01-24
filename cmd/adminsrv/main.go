@@ -10,6 +10,8 @@ import (
 	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/facebookgo/grace/gracehttp"
 	"github.com/gorilla/mux"
+	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
+
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
@@ -44,6 +46,8 @@ func main() {
 	// init middleware
 	router.Use(app.JwtAuthentication) //attach JWT auth middleware
 	router.Use(app.NewLoggingMiddle(utils.GetLogger()))
+
+	router.Use(app.NewLogEventMiddle(m.GetDB()))
 
 	listenAddr := os.Getenv("listen_addr")
 	if len(listenAddr) == 0 {
