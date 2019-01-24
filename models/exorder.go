@@ -7,6 +7,15 @@ import (
 	u "git.coding.net/bobxuyang/cy-gateway-BN/utils"
 )
 
+const (
+	// ExorderStatusPending ...
+	ExorderStatusPending = "PENDING"
+	// ExorderStatusDone ...
+	ExorderStatusDone = "DONE"
+	// ExorderStatusFailed ...
+	ExorderStatusFailed = "FAILED"
+)
+
 //ExOrder ...
 type ExOrder struct {
 	gorm.Model

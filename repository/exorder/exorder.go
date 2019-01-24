@@ -16,6 +16,7 @@ type Repository interface {
 	GetByID(id uint) (*m.ExOrder, error)
 	DeleteByID(id uint) error
 	Create(a *m.ExOrder) (err error)
+	UpdateColumns(id uint, b *m.ExOrder) (err error)
 }
 
 //Repo ...
