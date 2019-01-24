@@ -1,4 +1,4 @@
-package app
+package asset
 
 import (
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
