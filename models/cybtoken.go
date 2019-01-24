@@ -7,9 +7,9 @@ import (
 //CybToken ...
 type CybToken struct {
 	gorm.Model
-	CybAccount string `gorm:"type:varchar(255)" json:"accountName"` // use for GATEWAY mode
-	Signer     string `gorm:"type:varchar(255)" json:"signer"`      // user's Signer
-	Expiration uint   `json:"expiration"`                           //timestamp seconds
+	CybAccount string `gorm:"unique;type:varchar(255)" json:"accountName"` // use for GATEWAY mode
+	Signer     string `gorm:"type:varchar(255)" json:"signer"`             // user's Signer
+	Expiration uint   `json:"expiration"`                                  //timestamp seconds
 }
 
 //UpdateColumns ...
@@ -23,8 +23,8 @@ func (a *CybToken) Create() (err error) {
 }
 
 //Save ...
-func (a *CybToken) Save() (err error) {
-	return GetDB().Save(&a).Error
+func (a *CybToken) SaveUniqueBy(uniq CybToken) (err error) {
+	return GetDB().Where(uniq).Assign(*a).FirstOrCreate(&a).Error
 }
 
 //Delete ...
