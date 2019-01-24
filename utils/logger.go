@@ -337,7 +337,8 @@ func (l *Logger) Debugln(v ...interface{}) {
 	if l.level > debugFlag {
 		return
 	}
-	l.Output(calldepth, fmt.Sprintf("%s%s", "[DEBUG] ", fmt.Sprintln(v...)))
+
+	l.Output(calldepth, fmt.Sprintln("[DEBUG]", v))
 }
 
 // Infoln print info log
@@ -345,7 +346,7 @@ func (l *Logger) Infoln(v ...interface{}) {
 	if l.level > debugFlag {
 		return
 	}
-	l.Output(calldepth, fmt.Sprintf("%s%s", "[Info] ", fmt.Sprintln(v...)))
+	l.Output(calldepth, fmt.Sprintln("[INFO]", v))
 }
 
 // Warningln print warning log
@@ -353,7 +354,7 @@ func (l *Logger) Warningln(v ...interface{}) {
 	if l.level > debugFlag {
 		return
 	}
-	l.Output(calldepth, fmt.Sprintf("%s%s", "[WARNING] ", fmt.Sprintln(v...)))
+	l.Output(calldepth, fmt.Sprintln("[WARNING]", v))
 }
 
 // Errorln print error log
@@ -361,7 +362,7 @@ func (l *Logger) Errorln(v ...interface{}) {
 	if l.level > debugFlag {
 		return
 	}
-	l.Output(calldepth, fmt.Sprintf("%s%s", "[ERROR] ", fmt.Sprintln(v...)))
+	l.Output(calldepth, fmt.Sprintln("[ERROR]", v))
 }
 
 // Fatalln print fatal log
@@ -369,5 +370,5 @@ func (l *Logger) Fatalln(v ...interface{}) {
 	if l.level > debugFlag {
 		return
 	}
-	l.Output(calldepth, fmt.Sprintf("%s%s", "[FATAL] ", fmt.Sprintln(v...)))
+	l.Output(calldepth, fmt.Sprintln("[FATAL]", v))
 }
