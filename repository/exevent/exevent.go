@@ -11,6 +11,7 @@ type Repository interface {
 	FetchAll() ([]*m.ExEvent, error)
 	Fetch(p r.Page) ([]*m.ExEvent, error)
 	FetchWith(o *m.ExEvent) ([]*m.ExEvent, error)
+	Create(a *m.ExEvent) (err error)
 	GetByName(name string) (*m.ExEvent, error)
 	GetByID(id uint) (*m.ExEvent, error)
 	DeleteByID(id uint) error
@@ -84,4 +85,15 @@ func (repo *Repo) GetByName(name string) (*m.ExEvent, error) {
 //DeleteByID ...
 func (repo *Repo) DeleteByID(id uint) error {
 	return repo.DB.Where("ID=?", id).Delete(&m.ExEvent{}).Error
+}
+
+//Create ...
+//for transaction base use
+func (repo *Repo) Create(a *m.ExEvent) (err error) {
+	err = repo.DB.Create(&a).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

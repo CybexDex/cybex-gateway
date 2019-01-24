@@ -14,6 +14,7 @@ type Repository interface {
 	GetByName(name string) (*m.Order, error)
 	GetByID(id uint) (*m.Order, error)
 	DeleteByID(id uint) error
+	Create(a *m.Order) (err error)
 }
 
 //Repo ...
@@ -84,4 +85,15 @@ func (repo *Repo) GetByName(name string) (*m.Order, error) {
 //DeleteByID ...
 func (repo *Repo) DeleteByID(id uint) error {
 	return repo.DB.Where("ID=?", id).Delete(&m.Order{}).Error
+}
+
+//Create ...
+//for transaction base use
+func (repo *Repo) Create(a *m.Order) (err error) {
+	err = repo.DB.Create(&a).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
