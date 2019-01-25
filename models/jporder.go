@@ -64,44 +64,44 @@ func (a JPOrder) AfterSave(tx *gorm.DB) (err error) {
 		if a.Settled == false {
 			// set JPOrder Settled = true and SAVE to DB
 
-			if a.Status == JPOrderStatusDone {
+			if a.Status == JPOrderStatusDone { // case 1
 				// DEPOSIT JPOrder NOT settled before
 				// status: -> DONE
-				// balance: InLock -= 0, balance += amount
+				// balance: InLock += amount, balance += 0, same as case 3
 				// create ORDER
 
-			} else if a.Status == JPOrderStatusFailed {
+			} else if a.Status == JPOrderStatusFailed { // case 2
 				// DEPOSIT JPOrder NOT settled before
 				// status: -> FAILED
 				// balance: InLock -= 0, balance -= 0
 				// do NOTHING
 
-			} else if a.Status == JPOrderStatusPending {
+			} else if a.Status == JPOrderStatusPending { // case 3
 				// DEPOSIT JPOrder NOT settled before
 				// status: -> PENDING
 				// balance: InLock += amount, balance += 0
 
 			}
 		} else if a.Settled {
-			if a.Status == JPOrderStatusDone {
+			if a.Status == JPOrderStatusDone { // case 4
 				// DEPOSIT JPOrder settled before
 				// status: PENDING -> DONE
 				// balance: InLock -= 0, balance += 0
 				// do NOTHING
 
-			} else if a.Status == JPOrderStatusFailed {
+			} else if a.Status == JPOrderStatusFailed { // case 5, symmetrical to case 3
 				// DEPOSIT JPOrder settled before
 				// status: PENDING -> FAILED
 				// balance: InLock -= amount, balance += 0
 
-			} else if a.Status == JPOrderStatusPending {
+			} else if a.Status == JPOrderStatusPending { // case 6
 				// DEPOSIT JPOrder settled before
-				// status is still PENDING
+				// status: PENDING -> PENDING
 				// do NOTHING
 
 			}
 		}
-	} else if a.Type == JPOrderTypeWithdraw {
+	} else if a.Type == JPOrderTypeWithdraw { // map to cyborder's part
 		if a.Status == JPOrderStatusDone {
 			// WITHDRAW JPOrder NOT settled before
 			// status: -> DONE
@@ -110,8 +110,8 @@ func (a JPOrder) AfterSave(tx *gorm.DB) (err error) {
 		} else if a.Status == JPOrderStatusFailed {
 			// WITHDRAW JPOrder NOT settled before
 			// status: -> FAILED
-			// balance: OutLock -= amount, balance += amount ??
-			// create NEW jporder, set it to order, move old jporder to order's
+			// balance: OutLock -= amount, balance += amount
+			// create NEW jporder, set it to order, move old jporder to order's FailedJPOrders
 
 		} else if a.Status == JPOrderStatusPending {
 			// status: -> PENDING
