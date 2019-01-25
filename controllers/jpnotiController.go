@@ -26,7 +26,6 @@ import (
 
 	model "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/exevent"
-	"git.coding.net/bobxuyang/cy-gateway-BN/repository/order"
 	utils "git.coding.net/bobxuyang/cy-gateway-BN/utils"
 )
 
@@ -191,12 +190,9 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	n2 := parseIndexFromResult(result)
-	fmt.Println("n2", n2)
 	if jporderEntity == nil {
 		// parse tx index from result
 		n := parseIndexFromResult(result)
-		fmt.Println("n", n)
 		jporderEntity = new(model.JPOrder)
 		jporderEntity.From = result.From
 		jporderEntity.To = result.To
@@ -251,7 +247,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if jporderEntity.Type == model.JPorderTypeDeposit {
+	/*if jporderEntity.Type == model.JPorderTypeDeposit {
 		// jporder has done, for deposit, create order
 		if jporderEntity.Status == model.JPorderStatusDone {
 			orderRepo := order.NewRepo(tx)
@@ -278,7 +274,6 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 			}
 
 			orderEntity.Fee = asset.DepositFee
-
 			orderEntity.AppID = 1
 			err = orderRepo.Create(orderEntity)
 			if err != nil {
@@ -291,7 +286,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 	} else if jporderEntity.Type == model.JPorderTypeWithdraw {
 		// update order
 
-	}
+	}*/
 
 	tx.Commit()
 
