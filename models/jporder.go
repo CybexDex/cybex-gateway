@@ -6,16 +6,16 @@ import (
 )
 
 const (
-	// JPorderStatusPending ...
-	JPorderStatusPending = "PENDING"
-	// JPorderStatusDone ...
-	JPorderStatusDone = "DONE"
-	// JPorderStatusFailed ...
-	JPorderStatusFailed = "FAILED"
-	// JPorderTypeDeposit ...
-	JPorderTypeDeposit = "DEPOSIT"
-	// JPorderTypeWithdraw ...
-	JPorderTypeWithdraw = "WITHDRAW"
+	// JPOrderStatusPending ...
+	JPOrderStatusPending = "PENDING"
+	// JPOrderStatusDone ...
+	JPOrderStatusDone = "DONE"
+	// JPOrderStatusFailed ...
+	JPOrderStatusFailed = "FAILED"
+	// JPOrderTypeDeposit ...
+	JPOrderTypeDeposit = "DEPOSIT"
+	// JPOrderTypeWithdraw ...
+	JPOrderTypeWithdraw = "WITHDRAW"
 )
 
 //JPOrder ...
@@ -60,83 +60,70 @@ func (a *JPOrder) Delete() (err error) {
 
 //AfterSave ... will be called each time after CREATE / SAVE / UPDATE
 func (a JPOrder) AfterSave(tx *gorm.DB) (err error) {
-	if a.Settled == true {
-		if a.Status == JPorderStatusDone {
-			if a.Type == JPorderTypeDeposit {
-				// DEPOSIT jporder settled before
-				// status: PENDING -> DONE
-				// balance: InLock -= amount, balance += amount
+	if a.Type == JPOrderTypeDeposit {
+		if a.Settled == false {
+			// set JPOrder Settled = true and SAVE to DB
 
-			} else if a.Type == JPorderTypeWithdraw {
-				// WITHDRAW jporder settled before
-				// status: PENDING -> DONE
-				// balance: OutLock -= amount, balance -= 0
-
-			}
-		} else if a.Status == JPorderStatusFailed {
-			if a.Type == JPorderTypeDeposit {
-				// DEPOSIT jporder settled before
-				// status: PENDING -> FAILED
-				// balance: InLock -= amount, balance += 0
-
-			} else if a.Type == JPorderTypeWithdraw {
-				// WITHDRAW jporder settled before
-				// status: PENDING -> FAILED
-				// balance: OutLock -= amount, balance += amount
-
-			}
-		} else if a.Status == JPorderStatusPending {
-			// jporder was settled before
-			// status is still PENDING
-			// then do nothing
-		}
-	} else if a.Settled == false {
-		// set jporder Settled = true and SAVE to DB
-
-		if a.Status == JPorderStatusDone {
-			if a.Type == JPorderTypeDeposit {
-				// DEPOSIT jporder NOT settled before
+			if a.Status == JPOrderStatusDone {
+				// DEPOSIT JPOrder NOT settled before
 				// status: -> DONE
 				// balance: InLock -= 0, balance += amount
+				// create ORDER
 
-			} else if a.Type == JPorderTypeWithdraw {
-				// WITHDRAW jporder NOT settled before
-				// status: -> DONE
-				// balance: OutLock -= 0, balance -= amount
+			} else if a.Status == JPOrderStatusFailed {
+				// DEPOSIT JPOrder NOT settled before
+				// status: -> FAILED
+				// balance: InLock -= 0, balance -= 0
+				// do NOTHING
 
-			}
-		} else if a.Status == JPorderStatusFailed {
-			if a.Type == JPorderTypeDeposit {
-				// DEPOSIT jporder NOT settled before
-				// status: -> FAILED
-				// balance: InLock -= 0, balance += 0
-				// do NOTHING
-			} else if a.Type == JPorderTypeWithdraw {
-				// WITHDRAW jporder NOT settled before
-				// status: -> FAILED
-				// balance: OutLock -= 0, balance += 0
-				// do NOTHING
-			}
-		} else if a.Status == JPorderStatusPending {
-			if a.Type == JPorderTypeDeposit {
-				// DEPOSIT jporder NOT settled before
+			} else if a.Status == JPOrderStatusPending {
+				// DEPOSIT JPOrder NOT settled before
 				// status: -> PENDING
 				// balance: InLock += amount, balance += 0
 
-			} else if a.Type == JPorderTypeWithdraw {
-				// WITHDRAW jporder NOT settled before
-				// status: -> PENDING
-				// balance: OutLock += amount, balance -= amount
+			}
+		} else if a.Settled {
+			if a.Status == JPOrderStatusDone {
+				// DEPOSIT JPOrder settled before
+				// status: PENDING -> DONE
+				// balance: InLock -= 0, balance += 0
+				// do NOTHING
+
+			} else if a.Status == JPOrderStatusFailed {
+				// DEPOSIT JPOrder settled before
+				// status: PENDING -> FAILED
+				// balance: InLock -= amount, balance += 0
+
+			} else if a.Status == JPOrderStatusPending {
+				// DEPOSIT JPOrder settled before
+				// status is still PENDING
+				// do NOTHING
 
 			}
 		}
+	} else if a.Type == JPOrderTypeWithdraw {
+		if a.Status == JPOrderStatusDone {
+			// WITHDRAW JPOrder NOT settled before
+			// status: -> DONE
+			// balance: OutLock -= amount, balance -= 0
+
+		} else if a.Status == JPOrderStatusFailed {
+			// WITHDRAW JPOrder NOT settled before
+			// status: -> FAILED
+			// balance: OutLock -= amount, balance += amount ??
+			// create NEW jporder, set it to order, move old jporder to order's
+
+		} else if a.Status == JPOrderStatusPending {
+			// status: -> PENDING
+			// do NOTHING
+		}
 	}
 
-	// if a.Status != JPorderStatusDone {
-	// 	u.Debugln("from jporder after save hook and the order status is DONE")
+	// if a.Status != JPOrderStatusDone {
+	// 	u.Debugln("from JPOrder after save hook and the order status is DONE")
 	// }
 
-	return nil
-
 	// return errors.New("test error for rollback")
+
+	return nil
 }

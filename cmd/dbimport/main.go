@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 
+	"github.com/lib/pq"
+
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	"github.com/cockroachdb/apd"
 )
@@ -250,6 +252,12 @@ func tOrder() {
 	orderEntity := new(m.Order)
 	orderEntity.JPOrderID = 1
 	orderEntity.CybOrderID = 1
+	orderEntity.FailedJPOrders = *new(pq.Int64Array)
+	orderEntity.FailedJPOrders = append(orderEntity.FailedJPOrders, 1)
+	orderEntity.FailedJPOrders = append(orderEntity.FailedJPOrders, 1)
+	orderEntity.FailedCybOrders = *new(pq.Int64Array)
+	orderEntity.FailedCybOrders = append(orderEntity.FailedCybOrders, 1)
+	orderEntity.FailedCybOrders = append(orderEntity.FailedCybOrders, 1)
 	orderEntity.JPHash = jporderEntity.Hash
 	orderEntity.Status = "INIT"
 	orderEntity.Type = jporderEntity.Type

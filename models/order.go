@@ -3,6 +3,7 @@ package model
 import (
 	"github.com/cockroachdb/apd"
 	"github.com/jinzhu/gorm"
+	"github.com/lib/pq"
 )
 
 const (
@@ -31,6 +32,9 @@ type Order struct {
 
 	AssetID uint `gorm:"not null" json:"assetID"` // 1 to n
 	AppID   uint `gorm:"not null" json:"appID"`   // 1 to n
+
+	FailedJPOrders  pq.Int64Array `gorm:"type:integer[]" json:"failedJPOrders"`
+	FailedCybOrders pq.Int64Array `gorm:"type:integer[]" json:"failedCybOrders"`
 
 	// Accounting      Accounting `gorm:"foreignkey:AccountingRefer" json:"accounting"` // 1 to 1
 	// AccountingRefer uint       `json:"accountingRefer"`
