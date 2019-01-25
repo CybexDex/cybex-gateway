@@ -41,8 +41,8 @@ type Order struct {
 	CYBUUHash string `gorm:"type:varchar(256)" json:"cybUUHash"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
 
 	TotalAmount *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"totalAmount"` // totalAmount = amount + fee
-	Amount      *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"amount"`
-	Fee         *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"fee"` // fee in Asset
+	Amount      *apd.Decimal `gorm:"type:numeric(30,10)" json:"amount"`
+	Fee         *apd.Decimal `gorm:"type:numeric(30,10)" json:"fee"` // fee in Asset
 
 	Status string `gorm:"type:varchar(32);not null" json:"status"` // INIT, PROCESSING, DONE, TERMINATED
 	Type   string `gorm:"type:varchar(32);not null" json:"type"`   // DEPOSIT, WITHDRAW
