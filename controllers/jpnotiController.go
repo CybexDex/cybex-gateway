@@ -15,6 +15,9 @@ import (
 	"strconv"
 	"strings"
 
+	"git.coding.net/bobxuyang/cy-gateway-BN/repository/asset"
+	"git.coding.net/bobxuyang/cy-gateway-BN/repository/jporder"
+
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/cockroachdb/apd"
 	"github.com/jinzhu/gorm"
@@ -22,7 +25,6 @@ import (
 
 	model "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/exevent"
-	exorder "git.coding.net/bobxuyang/cy-gateway-BN/repository/exorder"
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/order"
 	utils "git.coding.net/bobxuyang/cy-gateway-BN/utils"
 )
@@ -111,6 +113,8 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	// save exevent
+	assetRepo := asset.NewRepo(tx)
+	assetRepo.GetByName(result.CoinType)
 	exeventEntity := new(model.ExEvent)
 	exeventEntity.AssetID = 1
 	exeventEntity.Hash = result.Hash
@@ -126,7 +130,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// find exorder and save/update exorder
+	// find jporder and save/update jporder
 	jpOrderID, err := strconv.Atoi(result.ID)
 	if err != nil {
 		tx.Rollback()
@@ -134,36 +138,36 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
-	exorderRepo := exorder.NewRepo(tx)
-	exorderEntity, err := exorderRepo.GetByJPID(uint(jpOrderID))
+	jporderRepo := jporder.NewRepo(tx)
+	jporderEntity, err := jporderRepo.GetByJPID(uint(jpOrderID))
 	if err != nil && !gorm.IsRecordNotFoundError(err) {
 		tx.Rollback()
-		utils.Errorf("get exorder error: %v", err)
+		utils.Errorf("get jporder error: %v", err)
 		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
 
-	if exorderEntity == nil {
+	if jporderEntity == nil {
 		// parse tx index from result
 		n := parseIndexFromResult(result)
-		exorderEntity = new(model.ExOrder)
-		exorderEntity.From = result.From
-		exorderEntity.To = result.To
-		exorderEntity.Hash = result.Hash
+		jporderEntity = new(model.JPOrder)
+		jporderEntity.From = result.From
+		jporderEntity.To = result.To
+		jporderEntity.Hash = result.Hash
 		if n > 0 {
-			exorderEntity.UUHash = fmt.Sprintf("%s:%s:%d", result.CoinType, result.Hash, n)
+			jporderEntity.UUHash = fmt.Sprintf("%s:%s:%d", result.CoinType, result.Hash, n)
 		} else {
-			exorderEntity.UUHash = fmt.Sprintf("%s:%s", result.CoinType, result.Hash)
+			jporderEntity.UUHash = fmt.Sprintf("%s:%s", result.CoinType, result.Hash)
 		}
 
-		exorderEntity.Index = n
-		exorderEntity.JadepoolOrderID = uint(jpOrderID)
-		exorderEntity.Status = result.State
-		exorderEntity.Type = result.BizType
+		jporderEntity.Index = n
+		jporderEntity.JadepoolOrderID = uint(jpOrderID)
+		jporderEntity.Status = result.State
+		jporderEntity.Type = result.BizType
 		//todo:
-		exorderEntity.AssetID = 1
+		jporderEntity.AssetID = 1
 		//todo:
-		exorderEntity.JadepoolID = 1
+		jporderEntity.JadepoolID = 1
 		amount, condition, err := apd.NewFromString(result.Value)
 		if err != nil || condition.Any() {
 			tx.Rollback()
@@ -171,49 +175,49 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 			utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 			return
 		}
-		exorderEntity.Amount = amount
-		err = exorderRepo.Create(exorderEntity)
+		jporderEntity.Amount = amount
+		err = jporderRepo.Create(jporderEntity)
 		if err != nil {
 			tx.Rollback()
-			utils.Errorf("create exorder error: %v", err)
+			utils.Errorf("create jporder error: %v", err)
 			utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 			return
 		}
 	} else {
-		if exorderEntity.Status == result.State {
+		if jporderEntity.Status == result.State {
 			// repeat request
-			utils.Infof("repeat request, jadepool order id: %d", exorderEntity.JadepoolOrderID)
+			utils.Infof("repeat request, jadepool order id: %d", jporderEntity.JadepoolOrderID)
 			tx.Commit()
 			resp := utils.Message(true, "success")
 			utils.Respond(w, resp)
 			return
 		}
 
-		updateEntity := &model.ExOrder{}
+		updateEntity := &model.JPOrder{}
 		updateEntity.Status = result.State
-		exorderEntity.Status = result.State
-		err = exorderRepo.UpdateColumns(exorderEntity.ID, updateEntity)
+		jporderEntity.Status = result.State
+		err = jporderRepo.UpdateColumns(jporderEntity.ID, updateEntity)
 		if err != nil {
 			tx.Rollback()
-			utils.Errorf("Update exorder error: %v", err)
+			utils.Errorf("Update jporder error: %v", err)
 			utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 			return
 		}
 	}
 
-	// exorder has done, so create order
-	if exorderEntity.Status == model.ExorderStatusDone {
+	// jporder has done, so create order
+	if jporderEntity.Status == model.JPorderStatusDone {
 		orderRepo := order.NewRepo(tx)
 		orderEntity := new(model.Order)
-		orderEntity.From = exorderEntity.From
-		orderEntity.Hash = exorderEntity.Hash
-		orderEntity.Index = exorderEntity.Index
-		orderEntity.Status = model.OrderStatusInit
-		orderEntity.To = exorderEntity.To
-		orderEntity.Type = exorderEntity.Type
-		orderEntity.UUHash = exorderEntity.UUHash
-		orderEntity.AssetID = exorderEntity.AssetID
-		orderEntity.Amount = exorderEntity.Amount
+		orderEntity.JPHash = jporderEntity.Hash
+		orderEntity.Status = "INIT"
+		orderEntity.Type = jporderEntity.Type
+		orderEntity.JPUUHash = jporderEntity.UUHash
+		orderEntity.AssetID = 1
+		orderEntity.TotalAmount = jporderEntity.Amount
+		orderEntity.Amount = jporderEntity.Amount
+		fee, _, _ := apd.NewFromString("0")
+		orderEntity.Fee = fee
 		//todo:
 		orderEntity.AppID = 1
 		err = orderRepo.Create(orderEntity)

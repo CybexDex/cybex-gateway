@@ -10,7 +10,7 @@ type Asset struct {
 	gorm.Model
 
 	ExEvents    []ExEvent    `json:"exEvents"`   // 1 to n
-	ExOrders    []ExOrder    `json:"exOrders"`   // 1 to n
+	JPOrders    []JPOrder    `json:"jpOrders"`   // 1 to n
 	Orders      []Order      `json:"orders"`     // 1 to n
 	Addresses   []Address    `json:"addresses"`  // 1 to n
 	Accountings []Accounting `json:"accounting"` // 1 to n

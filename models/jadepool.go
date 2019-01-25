@@ -7,7 +7,7 @@ type Jadepool struct {
 	gorm.Model
 
 	Apps     []App     `json:"apps"`     // 1 to n
-	ExOrders []ExOrder `json:"exOrders"` // 1 to n
+	JPOrders []JPOrder `json:"jpOrders"` // 1 to n
 	ExEvents []ExEvent `json:"exEvents"` // 1 to n
 
 	Name        string `gorm:"index;type:varchar(255);not null" json:"name"`

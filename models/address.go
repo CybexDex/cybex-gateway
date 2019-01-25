@@ -6,7 +6,7 @@ import "github.com/jinzhu/gorm"
 type Address struct {
 	gorm.Model
 
-	ExOrders []ExOrder `json:"exOrders"`
+	ExOrders []JPOrder `json:"exOrders"`
 	Orders   []Order   `json:"Orders"`
 
 	AppID   uint `json:"appID"`
