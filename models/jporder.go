@@ -6,20 +6,20 @@ import (
 )
 
 const (
-	// ExorderStatusPending ...
-	ExorderStatusPending = "PENDING"
-	// ExorderStatusDone ...
-	ExorderStatusDone = "DONE"
-	// ExorderStatusFailed ...
-	ExorderStatusFailed = "FAILED"
-	// ExorderTypeDeposit ...
-	ExorderTypeDeposit = "DEPOSIT"
-	// ExorderTypeWithdraw ...
-	ExorderTypeWithdraw = "WITHDRAW"
+	// JPorderStatusPending ...
+	JPorderStatusPending = "PENDING"
+	// JPorderStatusDone ...
+	JPorderStatusDone = "DONE"
+	// JPorderStatusFailed ...
+	JPorderStatusFailed = "FAILED"
+	// JPorderTypeDeposit ...
+	JPorderTypeDeposit = "DEPOSIT"
+	// JPorderTypeWithdraw ...
+	JPorderTypeWithdraw = "WITHDRAW"
 )
 
-//ExOrder ...
-type ExOrder struct {
+//JPOrder ...
+type JPOrder struct {
 	gorm.Model
 
 	AssetID    uint `gorm:"not null" json:"assetID"`    // n to 1
@@ -38,92 +38,92 @@ type ExOrder struct {
 }
 
 //UpdateColumns ...
-func (a *ExOrder) UpdateColumns(b *ExOrder) error {
-	return GetDB().Model(ExOrder{}).Where("ID=?", a.ID).UpdateColumns(b).Error
+func (a *JPOrder) UpdateColumns(b *JPOrder) error {
+	return GetDB().Model(JPOrder{}).Where("ID=?", a.ID).UpdateColumns(b).Error
 }
 
 //Create ...
-func (a *ExOrder) Create() (err error) {
+func (a *JPOrder) Create() (err error) {
 	return GetDB().Create(&a).Error
 }
 
 //Save ...
-func (a *ExOrder) Save() (err error) {
+func (a *JPOrder) Save() (err error) {
 	return GetDB().Save(&a).Error
 }
 
 //Delete ...
-func (a *ExOrder) Delete() (err error) {
+func (a *JPOrder) Delete() (err error) {
 	return GetDB().Delete(&a).Error
 }
 
 //AfterSave ... will be called each time after CREATE / SAVE / UPDATE
-func (a ExOrder) AfterSave(tx *gorm.DB) (err error) {
+func (a JPOrder) AfterSave(tx *gorm.DB) (err error) {
 	if a.Settled == true {
-		if a.Status == ExorderStatusDone {
-			if a.Type == ExorderTypeDeposit {
-				// DEPOSIT exorder settled before
+		if a.Status == JPorderStatusDone {
+			if a.Type == JPorderTypeDeposit {
+				// DEPOSIT jporder settled before
 				// status: PENDING -> DONE
 				// balance: InLock -= amount, balance += amount
 
-			} else if a.Type == ExorderTypeWithdraw {
-				// WITHDRAW exorder settled before
+			} else if a.Type == JPorderTypeWithdraw {
+				// WITHDRAW jporder settled before
 				// status: PENDING -> DONE
 				// balance: OutLock -= amount, balance -= 0
 
 			}
-		} else if a.Status == ExorderStatusFailed {
-			if a.Type == ExorderTypeDeposit {
-				// DEPOSIT exorder settled before
+		} else if a.Status == JPorderStatusFailed {
+			if a.Type == JPorderTypeDeposit {
+				// DEPOSIT jporder settled before
 				// status: PENDING -> FAILED
 				// balance: InLock -= amount, balance += 0
 
-			} else if a.Type == ExorderTypeWithdraw {
-				// WITHDRAW exorder settled before
+			} else if a.Type == JPorderTypeWithdraw {
+				// WITHDRAW jporder settled before
 				// status: PENDING -> FAILED
 				// balance: OutLock -= amount, balance += amount
 
 			}
-		} else if a.Status == ExorderStatusPending {
-			// exorder was settled before
+		} else if a.Status == JPorderStatusPending {
+			// jporder was settled before
 			// status is still PENDING
 			// then do nothing
 		}
 	} else if a.Settled == false {
-		// set exorder Settled = true and SAVE to DB
+		// set jporder Settled = true and SAVE to DB
 
-		if a.Status == ExorderStatusDone {
-			if a.Type == ExorderTypeDeposit {
-				// DEPOSIT exorder NOT settled before
+		if a.Status == JPorderStatusDone {
+			if a.Type == JPorderTypeDeposit {
+				// DEPOSIT jporder NOT settled before
 				// status: -> DONE
 				// balance: InLock -= 0, balance += amount
 
-			} else if a.Type == ExorderTypeWithdraw {
-				// WITHDRAW exorder NOT settled before
+			} else if a.Type == JPorderTypeWithdraw {
+				// WITHDRAW jporder NOT settled before
 				// status: -> DONE
 				// balance: OutLock -= 0, balance -= amount
 
 			}
-		} else if a.Status == ExorderStatusFailed {
-			if a.Type == ExorderTypeDeposit {
-				// DEPOSIT exorder NOT settled before
+		} else if a.Status == JPorderStatusFailed {
+			if a.Type == JPorderTypeDeposit {
+				// DEPOSIT jporder NOT settled before
 				// status: -> FAILED
 				// balance: InLock -= 0, balance += 0
 				// do NOTHING
-			} else if a.Type == ExorderTypeWithdraw {
-				// WITHDRAW exorder NOT settled before
+			} else if a.Type == JPorderTypeWithdraw {
+				// WITHDRAW jporder NOT settled before
 				// status: -> FAILED
 				// balance: OutLock -= 0, balance += 0
 				// do NOTHING
 			}
-		} else if a.Status == ExorderStatusPending {
-			if a.Type == ExorderTypeDeposit {
-				// DEPOSIT exorder NOT settled before
+		} else if a.Status == JPorderStatusPending {
+			if a.Type == JPorderTypeDeposit {
+				// DEPOSIT jporder NOT settled before
 				// status: -> PENDING
 				// balance: InLock += amount, balance += 0
 
-			} else if a.Type == ExorderTypeWithdraw {
-				// WITHDRAW exorder NOT settled before
+			} else if a.Type == JPorderTypeWithdraw {
+				// WITHDRAW jporder NOT settled before
 				// status: -> PENDING
 				// balance: OutLock += amount, balance -= amount
 
@@ -131,8 +131,8 @@ func (a ExOrder) AfterSave(tx *gorm.DB) (err error) {
 		}
 	}
 
-	// if a.Status != ExorderStatusDone {
-	// 	u.Debugln("from exorder after save hook and the order status is DONE")
+	// if a.Status != JPorderStatusDone {
+	// 	u.Debugln("from jporder after save hook and the order status is DONE")
 	// }
 
 	return nil

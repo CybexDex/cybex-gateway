@@ -1,4 +1,4 @@
-package exorder
+package jporder
 
 import (
 	"fmt"
@@ -25,7 +25,7 @@ func TestOne(t *testing.T) {
 	})
 	fmt.Println(res)
 
-	o := m.ExOrder{
+	o := m.JPOrder{
 		Status: "PENDING",
 	}
 	order := *(res[0])
@@ -35,7 +35,7 @@ func TestOne(t *testing.T) {
 	eo, _ := repo.GetByJPID(o.JadepoolID)
 	fmt.Println(*eo)
 
-	o = m.ExOrder{
+	o = m.JPOrder{
 		Status: "PENDING",
 	}
 	os, _ := repo.FetchWith(&o)

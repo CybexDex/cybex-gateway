@@ -1,4 +1,4 @@
-package exorder
+package jporder
 
 import (
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
@@ -9,14 +9,14 @@ import (
 
 //Repository ...
 type Repository interface {
-	FetchAll() ([]*m.ExOrder, error)
-	Fetch(p r.Page) ([]*m.ExOrder, error)
-	FetchWith(o *m.ExOrder) ([]*m.ExOrder, error)
-	GetByJPID(id uint) (*m.ExOrder, error)
-	GetByID(id uint) (*m.ExOrder, error)
+	FetchAll() ([]*m.JPOrder, error)
+	Fetch(p r.Page) ([]*m.JPOrder, error)
+	FetchWith(o *m.JPOrder) ([]*m.JPOrder, error)
+	GetByJPID(id uint) (*m.JPOrder, error)
+	GetByID(id uint) (*m.JPOrder, error)
 	DeleteByID(id uint) error
-	Create(a *m.ExOrder) (err error)
-	UpdateColumns(id uint, b *m.ExOrder) (err error)
+	Create(a *m.JPOrder) (err error)
+	UpdateColumns(id uint, b *m.JPOrder) (err error)
 }
 
 //Repo ...
@@ -32,8 +32,8 @@ func NewRepo(db *gorm.DB) Repository {
 }
 
 //FetchAll ...
-func (repo *Repo) FetchAll() ([]*m.ExOrder, error) {
-	var res []*m.ExOrder
+func (repo *Repo) FetchAll() ([]*m.JPOrder, error) {
+	var res []*m.JPOrder
 	err := repo.DB.Find(&res).Error
 	if err != nil {
 		return nil, err
@@ -43,7 +43,7 @@ func (repo *Repo) FetchAll() ([]*m.ExOrder, error) {
 }
 
 //Fetch ...
-func (repo *Repo) Fetch(p r.Page) (res []*m.ExOrder, err error) {
+func (repo *Repo) Fetch(p r.Page) (res []*m.JPOrder, err error) {
 	err = repo.DB.Order(p.OrderBy + " " + p.Sort).Offset(p.Offset).Find(&res).Limit(p.Amount).Error
 	if err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (repo *Repo) Fetch(p r.Page) (res []*m.ExOrder, err error) {
 }
 
 //FetchWith ...
-func (repo *Repo) FetchWith(o *m.ExOrder) (res []*m.ExOrder, err error) {
+func (repo *Repo) FetchWith(o *m.JPOrder) (res []*m.JPOrder, err error) {
 	err = repo.DB.Where(o).Find(&res).Error
 	if err != nil {
 		return nil, err
@@ -63,8 +63,8 @@ func (repo *Repo) FetchWith(o *m.ExOrder) (res []*m.ExOrder, err error) {
 }
 
 //GetByID ...
-func (repo *Repo) GetByID(id uint) (*m.ExOrder, error) {
-	a := m.ExOrder{}
+func (repo *Repo) GetByID(id uint) (*m.JPOrder, error) {
+	a := m.JPOrder{}
 	err := repo.DB.First(&a, id).Error
 	if err != nil {
 		return nil, err
@@ -74,9 +74,9 @@ func (repo *Repo) GetByID(id uint) (*m.ExOrder, error) {
 }
 
 //GetByJPID ...
-func (repo *Repo) GetByJPID(id uint) (*m.ExOrder, error) {
-	a := m.ExOrder{}
-	err := repo.DB.Where(&m.ExOrder{JadepoolOrderID: id}).First(&a).Error
+func (repo *Repo) GetByJPID(id uint) (*m.JPOrder, error) {
+	a := m.JPOrder{}
+	err := repo.DB.Where(&m.JPOrder{JadepoolOrderID: id}).First(&a).Error
 	if err != nil {
 		return nil, err
 	}
@@ -86,12 +86,12 @@ func (repo *Repo) GetByJPID(id uint) (*m.ExOrder, error) {
 
 //DeleteByID ...
 func (repo *Repo) DeleteByID(id uint) error {
-	return repo.DB.Where("ID=?", id).Delete(&m.ExOrder{}).Error
+	return repo.DB.Where("ID=?", id).Delete(&m.JPOrder{}).Error
 }
 
 //Create ...
 //for transaction base use
-func (repo *Repo) Create(a *m.ExOrder) (err error) {
+func (repo *Repo) Create(a *m.JPOrder) (err error) {
 	err = repo.DB.Create(&a).Error
 	if err != nil {
 		return err
@@ -102,6 +102,6 @@ func (repo *Repo) Create(a *m.ExOrder) (err error) {
 
 //UpdateColumns ...
 //for transaction base use
-func (repo *Repo) UpdateColumns(id uint, b *m.ExOrder) error {
-	return repo.DB.Model(m.ExOrder{}).Where("ID=?", id).UpdateColumns(b).Error
+func (repo *Repo) UpdateColumns(id uint, b *m.JPOrder) error {
+	return repo.DB.Model(m.JPOrder{}).Where("ID=?", id).UpdateColumns(b).Error
 }
