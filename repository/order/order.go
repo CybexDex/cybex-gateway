@@ -2,6 +2,7 @@ package order
 
 import (
 	"database/sql"
+	"fmt"
 
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	r "git.coding.net/bobxuyang/cy-gateway-BN/repository"
@@ -17,6 +18,7 @@ type Repository interface {
 	DeleteByID(id uint) error
 	Create(a *m.Order) (err error)
 	Rows(o *m.Order) (*sql.Rows, error)
+	MDB() *gorm.DB
 }
 
 //Repo ...
@@ -80,11 +82,13 @@ func (repo *Repo) DeleteByID(id uint) error {
 
 // MDB ...
 func (repo *Repo) MDB() *gorm.DB {
-	return repo.DB
+	return repo.DB.Model(&m.Order{})
 }
 
 //Rows
 func (repo *Repo) Rows(o *m.Order) (*sql.Rows, error) {
+	x := repo.DB.Where(o)
+	fmt.Println("ss", x)
 	rows, err := repo.DB.Where(o).Rows()
 	defer rows.Close()
 	return rows, err
