@@ -14,6 +14,7 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
+	"time"
 
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/asset"
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/jadepool"
@@ -292,6 +293,88 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 
 	resp := utils.Message(true, "success")
 	utils.Respond(w, resp)
+}
+
+///////////////////////////////////////////////send transaction///////////////////////////////////////////////
+
+// JPTransaction ...
+type JPTransaction struct {
+	Type      string `json:"type"`
+	Value     string `json:"value"`
+	To        string `json:"to"`
+	Timestamp int64  `json:"timestamp"`
+	Callback  string `json:"callback"`
+	ExtraData string `json:"extraData"`
+}
+
+// JPSendData ...
+type JPSendData struct {
+	Crypto    string         `json:"crypto"`
+	Hash      string         `json:"hash"`
+	Encode    string         `json:"encode"`
+	AppID     string         `json:"appid"`
+	Timestamp int64          `json:"timestamp"`
+	Sig       *Sig           `json:"sig"`
+	Data      *JPTransaction `json:"data"`
+}
+
+//OrderSend ...
+func OrderSend(w http.ResponseWriter, r *http.Request) {
+	prikey := "bf12996feeaa2977b6ca0d33a0e8bd2ccfc4844c6f8a7e6d15c099f8da4a255c"
+	timestamp := time.Now().Unix() * 1000
+	sendData := &JPSendData{}
+	sendData.Crypto = "ecc"
+	sendData.Encode = "base64"
+	sendData.Timestamp = timestamp
+	sendData.Hash = "sha3"
+	sendData.AppID = "app"
+	sendData.Data = &JPTransaction{}
+	sendData.Data.Timestamp = timestamp
+
+	sig, err := signTransaction(prikey, sendData.Data)
+	if err != nil {
+		utils.Errorf("create jporder error: %v", err)
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+	}
+	sendData.Sig = sig
+}
+
+func signTransaction(prikey string, transaction *JPTransaction) (*Sig, error) {
+	buf, _ := json.Marshal(transaction)
+	decoder := json.NewDecoder(bytes.NewReader(buf))
+	decoder.UseNumber()
+	obj := make(map[string]interface{})
+	err := decoder.Decode(&obj)
+	if err != nil {
+		return nil, err
+	}
+
+	priKeyBytes, err := hex.DecodeString(prikey)
+	if err != nil {
+		return nil, err
+	}
+	priKey, _ := btcec.PrivKeyFromBytes(btcec.S256(), priKeyBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	notiMsgStr := utils.BuildMsg(obj)
+	sha3Hash := sha3.NewLegacyKeccak256()
+	_, err = sha3Hash.Write([]byte(notiMsgStr))
+	if err != nil {
+		return nil, err
+	}
+	msgBuf := sha3Hash.Sum(nil)
+	sig, err := priKey.Sign(msgBuf)
+	if err != nil {
+		return nil, err
+	}
+
+	_sig := &Sig{
+		R: base64.StdEncoding.EncodeToString(sig.R.Bytes()),
+		S: base64.StdEncoding.EncodeToString(sig.S.Bytes()),
+	}
+	return _sig, nil
 }
 
 func verifySign(result *OrderNotiResult, sign *Sig, pubkey string) (bool, error) {
