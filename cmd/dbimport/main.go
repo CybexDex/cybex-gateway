@@ -216,7 +216,7 @@ func tJPOrderAndOrder() {
 	jporderEntity.Hash = "cb51b5174b1059549be8b54cd9a8710f510889a465da28fe590c43a38052574b"
 	jporderEntity.UUHash = "BTC:cb51b5174b1059549be8b54cd9a8710f510889a465da28fe590c43a38052574b:1"
 	jporderEntity.Index = 1
-	jporderEntity.JadepoolOrderID = uint(404)
+	jporderEntity.JadepoolOrderID = uint(408)
 	jporderEntity.Status = "DONE"
 	jporderEntity.Type = "DEPOSIT"
 	jporderEntity.AssetID = 1
@@ -225,7 +225,7 @@ func tJPOrderAndOrder() {
 	jporderEntity.Amount = amount
 	err := jporderEntity.Create()
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("jporderEntity.Create", err)
 		return
 	}
 
@@ -242,7 +242,7 @@ func tJPOrderAndOrder() {
 	orderEntity.AppID = 1
 	err = orderEntity.Create()
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("orderEntity", err)
 		return
 	}
 }
