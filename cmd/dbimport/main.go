@@ -220,6 +220,7 @@ func tJPOrderAndOrder() {
 	jporderEntity.Status = "DONE"
 	jporderEntity.Type = "DEPOSIT"
 	jporderEntity.AssetID = 1
+	jporderEntity.AppID = 1
 	jporderEntity.JadepoolID = 1
 	amount, _, _ := apd.NewFromString("0.01000000")
 	jporderEntity.Amount = amount

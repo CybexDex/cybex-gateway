@@ -24,6 +24,7 @@ type JPOrder struct {
 
 	AssetID    uint `gorm:"not null" json:"assetID"`    // n to 1
 	JadepoolID uint `gorm:"not null" json:"jadepoolID"` // n to 1
+	AppID      uint `gorm:"not null" json:"appID"`      // n to 1
 
 	JadepoolOrderID uint         `gorm:"index;unique" json:"jadepoolOrderID"`
 	From            string       `gorm:"type:varchar(128)" json:"from"`

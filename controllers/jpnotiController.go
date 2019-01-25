@@ -155,6 +155,25 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	appID := uint(1)
+	/*addressRepo := address.NewRepo(tx)
+	adddresses, err := addressRepo.FetchWith(&model.Address{
+		Address: result.To,
+	})
+	if err != nil {
+		tx.Rollback()
+		utils.Errorf("addressRepo.FetchWith error: %v", err)
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
+	if len(adddresses) == 0 {
+		tx.Rollback()
+		utils.Errorf("addressRepo.FetchWith result: %v", adddresses)
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
+	appID = adddresses[0].AppID*/
+
 	// find jporder and save/update jporder
 	jpOrderID, err := strconv.Atoi(result.ID)
 	if err != nil {
@@ -172,9 +191,12 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	n2 := parseIndexFromResult(result)
+	fmt.Println("n2", n2)
 	if jporderEntity == nil {
 		// parse tx index from result
 		n := parseIndexFromResult(result)
+		fmt.Println("n", n)
 		jporderEntity = new(model.JPOrder)
 		jporderEntity.From = result.From
 		jporderEntity.To = result.To
@@ -190,6 +212,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		jporderEntity.Status = result.State
 		jporderEntity.Type = result.BizType
 		jporderEntity.AssetID = asset.ID
+		jporderEntity.AppID = appID
 		jporderEntity.JadepoolID = defaultJadepool.ID
 		amount, condition, err := apd.NewFromString(result.Value)
 		if err != nil || condition.Any() {
@@ -228,10 +251,9 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// jporder has done
-	if jporderEntity.Status == model.JPorderStatusDone {
-		// for deposit, create order
-		if jporderEntity.Type == model.JPorderTypeDeposit {
+	if jporderEntity.Type == model.JPorderTypeDeposit {
+		// jporder has done, for deposit, create order
+		if jporderEntity.Status == model.JPorderStatusDone {
 			orderRepo := order.NewRepo(tx)
 			orderEntity := new(model.Order)
 			orderEntity.JPHash = jporderEntity.Hash
@@ -240,27 +262,22 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 			orderEntity.Type = jporderEntity.Type
 			orderEntity.AssetID = asset.ID
 			orderEntity.TotalAmount = jporderEntity.Amount
-			orderEntity.Amount = jporderEntity.Amount
-			fee, _, _ := apd.NewFromString("0")
-			orderEntity.Fee = fee
-			/*addressRepo := address.NewRepo(tx)
-			adddresses, err := addressRepo.FetchWith(&model.Address{
-				Address: result.To,
-			})
-			if err != nil {
+			if orderEntity.TotalAmount.Cmp(asset.DepositFee) < 0 {
 				tx.Rollback()
-				utils.Errorf("addressRepo.FetchWith error: %v", err)
+				utils.Errorf("totol is smaller than fee: %v < %v", orderEntity.TotalAmount, asset.DepositFee)
 				utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 				return
 			}
-			if len(adddresses) == 0 {
+			orderEntity.Amount = apd.New(0, 0)
+			_, err = apd.BaseContext.Sub(orderEntity.Amount, orderEntity.TotalAmount, asset.DepositFee)
+			if err != nil {
 				tx.Rollback()
-				utils.Errorf("addressRepo.FetchWith result: %v", adddresses)
+				utils.Errorf("create order error: %v", err)
 				utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 				return
-			} else {
-				orderEntity.AppID = adddresses[0].AppID
-			}*/
+			}
+
+			orderEntity.Fee = asset.DepositFee
 
 			orderEntity.AppID = 1
 			err = orderRepo.Create(orderEntity)
@@ -270,10 +287,12 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 				utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 				return
 			}
-		} else if jporderEntity.Type == model.JPorderTypeWithdraw {
-			//
 		}
+	} else if jporderEntity.Type == model.JPorderTypeWithdraw {
+		// update order
+
 	}
+
 	tx.Commit()
 
 	resp := utils.Message(true, "success")
