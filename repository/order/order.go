@@ -1,6 +1,8 @@
 package order
 
 import (
+	"database/sql"
+
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	r "git.coding.net/bobxuyang/cy-gateway-BN/repository"
 	"github.com/jinzhu/gorm"
@@ -14,6 +16,7 @@ type Repository interface {
 	GetByID(id uint) (*m.Order, error)
 	DeleteByID(id uint) error
 	Create(a *m.Order) (err error)
+	Rows(o *m.Order) (*sql.Rows, error)
 }
 
 //Repo ...
@@ -73,6 +76,18 @@ func (repo *Repo) GetByID(id uint) (*m.Order, error) {
 //DeleteByID ...
 func (repo *Repo) DeleteByID(id uint) error {
 	return repo.DB.Where("ID=?", id).Delete(&m.Order{}).Error
+}
+
+// MDB ...
+func (repo *Repo) MDB() *gorm.DB {
+	return repo.DB
+}
+
+//Rows
+func (repo *Repo) Rows(o *m.Order) (*sql.Rows, error) {
+	rows, err := repo.DB.Where(o).Rows()
+	defer rows.Close()
+	return rows, err
 }
 
 //Create ...
