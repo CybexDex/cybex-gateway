@@ -16,6 +16,7 @@ import (
 	"strings"
 
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/asset"
+	"git.coding.net/bobxuyang/cy-gateway-BN/repository/jadepool"
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/jporder"
 
 	"github.com/btcsuite/btcd/btcec"
@@ -27,6 +28,14 @@ import (
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/exevent"
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/order"
 	utils "git.coding.net/bobxuyang/cy-gateway-BN/utils"
+)
+
+const (
+	defaultJadepoolName = "Jadepool-001"
+)
+
+var (
+	defaultJadepool *model.Jadepool
 )
 
 //OrderNotiResult ...
@@ -114,11 +123,27 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 
 	// save exevent
 	assetRepo := asset.NewRepo(tx)
-	assetRepo.GetByName(result.CoinType)
+	jadepoolRepo := jadepool.NewRepo(tx)
+	asset, err := assetRepo.GetByName(result.CoinType)
+	if err != nil {
+		utils.Errorf("assetRepo.GetByName error: %v", err)
+		utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
+		return
+	}
+	if defaultJadepool == nil {
+		jadepool, err := jadepoolRepo.GetByName(defaultJadepoolName)
+		if err != nil {
+			utils.Errorf("assetRepo.GetByName error: %v", err)
+			utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
+			return
+		}
+		defaultJadepool = jadepool
+	}
+
 	exeventEntity := new(model.ExEvent)
-	exeventEntity.AssetID = 1
+	exeventEntity.AssetID = asset.ID
 	exeventEntity.Hash = result.Hash
-	exeventEntity.JadepoolID = 1
+	exeventEntity.JadepoolID = defaultJadepool.ID
 	exeventEntity.Status = result.State
 	exeventEntity.Log = string(requestBody)
 	exeventRepo := exevent.NewRepo(tx)
@@ -164,10 +189,8 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		jporderEntity.JadepoolOrderID = uint(jpOrderID)
 		jporderEntity.Status = result.State
 		jporderEntity.Type = result.BizType
-		//todo:
-		jporderEntity.AssetID = 1
-		//todo:
-		jporderEntity.JadepoolID = 1
+		jporderEntity.AssetID = asset.ID
+		jporderEntity.JadepoolID = defaultJadepool.ID
 		amount, condition, err := apd.NewFromString(result.Value)
 		if err != nil || condition.Any() {
 			tx.Rollback()
@@ -205,27 +228,50 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// jporder has done, so create order
+	// jporder has done
 	if jporderEntity.Status == model.JPorderStatusDone {
-		orderRepo := order.NewRepo(tx)
-		orderEntity := new(model.Order)
-		orderEntity.JPHash = jporderEntity.Hash
-		orderEntity.Status = "INIT"
-		orderEntity.Type = jporderEntity.Type
-		orderEntity.JPUUHash = jporderEntity.UUHash
-		orderEntity.AssetID = 1
-		orderEntity.TotalAmount = jporderEntity.Amount
-		orderEntity.Amount = jporderEntity.Amount
-		fee, _, _ := apd.NewFromString("0")
-		orderEntity.Fee = fee
-		//todo:
-		orderEntity.AppID = 1
-		err = orderRepo.Create(orderEntity)
-		if err != nil {
-			tx.Rollback()
-			utils.Errorf("create order error: %v", err)
-			utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
-			return
+		// for deposit, create order
+		if jporderEntity.Type == model.JPorderTypeDeposit {
+			orderRepo := order.NewRepo(tx)
+			orderEntity := new(model.Order)
+			orderEntity.JPHash = jporderEntity.Hash
+			orderEntity.JPUUHash = jporderEntity.UUHash
+			orderEntity.Status = "INIT"
+			orderEntity.Type = jporderEntity.Type
+			orderEntity.AssetID = asset.ID
+			orderEntity.TotalAmount = jporderEntity.Amount
+			orderEntity.Amount = jporderEntity.Amount
+			fee, _, _ := apd.NewFromString("0")
+			orderEntity.Fee = fee
+			/*addressRepo := address.NewRepo(tx)
+			adddresses, err := addressRepo.FetchWith(&model.Address{
+				Address: result.To,
+			})
+			if err != nil {
+				tx.Rollback()
+				utils.Errorf("addressRepo.FetchWith error: %v", err)
+				utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+				return
+			}
+			if len(adddresses) == 0 {
+				tx.Rollback()
+				utils.Errorf("addressRepo.FetchWith result: %v", adddresses)
+				utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+				return
+			} else {
+				orderEntity.AppID = adddresses[0].AppID
+			}*/
+
+			orderEntity.AppID = 1
+			err = orderRepo.Create(orderEntity)
+			if err != nil {
+				tx.Rollback()
+				utils.Errorf("create order error: %v", err)
+				utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+				return
+			}
+		} else if jporderEntity.Type == model.JPorderTypeWithdraw {
+			//
 		}
 	}
 	tx.Commit()
