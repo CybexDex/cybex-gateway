@@ -81,7 +81,11 @@ func Asset(w http.ResponseWriter, r *http.Request) {
 }
 func createCybexUserApp(user string) *m.App {
 	fmt.Println("create app")
-	return &m.App{}
+	newapp := &m.App{
+		CybAccount: user,
+	}
+	newapp.Save()
+	return newapp
 }
 func createCybexUserAddress(addrQ *m.Address) *m.Address {
 	fmt.Println("create address")
@@ -105,13 +109,10 @@ func findAppOrCreate(user string) *m.App {
 	}
 	return app1
 }
-func findAssetByName(name string) *m.Asset {
-	asset1, _ := rep.Asset.GetByName(name)
-	return asset1
+func findAssetByName(name string) (*m.Asset, error) {
+	return rep.Asset.GetByName(name)
 }
 func findAddrOrCreate(app *m.App, asset *m.Asset) *m.Address {
-	app.ID = 1
-	asset.ID = 2
 	addrQ := &m.Address{
 		AppID:   app.ID,
 		AssetID: asset.ID,
@@ -132,14 +133,19 @@ func DepositAddress(w http.ResponseWriter, r *http.Request) {
 	user := vars["user"]
 	asset := vars["asset"]
 	app1 := findAppOrCreate(user)
-	asset1 := findAssetByName(asset)
+	asset1, err := findAssetByName(asset)
+	if err != nil {
+		u.Respond(w, u.Message(false, "asset not support!"), http.StatusBadRequest)
+		return
+	}
 	addr := findAddrOrCreate(app1, asset1)
 	msg := map[string]interface{}{
 		"code": 200, // 200:ok  400:fail
 		"data": map[string]interface{}{
-			"address": addr.Address,
-			"asset":   asset1.Name, //TODO: cyb链的资产名
-			"type":    asset1.Name,
+			"address":  addr.Address,
+			"asset":    asset1.Name, //TODO: cyb链的资产名
+			"type":     asset1.Name,
+			"createAt": addr.CreatedAt,
 		},
 	}
 	u.Respond(w, msg, 200)
