@@ -24,6 +24,11 @@ const (
 type Order struct {
 	gorm.Model
 
+	JPOrderID  uint     `json:"jpOrderID"`
+	JPOrder    JPOrder  `json:"jpOrder"`
+	CybOrderID uint     `json:"cybOrderID"`
+	CybOrder   CybOrder `json:"cybOrder"`
+
 	AssetID uint `gorm:"not null" json:"assetID"` // 1 to n
 	AppID   uint `gorm:"not null" json:"appID"`   // 1 to n
 
