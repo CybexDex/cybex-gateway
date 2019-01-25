@@ -6,7 +6,7 @@ import "github.com/jinzhu/gorm"
 type Blockchain struct {
 	gorm.Model
 
-	Assets []Asset `json:"assets"` // 1 to n
+	Assets []Asset `gorm:"ForeignKey:BlockchainId" json:"assets"` // 1 to n
 
 	Name         string `gorm:"unique;index;type:varchar(32);not null" json:"name"`
 	Description  string `gorm:"type:text" json:"description"`

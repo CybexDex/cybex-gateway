@@ -61,7 +61,7 @@ func (repo *Repo) FetchWith(o *m.Address) (res []*m.Address, err error) {
 //GetByID ...
 func (repo *Repo) GetByID(id uint) (*m.Address, error) {
 	a := m.Address{}
-	err := repo.DB.First(&a, id).Error
+	err := repo.DB.Preload("Asset").First(&a, id).Error
 	if err != nil {
 		return nil, err
 	}

@@ -27,5 +27,5 @@ func TestOne(t *testing.T) {
 	fmt.Println(*(res[0]))
 
 	// delete by ID
-	fmt.Println(repo.DeleteByID(4))
+	//fmt.Println(repo.DeleteByID(4))
 }

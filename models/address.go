@@ -9,8 +9,9 @@ type Address struct {
 	ExOrders []JPOrder `json:"exOrders"`
 	Orders   []Order   `json:"Orders"`
 
-	AppID   uint `json:"appID"`
-	AssetID uint `json:"assetID"`
+	AppID   uint  `json:"appID"`
+	AssetID uint  `json:"assetID"`
+	Asset   Asset `gorm:"ForeignKey:AssetId" json:"asset"`
 
 	Address string `gorm:"index;type:varchar(128);not null" json:"address"`
 	Status  string `gorm:"type:varchar(32);not null" json:"status"` // INIT, NORMAL, ABNORMAL

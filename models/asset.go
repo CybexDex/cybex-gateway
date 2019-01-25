@@ -9,14 +9,15 @@ import (
 type Asset struct {
 	gorm.Model
 
-	ExEvents    []ExEvent    `json:"exEvents"`   // 1 to n
-	JPOrders    []JPOrder    `json:"jpOrders"`   // 1 to n
-	Orders      []Order      `json:"orders"`     // 1 to n
-	Addresses   []Address    `json:"addresses"`  // 1 to n
-	Accountings []Accounting `json:"accounting"` // 1 to n
-	Balances    []Balance    `json:"balances"`   // 1 to n
+	ExEvents    []ExEvent    `json:"exEvents"`                            // 1 to n
+	JPOrders    []JPOrder    `json:"jpOrders"`                            // 1 to n
+	Orders      []Order      `json:"orders"`                              // 1 to n
+	Addresses   []Address    `gorm:"ForeignKey:AssetId" json:"addresses"` // 1 to n
+	Accountings []Accounting `json:"accounting"`                          // 1 to n
+	Balances    []Balance    `json:"balances"`                            // 1 to n
 
-	BlockchainID uint `json:"blockchainID"` // n to 1
+	BlockchainID uint       `json:"blockchainID"` // n to 1
+	Blockchain   Blockchain `gorm:"ForeignKey:BlockchainID" json:"blockchain"`
 
 	Name           string       `gorm:"index;type:varchar(32);not null" json:"name"`
 	Description    string       `gorm:"type:text" json:"description"`
