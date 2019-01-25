@@ -25,8 +25,8 @@ type CybOrder struct {
 	AssetID uint `gorm:"not null" json:"assetID"` // 1 to n
 	AppID   uint `gorm:"not null" json:"appID"`   // 1 to n
 
-	Accounting      Accounting `gorm:"foreignkey:AccountingRefer" json:"accounting"` // 1 to 1
-	AccountingRefer uint       `json:"accountingRefer"`
+	// Accounting      Accounting `gorm:"foreignkey:AccountingRefer" json:"accounting"` // 1 to 1
+	// AccountingRefer uint       `json:"accountingRefer"`
 
 	From   string       `gorm:"type:varchar(128)" json:"from"`
 	To     string       `gorm:"type:varchar(128)" json:"to"`

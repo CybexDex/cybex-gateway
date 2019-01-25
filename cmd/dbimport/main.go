@@ -18,7 +18,7 @@ func main() {
 	tExOrder()
 	tQueryPreload()
 	tQueryPreload2()
-	tJPOrderAndOrder()
+	tOrder()
 }
 
 func tBlockchain() {
@@ -209,7 +209,7 @@ func tQueryPreload2() {
 	fmt.Println(com)
 }
 
-func tJPOrderAndOrder() {
+func tOrder() {
 	jporderEntity := new(m.JPOrder)
 	jporderEntity.From = "3QQDiUoKwNUVVnRY5Cyt5gKDhcocL7w5YP"
 	jporderEntity.To = "1CvVvwwtVMaxvA4dLWHvrf47bkYJXCeV1j"
@@ -230,7 +230,26 @@ func tJPOrderAndOrder() {
 		return
 	}
 
+	cyborderEntity := new(m.CybOrder)
+	cyborderEntity.AssetID = 1
+	cyborderEntity.AppID = 1
+	cyborderEntity.From = "xuyang"
+	cyborderEntity.To = "yangyu"
+	amount, _, _ = apd.NewFromString("100")
+	cyborderEntity.Amount = amount
+	cyborderEntity.Hash = "400000:3"
+	cyborderEntity.UUHash = "cyb:400000:3"
+	cyborderEntity.Status = "PENDING"
+	cyborderEntity.Type = "DEPOSIT"
+	err = cyborderEntity.Create()
+	if err != nil {
+		fmt.Println("orderEntity", err)
+		return
+	}
+
 	orderEntity := new(m.Order)
+	orderEntity.JPOrderID = 1
+	orderEntity.CybOrderID = 1
 	orderEntity.JPHash = jporderEntity.Hash
 	orderEntity.Status = "INIT"
 	orderEntity.Type = jporderEntity.Type
