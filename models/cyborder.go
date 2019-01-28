@@ -73,8 +73,7 @@ func (a *CybOrder) Delete() (err error) {
 
 //AfterSave ... will be called each time after CREATE / SAVE / UPDATE
 func (a CybOrder) AfterSave(tx *gorm.DB) (err error) {
-	// if a.Type == CybOrderTypeWithdraw || a.Type == CybOrderTypeRecharge || a.Type == CybOrderTypeSweep || a.Type == CybOrderTypeFeeSettle {
-	if a.Type != CybOrderTypeDeposit {
+	if a.Type == CybOrderTypeWithdraw {
 		if a.Settled == false {
 			// case 1, 2, 4, 6 will executed only once
 
@@ -83,32 +82,32 @@ func (a CybOrder) AfterSave(tx *gorm.DB) (err error) {
 			if a.Status == CybOrderStatusDone { // case 1
 				// DEPOSIT CybOrder NOT settled before
 				// status: -> DONE
-				// balance: InLock += amount, balance += 0, same as case 3
-				// ****** IF DEPOSIT THEN create ORDER ******
+				// balance: OutLock += amount, balance -= amount, same as case 3
+				// create ORDER
 
 			} else if a.Status == CybOrderStatusFailed { // case 2
 				// DEPOSIT CybOrder NOT settled before
 				// status: -> FAILED
-				// balance: InLock -= 0, balance -= 0
+				// balance: OutLock -= 0, balance -= 0
 				// do NOTHING
 
 			} else if a.Status == CybOrderStatusPending || a.Status == CybOrderStatusInit || a.Status == CybOrderStatusHolding { // case 3
 				// DEPOSIT CybOrder NOT settled before
 				// status: -> PENDING
-				// balance: InLock += amount, balance += 0, same as case 1
+				// balance: OutLock += amount, balance -= amount, same as case 1
 
 			}
 		} else if a.Settled {
 			if a.Status == CybOrderStatusDone { // case 4
 				// DEPOSIT CybOrder settled before
 				// status: PENDING -> DONE
-				// balance: InLock -= 0, balance += 0
-				// ****** IF DEPOSIT THEN create ORDER ******
+				// balance: OutLock -= 0, balance += 0
+				// create ORDER
 
 			} else if a.Status == CybOrderStatusFailed { // case 5, symmetrical to case 3 & 1
 				// DEPOSIT CybOrder settled before
 				// status: PENDING -> FAILED
-				// balance: InLock -= amount, balance += 0
+				// balance: OutLock -= amount, balance += amount
 
 			} else if a.Status == CybOrderStatusPending || a.Status == CybOrderStatusInit || a.Status == CybOrderStatusHolding { // case 6
 				// DEPOSIT CybOrder settled before
@@ -121,12 +120,12 @@ func (a CybOrder) AfterSave(tx *gorm.DB) (err error) {
 		if a.Status == CybOrderStatusDone {
 			// WITHDRAW CybOrder NOT settled before
 			// status: -> DONE
-			// balance: OutLock -= amount, balance -= 0
+			// balance: InLock -= amount, balance += amount
 
 		} else if a.Status == CybOrderStatusFailed {
 			// WITHDRAW CybOrder NOT settled before
 			// status: -> FAILED
-			// balance: OutLock -= amount, balance += amount
+			// balance: InLock -= 0, balance -= 0
 			// create NEW cyborder, set it to order, move old cyborder to order's FailedCybOrders
 
 		} else if a.Status == CybOrderStatusPending || a.Status == CybOrderStatusInit || a.Status == CybOrderStatusHolding {

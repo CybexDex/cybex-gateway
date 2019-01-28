@@ -33,9 +33,9 @@ type JPOrder struct {
 	Index           int          `json:"index"`
 	Hash            string       `gorm:"unique;index;type:varchar(128);not null" json:"hash"`
 	UUHash          string       `gorm:"unique;index;type:varchar(256);not null" json:"uuhash"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
-	Status          string       `gorm:"type:varchar(32);not null" json:"status"`               // PENDING, DONE, FAILED
+	Status          string       `gorm:"type:varchar(32);not null" json:"status"`               // INIT, PENDING, DONE, FAILED
 	Type            string       `gorm:"type:varchar(32);not null" json:"type"`                 // DEPOSIT, WITHDRAW
-	Settled         bool         `gorm:"not null;default:false" json:"settled"`                 // if order is created and count amount to balance, then Settled = true
+	Settled         bool         `gorm:"not null;default:false" json:"settled"`                 // if count amount to balance, then Settled = true
 }
 
 //UpdateColumns ...
@@ -81,7 +81,7 @@ func (a JPOrder) AfterSave(tx *gorm.DB) (err error) {
 			} else if a.Status == JPOrderStatusPending { // case 3
 				// DEPOSIT JPOrder NOT settled before
 				// status: -> PENDING
-				// balance: InLock += amount, balance += 0, case as case 1
+				// balance: InLock += amount, balance += 0, same as case 1
 
 			}
 		} else if a.Settled {
@@ -112,8 +112,8 @@ func (a JPOrder) AfterSave(tx *gorm.DB) (err error) {
 		} else if a.Status == JPOrderStatusFailed {
 			// WITHDRAW JPOrder NOT settled before
 			// status: -> FAILED
-			// balance: OutLock -= amount, balance += amount
-			// create NEW jporder, set it to order, move old jporder to order's FailedJPOrders
+			// balance: OutLock -= 0, balance += 0
+			// create NEW jporder - status INIT, set it to order, move old jporder to order's FailedJPOrders
 
 		} else if a.Status == JPOrderStatusPending {
 			// status: -> PENDING

@@ -76,11 +76,23 @@ func (a Order) AfterSave(tx *gorm.DB) (err error) {
 	if a.Settled == false {
 		// set order's settled = true and SAVE to DB
 
+		保证只做一次
+
+amount并没有扣除fee，在第一个阶段
+
 		if a.Status == OrderStatusDone && a.Type == OrderTypeDeposit {
 			// create cyborder
 		} else if a.Status == OrderStatusDone && a.Type == OrderTypeWithdraw {
 			// create jporder
 		}
+
+		if a.Status == OrderStatusTerminated && a.Type == OrderTypeDeposit {
+			// inlock -= amount
+
+		} else if a.Status == OrderStatusTerminated && a.Type == OrderTypeWithdraw {
+			// outlock -= amount, balance += amount
+		}
+
 	}
 
 	// return errors.New("test error for rollback")
