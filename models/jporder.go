@@ -31,11 +31,11 @@ type JPOrder struct {
 	To              string       `gorm:"type:varchar(128)" json:"to"`
 	Amount          *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"amount"`
 	Index           int          `json:"index"`
-	Hash            string       `gorm:"index;type:varchar(128);not null" json:"hash"`
-	UUHash          string       `gorm:"type:varchar(256);not null" json:"uuhash"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
-	Status          string       `gorm:"type:varchar(32);not null" json:"status"`  // PENDING, DONE, FAILED
-	Type            string       `gorm:"type:varchar(32);not null" json:"type"`    // DEPOSIT, WITHDRAW
-	Settled         bool         `gorm:"not null;default:false" json:"settled"`    // if order is created and count amount to balance, then Settled = true
+	Hash            string       `gorm:"unique;index;type:varchar(128);not null" json:"hash"`
+	UUHash          string       `gorm:"unique;index;type:varchar(256);not null" json:"uuhash"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
+	Status          string       `gorm:"type:varchar(32);not null" json:"status"`               // PENDING, DONE, FAILED
+	Type            string       `gorm:"type:varchar(32);not null" json:"type"`                 // DEPOSIT, WITHDRAW
+	Settled         bool         `gorm:"not null;default:false" json:"settled"`                 // if order is created and count amount to balance, then Settled = true
 }
 
 //UpdateColumns ...
@@ -62,6 +62,8 @@ func (a *JPOrder) Delete() (err error) {
 func (a JPOrder) AfterSave(tx *gorm.DB) (err error) {
 	if a.Type == JPOrderTypeDeposit {
 		if a.Settled == false {
+			// case 1, 2, 4, 6 will executed only once
+
 			// set JPOrder Settled = true and SAVE to DB
 
 			if a.Status == JPOrderStatusDone { // case 1
@@ -79,7 +81,7 @@ func (a JPOrder) AfterSave(tx *gorm.DB) (err error) {
 			} else if a.Status == JPOrderStatusPending { // case 3
 				// DEPOSIT JPOrder NOT settled before
 				// status: -> PENDING
-				// balance: InLock += amount, balance += 0
+				// balance: InLock += amount, balance += 0, case as case 1
 
 			}
 		} else if a.Settled {
@@ -87,9 +89,9 @@ func (a JPOrder) AfterSave(tx *gorm.DB) (err error) {
 				// DEPOSIT JPOrder settled before
 				// status: PENDING -> DONE
 				// balance: InLock -= 0, balance += 0
-				// do NOTHING
+				// create ORDER
 
-			} else if a.Status == JPOrderStatusFailed { // case 5, symmetrical to case 3
+			} else if a.Status == JPOrderStatusFailed { // case 5, symmetrical to case 3 & 1
 				// DEPOSIT JPOrder settled before
 				// status: PENDING -> FAILED
 				// balance: InLock -= amount, balance += 0
@@ -118,10 +120,6 @@ func (a JPOrder) AfterSave(tx *gorm.DB) (err error) {
 			// do NOTHING
 		}
 	}
-
-	// if a.Status != JPOrderStatusDone {
-	// 	u.Debugln("from JPOrder after save hook and the order status is DONE")
-	// }
 
 	// return errors.New("test error for rollback")
 
