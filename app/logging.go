@@ -70,7 +70,11 @@ func NewLoggingMiddle(logger *utils.Logger) func(http.Handler) http.Handler {
 			event.Route = route
 			event.StatusCode = res.status
 			event.UserAgent = userAgent
-			event.Output = string(res.data)
+			ouput := string(res.data)
+			if len(res.data) == 0 {
+				ouput = "{}"
+			}
+			event.Output = ouput
 			event.Create()
 		})
 	}

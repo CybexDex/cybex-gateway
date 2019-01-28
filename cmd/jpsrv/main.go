@@ -31,7 +31,9 @@ func main() {
 	router.HandleFunc("/api/test", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("ok"))
 	}).Methods("GET")
-	router.HandleFunc("/api/order/noti", controllers.OrderNoti).Methods("POST")
+	router.HandleFunc("/api/order/noti", controllers.NotiOrder).Methods("POST")
+	router.HandleFunc("/api/address/new", controllers.GetNewAddress).Methods("GET")
+	router.HandleFunc("/api/order/send", controllers.SendOrder).Methods("POST")
 	router.Use(app.NewLoggingMiddle(utils.GetLogger()))
 
 	listenAddr := os.Getenv("listen_addr")

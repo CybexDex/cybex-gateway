@@ -9,3 +9,8 @@
     console.log(bodyMsg.sig)
     let verifyOk = crypto.ecc.verify(bodyMsg.data, bodyMsg.sig, pubKey, {hash: msgHash, crypto: msgCrypto, encode: msgEncode})
     console.log("verify result:", verifyOk)
+
+    bodyMsg = JSON.parse('{"crypto":"ecc","hash":"sha3","encode":"base64","appid":"app","timestamp":1548661151000,"sig":{"r":"D5W5WYkKGZiYSiT5/SxYTmTtv+zCAeb88yBCSK69jQg=","s":"Ifc8aEid0Mbh33Z6i5lluSk25KiWEXMQrNwDRyUJe2M=","v":0},"data":{"type":"","timestamp":1548661151000,"callback":""}}')
+    console.log(bodyMsg.sig)
+    verifyOk = crypto.ecc.verify(bodyMsg.data, bodyMsg.sig, pubKey, {hash: msgHash, crypto: msgCrypto, encode: msgEncode})
+    console.log("verify result:", verifyOk)

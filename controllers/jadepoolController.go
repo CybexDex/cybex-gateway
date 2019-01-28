@@ -2,12 +2,9 @@ package controllers
 
 import (
 	"bytes"
-	"encoding/base64"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"math/big"
 	"net/http"
 	"os"
 	"reflect"
@@ -20,10 +17,8 @@ import (
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/jadepool"
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/jporder"
 
-	"github.com/btcsuite/btcd/btcec"
 	"github.com/cockroachdb/apd"
 	"github.com/jinzhu/gorm"
-	"golang.org/x/crypto/sha3"
 
 	model "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/exevent"
@@ -59,23 +54,16 @@ type OrderNotiResult struct {
 	SendAgain     bool                   `json:"sendAgain"`
 }
 
-// Sig ...
-type Sig struct {
-	R string `json:"r"`
-	S string `json:"s"`
-	V int64  `json:"v"`
-}
-
 //OrderNotiRequest ...
 type OrderNotiRequest struct {
 	Result    *OrderNotiResult `json:"result"`
 	Crypto    string           `json:"crypto"`
 	Timestamp int64            `json:"timestamp"`
-	Sig       *Sig             `json:"sig"`
+	Sig       *utils.ECCSig    `json:"sig"`
 }
 
-//OrderNoti ...
-func OrderNoti(w http.ResponseWriter, r *http.Request) {
+//NotiOrder ...
+func NotiOrder(w http.ResponseWriter, r *http.Request) {
 	requestBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		utils.Errorf("ReadAll error: %v", err)
@@ -98,7 +86,7 @@ func OrderNoti(w http.ResponseWriter, r *http.Request) {
 	if os.Getenv("env") != "dev" && os.Getenv("env") != "staging" {
 		// verify sig
 		pubKey := os.Getenv("pub_key")
-		ok, err := verifySign(result, request.Sig, pubKey)
+		ok, err := utils.VerifyECCSign(result, request.Sig, pubKey)
 		if err != nil {
 			utils.Errorf("verifySign error: %v", err)
 			utils.Respond(w, utils.Message(false, "Sign error"), http.StatusForbidden)
@@ -309,115 +297,143 @@ type JPTransaction struct {
 
 // JPSendData ...
 type JPSendData struct {
-	Crypto    string         `json:"crypto"`
-	Hash      string         `json:"hash"`
-	Encode    string         `json:"encode"`
-	AppID     string         `json:"appid"`
-	Timestamp int64          `json:"timestamp"`
-	Sig       *Sig           `json:"sig"`
-	Data      *JPTransaction `json:"data"`
+	Crypto    string        `json:"crypto"`
+	Hash      string        `json:"hash"`
+	Encode    string        `json:"encode"`
+	AppID     string        `json:"appid"`
+	Timestamp int64         `json:"timestamp"`
+	Sig       *utils.ECCSig `json:"sig"`
+	Data      interface{}   `json:"data"`
 }
 
-//OrderSend ...
-func OrderSend(w http.ResponseWriter, r *http.Request) {
-	prikey := "bf12996feeaa2977b6ca0d33a0e8bd2ccfc4844c6f8a7e6d15c099f8da4a255c"
+// SendOrder ...
+func SendOrder(w http.ResponseWriter, r *http.Request) {
+	bodyBytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		utils.Errorf("error: %v", err)
+		utils.Respond(w, utils.Message(false, "bad request error"), http.StatusBadRequest)
+		return
+	}
+	jptransaction := JPTransaction{}
+	err = json.Unmarshal(bodyBytes, jptransaction)
+	if err != nil {
+		utils.Errorf("error: %v", err)
+		utils.Respond(w, utils.Message(false, "bad request error"), http.StatusBadRequest)
+		return
+	}
 	timestamp := time.Now().Unix() * 1000
+	jptransaction.Timestamp = timestamp
+	jptransaction.Callback = os.Getenv("self_url") + "/api/order/noti"
+
 	sendData := &JPSendData{}
 	sendData.Crypto = "ecc"
 	sendData.Encode = "base64"
 	sendData.Timestamp = timestamp
 	sendData.Hash = "sha3"
 	sendData.AppID = "app"
-	sendData.Data = &JPTransaction{}
-	sendData.Data.Timestamp = timestamp
+	sendData.Data = &jptransaction
 
-	sig, err := signTransaction(prikey, sendData.Data)
+	prikey := os.Getenv("pri_key")
+	sig, err := utils.SignECCData(prikey, sendData.Data)
 	if err != nil {
 		utils.Errorf("create jporder error: %v", err)
 		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
 	}
 	sendData.Sig = sig
 }
 
-func signTransaction(prikey string, transaction *JPTransaction) (*Sig, error) {
-	buf, _ := json.Marshal(transaction)
-	decoder := json.NewDecoder(bytes.NewReader(buf))
-	decoder.UseNumber()
-	obj := make(map[string]interface{})
-	err := decoder.Decode(&obj)
-	if err != nil {
-		return nil, err
-	}
-
-	priKeyBytes, err := hex.DecodeString(prikey)
-	if err != nil {
-		return nil, err
-	}
-	priKey, _ := btcec.PrivKeyFromBytes(btcec.S256(), priKeyBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	notiMsgStr := utils.BuildMsg(obj)
-	sha3Hash := sha3.NewLegacyKeccak256()
-	_, err = sha3Hash.Write([]byte(notiMsgStr))
-	if err != nil {
-		return nil, err
-	}
-	msgBuf := sha3Hash.Sum(nil)
-	sig, err := priKey.Sign(msgBuf)
-	if err != nil {
-		return nil, err
-	}
-
-	_sig := &Sig{
-		R: base64.StdEncoding.EncodeToString(sig.R.Bytes()),
-		S: base64.StdEncoding.EncodeToString(sig.S.Bytes()),
-	}
-	return _sig, nil
+// JPAddressRequest ...
+type JPAddressRequest struct {
+	Type      string `json:"type"`
+	Timestamp int64  `json:"timestamp,omitempty"`
+	Callback  string `json:"callback,omitempty"`
 }
 
-func verifySign(result *OrderNotiResult, sign *Sig, pubkey string) (bool, error) {
-	buf, _ := json.Marshal(result)
-	decoder := json.NewDecoder(bytes.NewReader(buf))
-	decoder.UseNumber()
-	obj := make(map[string]interface{})
-	err := decoder.Decode(&obj)
+// JPAddressResult ...
+type JPAddressResult struct {
+	Type    string `json:"type"`
+	SubType string `json:"subType"`
+	Address string `json:"address"`
+}
+
+//JPAddressResponse ...
+type JPAddressResponse struct {
+	Code      int              `json:"code"`
+	Message   string           `json:"message"`
+	Status    int              `json:"status"`
+	Result    *JPAddressResult `json:"result"`
+	Crypto    string           `json:"crypto"`
+	Timestamp int64            `json:"timestamp"`
+	Sig       *utils.ECCSig    `json:"sig"`
+}
+
+//GetNewAddress ...
+func GetNewAddress(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query()
+	coinType := query.Get("type")
+	if len(coinType) == 0 {
+		utils.Respond(w, utils.Message(false, "bad request"), http.StatusBadRequest)
+		return
+	}
+	coinType = strings.ToUpper(coinType)
+
+	timestamp := time.Now().Unix() * 1000
+	requestAddress := JPAddressRequest{}
+	requestAddress.Timestamp = timestamp
+	requestAddress.Type = coinType
+	requestAddress.Callback = ""
+
+	sendData := &JPSendData{}
+	sendData.Crypto = "ecc"
+	sendData.Encode = "base64"
+	sendData.Timestamp = timestamp
+	sendData.Hash = "sha3"
+	sendData.AppID = "app"
+	sendData.Data = &requestAddress
+
+	prikey := os.Getenv("pri_key")
+	sig, err := utils.SignECCData(prikey, sendData.Data)
 	if err != nil {
-		return false, err
+		utils.Errorf("create jporder error: %v", err)
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
+	sendData.Sig = sig
+
+	bs, _ := json.Marshal(sendData)
+	jadepoolURL := os.Getenv("jadepool_url")
+	url := jadepoolURL + "/api/v1/addresses/new"
+
+	addrResp := JPAddressResponse{}
+	for i := 0; i < 3; i++ {
+		resp, err := http.Post(url, "application/json", bytes.NewReader(bs))
+		if err != nil {
+			utils.Errorf("post error: %v", err)
+			continue
+		}
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		resp.Body.Close()
+		if err != nil {
+			utils.Errorf("ReadAll error: %v", err)
+			continue
+		}
+
+		err = json.Unmarshal(bodyBytes, &addrResp)
+		if err != nil {
+			utils.Errorf("Unmarshal error: %v, body: %s", err, string(bodyBytes))
+			continue
+		}
+		break
+	}
+	if addrResp.Code != 0 || addrResp.Status != 0 || addrResp.Result == nil || len(addrResp.Result.Address) == 0 {
+		utils.Errorln("not found address")
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
 	}
 
-	pubKeyBytes, err := hex.DecodeString(pubkey)
-	if err != nil {
-		return false, err
-	}
-	pubKey, err := btcec.ParsePubKey(pubKeyBytes, btcec.S256())
-	if err != nil {
-		return false, err
-	}
-
-	notiMsgStr := utils.BuildMsg(obj)
-	sha3Hash := sha3.NewLegacyKeccak256()
-	_, err = sha3Hash.Write([]byte(notiMsgStr))
-	if err != nil {
-		return false, err
-	}
-	msgBuf := sha3Hash.Sum(nil)
-
-	// Decode hex-encoded serialized signature.
-	decodedR, err := base64.StdEncoding.DecodeString(sign.R)
-	if err != nil {
-		return false, err
-	}
-	decodedS, err := base64.StdEncoding.DecodeString(sign.S)
-	if err != nil {
-		return false, err
-	}
-	signature := btcec.Signature{
-		R: new(big.Int).SetBytes(decodedR),
-		S: new(big.Int).SetBytes(decodedS),
-	}
-	return signature.Verify(msgBuf, pubKey), nil
+	resp := utils.Message(true, "success", addrResp.Result)
+	utils.Respond(w, resp)
 }
 
 func parseIndexFromResult(result *OrderNotiResult) int {
