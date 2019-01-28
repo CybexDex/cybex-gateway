@@ -52,6 +52,8 @@ type OrderNotiResult struct {
 	Memo          string                 `json:"memo"`
 	Timestamp     int64                  `json:"timestamp"`
 	SendAgain     bool                   `json:"sendAgain"`
+	Namespace     string                 `json:"namespace,omitempty"`
+	Sid           string                 `json:"sid,omitempty"`
 }
 
 //OrderNotiRequest ...
@@ -199,14 +201,30 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 		jporderEntity.AssetID = asset.ID
 		jporderEntity.AppID = appID
 		jporderEntity.JadepoolID = defaultJadepool.ID
-		amount, condition, err := apd.NewFromString(result.Value)
+		totalAmount, condition, err := apd.NewFromString(result.Value)
 		if err != nil || condition.Any() {
 			tx.Rollback()
 			utils.Errorf("apd.NewFromString error: %v, condition: %s", err, condition.String())
 			utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 			return
 		}
-		jporderEntity.Amount = amount
+		jporderEntity.TotalAmount = totalAmount
+		if jporderEntity.TotalAmount.Cmp(asset.DepositFee) < 0 {
+			tx.Rollback()
+			utils.Errorf("total is smaller than fee: %v < %v", jporderEntity.TotalAmount, asset.DepositFee)
+			utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+			return
+		}
+		jporderEntity.Amount = apd.New(0, 0)
+		condition, err = apd.BaseContext.Sub(jporderEntity.Amount, jporderEntity.TotalAmount, asset.DepositFee)
+		if err != nil || condition.Any() {
+			tx.Rollback()
+			utils.Errorf("apd.BaseContext.Sub error: %v, condition: %v", err, condition)
+			utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+			return
+		}
+
+		jporderEntity.Fee = asset.DepositFee
 		err = jporderRepo.Create(jporderEntity)
 		if err != nil {
 			tx.Rollback()
@@ -235,47 +253,6 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
-	/*if jporderEntity.Type == model.JPorderTypeDeposit {
-		// jporder has done, for deposit, create order
-		if jporderEntity.Status == model.JPorderStatusDone {
-			orderRepo := order.NewRepo(tx)
-			orderEntity := new(model.Order)
-			orderEntity.JPHash = jporderEntity.Hash
-			orderEntity.JPUUHash = jporderEntity.UUHash
-			orderEntity.Status = "INIT"
-			orderEntity.Type = jporderEntity.Type
-			orderEntity.AssetID = asset.ID
-			orderEntity.TotalAmount = jporderEntity.Amount
-			if orderEntity.TotalAmount.Cmp(asset.DepositFee) < 0 {
-				tx.Rollback()
-				utils.Errorf("totol is smaller than fee: %v < %v", orderEntity.TotalAmount, asset.DepositFee)
-				utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
-				return
-			}
-			orderEntity.Amount = apd.New(0, 0)
-			_, err = apd.BaseContext.Sub(orderEntity.Amount, orderEntity.TotalAmount, asset.DepositFee)
-			if err != nil {
-				tx.Rollback()
-				utils.Errorf("create order error: %v", err)
-				utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
-				return
-			}
-
-			orderEntity.Fee = asset.DepositFee
-			orderEntity.AppID = 1
-			err = orderRepo.Create(orderEntity)
-			if err != nil {
-				tx.Rollback()
-				utils.Errorf("create order error: %v", err)
-				utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
-				return
-			}
-		}
-	} else if jporderEntity.Type == model.JPorderTypeWithdraw {
-		// update order
-
-	}*/
 
 	tx.Commit()
 
@@ -306,6 +283,17 @@ type JPSendData struct {
 	Data      interface{}   `json:"data"`
 }
 
+//JPOrderResponse ...
+type JPOrderResponse struct {
+	Code      int              `json:"code"`
+	Message   string           `json:"message"`
+	Status    int              `json:"status"`
+	Result    *OrderNotiResult `json:"result"`
+	Crypto    string           `json:"crypto"`
+	Timestamp int64            `json:"timestamp"`
+	Sig       *utils.ECCSig    `json:"sig"`
+}
+
 // SendOrder ...
 func SendOrder(w http.ResponseWriter, r *http.Request) {
 	bodyBytes, err := ioutil.ReadAll(r.Body)
@@ -315,12 +303,18 @@ func SendOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	jptransaction := JPTransaction{}
-	err = json.Unmarshal(bodyBytes, jptransaction)
+	err = json.Unmarshal(bodyBytes, &jptransaction)
 	if err != nil {
 		utils.Errorf("error: %v", err)
 		utils.Respond(w, utils.Message(false, "bad request error"), http.StatusBadRequest)
 		return
 	}
+	if len(jptransaction.Type) == 0 || len(jptransaction.Value) == 0 || len(jptransaction.To) == 0 {
+		utils.Errorf("error: %v", err)
+		utils.Respond(w, utils.Message(false, "bad request error"), http.StatusBadRequest)
+		return
+	}
+
 	timestamp := time.Now().Unix() * 1000
 	jptransaction.Timestamp = timestamp
 	jptransaction.Callback = os.Getenv("self_url") + "/api/order/noti"
@@ -341,7 +335,44 @@ func SendOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sendData.Sig = sig
+
+	bs, _ := json.Marshal(sendData)
+	jadepoolURL := os.Getenv("jadepool_url")
+	url := jadepoolURL + "/api/v1/transactions/"
+
+	orderResp := JPOrderResponse{}
+	for i := 0; i < 3; i++ {
+		resp, err := http.Post(url, "application/json", bytes.NewReader(bs))
+		if err != nil {
+			utils.Errorf("post error: %v", err)
+			continue
+		}
+		_bodyBytes, err := ioutil.ReadAll(resp.Body)
+		resp.Body.Close()
+		if err != nil {
+			utils.Errorf("ReadAll error: %v", err)
+			continue
+		}
+
+		err = json.Unmarshal(_bodyBytes, &orderResp)
+		if err != nil {
+			utils.Errorf("Unmarshal error: %v, body: %s", err, string(_bodyBytes))
+			continue
+		}
+		break
+	}
+
+	if orderResp.Code != 0 || orderResp.Status != 0 || orderResp.Result == nil {
+		utils.Errorln("not found address")
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
+
+	resp := utils.Message(true, "success", orderResp.Result)
+	utils.Respond(w, resp)
 }
+
+/////////////////////////////////////////////address/////////////////////////////////////////
 
 // JPAddressRequest ...
 type JPAddressRequest struct {
