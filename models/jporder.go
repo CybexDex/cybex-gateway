@@ -1,6 +1,7 @@
 package model
 
 import (
+	u "git.coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/cockroachdb/apd"
 	"github.com/jinzhu/gorm"
 )
@@ -26,16 +27,20 @@ type JPOrder struct {
 	JadepoolID uint `gorm:"not null" json:"jadepoolID"` // n to 1
 	AppID      uint `gorm:"not null" json:"appID"`      // n to 1
 
-	JadepoolOrderID uint         `gorm:"index;unique" json:"jadepoolOrderID"`
-	From            string       `gorm:"type:varchar(128)" json:"from"`
-	To              string       `gorm:"type:varchar(128)" json:"to"`
-	Amount          *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"amount"`
-	Index           int          `json:"index"`
-	Hash            string       `gorm:"unique;index;type:varchar(128);not null" json:"hash"`
-	UUHash          string       `gorm:"unique;index;type:varchar(256);not null" json:"uuhash"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
-	Status          string       `gorm:"type:varchar(32);not null" json:"status"`               // INIT, PENDING, DONE, FAILED
-	Type            string       `gorm:"type:varchar(32);not null" json:"type"`                 // DEPOSIT, WITHDRAW
-	Settled         bool         `gorm:"not null;default:false" json:"settled"`                 // if count amount to balance, then Settled = true
+	JadepoolOrderID uint   `gorm:"index;unique" json:"jadepoolOrderID"`
+	From            string `gorm:"type:varchar(128)" json:"from"`
+	To              string `gorm:"type:varchar(128)" json:"to"`
+
+	TotalAmount *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"totalAmount"` // totalAmount = amount + fee
+	Amount      *apd.Decimal `gorm:"type:numeric(30,10)" json:"amount"`
+	Fee         *apd.Decimal `gorm:"type:numeric(30,10)" json:"fee"` // fee in Asset
+
+	Index   int    `json:"index"`
+	Hash    string `gorm:"unique;index;type:varchar(128);not null" json:"hash"`
+	UUHash  string `gorm:"unique;index;type:varchar(256);not null" json:"uuhash"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
+	Status  string `gorm:"type:varchar(32);not null" json:"status"`               // INIT, PENDING, DONE, FAILED
+	Type    string `gorm:"type:varchar(32);not null" json:"type"`                 // DEPOSIT, WITHDRAW
+	Settled bool   `gorm:"not null;default:false" json:"settled"`                 // if count amount to balance, then Settled = true
 }
 
 //UpdateColumns ...
@@ -59,19 +64,86 @@ func (a *JPOrder) Delete() (err error) {
 }
 
 //AfterSave ... will be called each time after CREATE / SAVE / UPDATE
-func (a JPOrder) AfterSave(tx *gorm.DB) (err error) {
+func (a *JPOrder) AfterSave(tx *gorm.DB) (err error) {
 	if a.Type == JPOrderTypeDeposit {
 		if a.Settled == false {
 			// case 1, 2, 4, 6 will executed only once
 
 			// set JPOrder Settled = true and SAVE to DB
+			a.Settled = true
+			err := tx.Save(a).Error
+			if err != nil {
+				u.Errorln("set order settled to true error", a.ID)
+				return err
+			}
+			u.Debugln("set order settled to true", a.ID)
 
 			if a.Status == JPOrderStatusDone { // case 1
 				// DEPOSIT JPOrder NOT settled before
 				// status: -> DONE
-				// balance: InLock += amount, balance += 0, same as case 3
-				// create ORDER
+				// balance: InLock += jporder.amount, balance += 0, InLockedFee += fee from asset, same as case 3
+				// create ORDER, order.TotalAmount = jporder.amount, order.Fee = fee from asset table, order.Amount = order.TotalAmount - order.Fee
 
+				// get balance record
+				var bal Balance
+				err = tx.FirstOrCreate(&bal, Balance{
+					AppID:   a.AppID,
+					AssetID: a.AssetID,
+				}).Preload("Asset").Error
+
+				if err != nil {
+					u.Errorln("get balance error", a.ID)
+					return err
+				}
+				u.Debugln("get balance record", a.ID)
+
+				// compute InLock
+				condition, err := apd.BaseContext.Add(bal.InLocked, bal.InLocked, a.Amount)
+				if err != nil {
+					u.Errorf("apd decimal add error,", err, a.ID)
+					return err
+				}
+				if condition.Any() {
+					u.Errorf("apd decimal add error,", condition.String(), a.ID)
+					return err
+				}
+
+				// compute fee
+				condition, err = apd.BaseContext.Add(bal.InLockedFee, bal.InLockedFee, a.Fee)
+				if err != nil {
+					u.Errorf("apd decimal add error,", err, a.ID)
+					return err
+				}
+				if condition.Any() {
+					u.Errorf("apd decimal add error,", condition.String(), a.ID)
+					return err
+				}
+
+				// save balance
+				err = tx.Save(bal).Error
+				if err != nil {
+					u.Errorf("save balance error,", err, a.ID)
+					return err
+				}
+
+				// save order
+				order := new(Order)
+				order.TotalAmount = a.TotalAmount
+				order.Amount = a.Amount
+				order.Fee = a.Fee
+				order.AssetID = a.AssetID
+				order.AppID = a.AppID
+				order.JPOrderID = a.ID
+				order.JPHash = a.Hash
+				order.JPUUHash = a.UUHash
+				order.Status = OrderStatusInit
+				order.Type = OrderTypeDeposit
+				order.Settled = false
+				tx.Save(order)
+				if err != nil {
+					u.Errorf("save order error,", err, a.ID)
+					return err
+				}
 			} else if a.Status == JPOrderStatusFailed { // case 2
 				// DEPOSIT JPOrder NOT settled before
 				// status: -> FAILED
@@ -81,20 +153,20 @@ func (a JPOrder) AfterSave(tx *gorm.DB) (err error) {
 			} else if a.Status == JPOrderStatusPending { // case 3
 				// DEPOSIT JPOrder NOT settled before
 				// status: -> PENDING
-				// balance: InLock += amount, balance += 0, same as case 1
+				// balance: InLock += jporder.amount, balance += 0, InLockedFee += fee from asset same as case 1
 
 			}
 		} else if a.Settled {
 			if a.Status == JPOrderStatusDone { // case 4
 				// DEPOSIT JPOrder settled before
 				// status: PENDING -> DONE
-				// balance: InLock -= 0, balance += 0
-				// create ORDER
+				// balance: InLock -= 0, balance += 0, InLockedFee -= 0
+				// create ORDER, order.TotalAmount = jporder.amount, order.Fee = from Asset table, order.Amount = order.TotalAmount - order.Fee, same as case 1
 
 			} else if a.Status == JPOrderStatusFailed { // case 5, symmetrical to case 3 & 1
 				// DEPOSIT JPOrder settled before
 				// status: PENDING -> FAILED
-				// balance: InLock -= amount, balance += 0
+				// balance: InLock -= jporder.amount, balance += 0, InLockedFee -= fee
 
 			} else if a.Status == JPOrderStatusPending { // case 6
 				// DEPOSIT JPOrder settled before
@@ -105,14 +177,12 @@ func (a JPOrder) AfterSave(tx *gorm.DB) (err error) {
 		}
 	} else if a.Type == JPOrderTypeWithdraw { // map to cyborder's part
 		if a.Status == JPOrderStatusDone {
-			// WITHDRAW JPOrder NOT settled before
 			// status: -> DONE
-			// balance: OutLock -= amount, balance -= 0
+			// balance: balance -= 0, outLocked -= TotalAmount, outLockedFee -= Fee
 
 		} else if a.Status == JPOrderStatusFailed {
-			// WITHDRAW JPOrder NOT settled before
 			// status: -> FAILED
-			// balance: OutLock -= 0, balance += 0
+			// balance: balance -= 0, outLocked -= 0, outLockedFee -= 0
 			// create NEW jporder - status INIT, set it to order, move old jporder to order's FailedJPOrders
 
 		} else if a.Status == JPOrderStatusPending {
