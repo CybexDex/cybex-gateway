@@ -15,8 +15,6 @@ type Address struct {
 
 	Address string `gorm:"index;type:varchar(128);not null" json:"address"`
 	Status  string `gorm:"type:varchar(32);not null" json:"status"` // INIT, NORMAL, ABNORMAL
-	// memo      string `gorm:"type:varchar(64)" json:"memo"`
-	// UUAddress string `gorm:"type:varchar(255);not null" json:"uuaddres"` // = BLOCKCHAIN + ADDRESS
 }
 
 //UpdateColumns ...

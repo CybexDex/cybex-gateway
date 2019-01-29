@@ -32,8 +32,8 @@ type JPOrder struct {
 	To              string `gorm:"type:varchar(128)" json:"to"`
 
 	TotalAmount *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"totalAmount"` // totalAmount = amount + fee
-	Amount      *apd.Decimal `gorm:"type:numeric(30,10)" json:"amount"`
-	Fee         *apd.Decimal `gorm:"type:numeric(30,10)" json:"fee"` // fee in Asset
+	Amount      *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"amount"`
+	Fee         *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"fee"` // fee in Asset
 
 	Index   int    `json:"index"`
 	Hash    string `gorm:"unique;index;type:varchar(128);not null" json:"hash"`
@@ -64,7 +64,7 @@ func (a *JPOrder) Delete() (err error) {
 }
 
 //AfterSave ... will be called each time after CREATE / SAVE / UPDATE
-func (a *JPOrder) AfterSave(tx *gorm.DB) (err error) {
+func (a *JPOrder) AfterSave1(tx *gorm.DB) (err error) {
 	if a.Type == JPOrderTypeDeposit {
 		if a.Settled == false {
 			// case 1, 2, 4, 6 will executed only once
@@ -84,7 +84,7 @@ func (a *JPOrder) AfterSave(tx *gorm.DB) (err error) {
 				// balance: InLock += jporder.amount, balance += 0, InLockedFee += fee from asset, same as case 3
 				// create ORDER, order.TotalAmount = jporder.amount, order.Fee = fee from asset table, order.Amount = order.TotalAmount - order.Fee
 
-				// get balance record
+				// update balance record
 				var bal Balance
 				err = tx.FirstOrCreate(&bal, Balance{
 					AppID:   a.AppID,
@@ -97,34 +97,19 @@ func (a *JPOrder) AfterSave(tx *gorm.DB) (err error) {
 				}
 				u.Debugln("get balance record", a.ID)
 
-				// compute InLock
-				condition, err := apd.BaseContext.Add(bal.InLocked, bal.InLocked, a.Amount)
-				if err != nil {
-					u.Errorf("apd decimal add error,", err, a.ID)
-					return err
-				}
-				if condition.Any() {
-					u.Errorf("apd decimal add error,", condition.String(), a.ID)
-					return err
-				}
+				data := GetBalanceInitData()
 
-				// compute fee
-				condition, err = apd.BaseContext.Add(bal.InLockedFee, bal.InLockedFee, a.Fee)
-				if err != nil {
-					u.Errorf("apd decimal add error,", err, a.ID)
-					return err
-				}
-				if condition.Any() {
-					u.Errorf("apd decimal add error,", condition.String(), a.ID)
-					return err
-				}
+				data["InLocked"].Oper = "ADD"
+				data["InLocked"].Value = a.Amount
+				data["InLockedFee"].Oper = "ADD"
+				data["InLockedFee"].Value = a.Fee
 
-				// save balance
-				err = tx.Save(bal).Error
+				err = ComputeBalance(tx, &bal, &data)
 				if err != nil {
-					u.Errorf("save balance error,", err, a.ID)
+					u.Errorln("compute balance error", a.ID)
 					return err
 				}
+				u.Debugln("compute balance error", a.ID)
 
 				// save order
 				order := new(Order)

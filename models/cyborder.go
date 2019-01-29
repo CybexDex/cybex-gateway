@@ -40,9 +40,12 @@ type CybOrder struct {
 
 	From   string       `gorm:"type:varchar(128)" json:"from"`
 	To     string       `gorm:"type:varchar(128)" json:"to"`
-	Amount *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"amount"`
 	CybFee *apd.Decimal `gorm:"type:numeric(30,10)" json:"cybFee"` // cybex blockchain fee
 	// FeeAssetID uint
+
+	TotalAmount *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"totalAmount"` // totalAmount = amount + fee
+	Amount      *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"amount"`
+	Fee         *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"fee"` // fee in Asset
 
 	Hash    string `gorm:"unique;index;type:varchar(128);not null" json:"hash"`
 	UUHash  string `gorm:"unique;nidex;type:varchar(256);not null" json:"uuhash"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
@@ -82,8 +85,8 @@ func (a CybOrder) AfterSave(tx *gorm.DB) (err error) {
 			if a.Status == CybOrderStatusDone { // case 1
 				// DEPOSIT CybOrder NOT settled before
 				// status: -> DONE
-				// balance: OutLock += amount, balance -= amount, same as case 3
-				// create ORDER
+				// balance: OutLock += cyborder.amount, balance -= cyborder.amount, same as case 3
+				// create ORDER, order.TotalAmount = cyborder.amount
 
 			} else if a.Status == CybOrderStatusFailed { // case 2
 				// DEPOSIT CybOrder NOT settled before
@@ -94,7 +97,7 @@ func (a CybOrder) AfterSave(tx *gorm.DB) (err error) {
 			} else if a.Status == CybOrderStatusPending || a.Status == CybOrderStatusInit || a.Status == CybOrderStatusHolding { // case 3
 				// DEPOSIT CybOrder NOT settled before
 				// status: -> PENDING
-				// balance: OutLock += amount, balance -= amount, same as case 1
+				// balance: OutLock += cyborder.amount, balance -= cyborder.amount, same as case 1
 
 			}
 		} else if a.Settled {
@@ -102,12 +105,12 @@ func (a CybOrder) AfterSave(tx *gorm.DB) (err error) {
 				// DEPOSIT CybOrder settled before
 				// status: PENDING -> DONE
 				// balance: OutLock -= 0, balance += 0
-				// create ORDER
+				// create ORDER, order.TotalAmount = cyborder.amount
 
 			} else if a.Status == CybOrderStatusFailed { // case 5, symmetrical to case 3 & 1
 				// DEPOSIT CybOrder settled before
 				// status: PENDING -> FAILED
-				// balance: OutLock -= amount, balance += amount
+				// balance: OutLock -= cyborder.amount, balance += cyborder.amount
 
 			} else if a.Status == CybOrderStatusPending || a.Status == CybOrderStatusInit || a.Status == CybOrderStatusHolding { // case 6
 				// DEPOSIT CybOrder settled before
@@ -120,12 +123,12 @@ func (a CybOrder) AfterSave(tx *gorm.DB) (err error) {
 		if a.Status == CybOrderStatusDone {
 			// WITHDRAW CybOrder NOT settled before
 			// status: -> DONE
-			// balance: InLock -= amount, balance += amount
+			// balance: balance = balance + order.Amount, inLocked -= order.TotalAmount, inLockedFee -= order.Fee
 
 		} else if a.Status == CybOrderStatusFailed {
 			// WITHDRAW CybOrder NOT settled before
 			// status: -> FAILED
-			// balance: InLock -= 0, balance -= 0
+			// balance: InLock -= 0, balance -= 0, inLockedFee -=0
 			// create NEW cyborder, set it to order, move old cyborder to order's FailedCybOrders
 
 		} else if a.Status == CybOrderStatusPending || a.Status == CybOrderStatusInit || a.Status == CybOrderStatusHolding {

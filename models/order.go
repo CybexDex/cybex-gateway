@@ -43,8 +43,8 @@ type Order struct {
 	CYBUUHash string `gorm:"unique;index;type:varchar(256)" json:"cybUUHash"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
 
 	TotalAmount *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"totalAmount"` // totalAmount = amount + fee
-	Amount      *apd.Decimal `gorm:"type:numeric(30,10)" json:"amount"`
-	Fee         *apd.Decimal `gorm:"type:numeric(30,10)" json:"fee"` // fee in Asset
+	Amount      *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"amount"`
+	Fee         *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"fee"` // fee in Asset
 
 	Status  string `gorm:"type:varchar(32);not null" json:"status"` // INIT, PROCESSING, DONE, TERMINATED
 	Type    string `gorm:"type:varchar(32);not null" json:"type"`   // DEPOSIT, WITHDRAW
@@ -76,9 +76,7 @@ func (a Order) AfterSave(tx *gorm.DB) (err error) {
 	if a.Settled == false {
 		// set order's settled = true and SAVE to DB
 
-		保证只做一次
-
-amount并没有扣除fee，在第一个阶段
+		//保证只做一次
 
 		if a.Status == OrderStatusDone && a.Type == OrderTypeDeposit {
 			// create cyborder
