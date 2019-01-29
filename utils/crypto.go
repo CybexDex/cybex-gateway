@@ -5,7 +5,10 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"math/big"
+	"reflect"
+	"sort"
 
 	"github.com/btcsuite/btcd/btcec"
 	"golang.org/x/crypto/sha3"
@@ -58,16 +61,7 @@ func SignECCData(prikey string, data interface{}) (*ECCSig, error) {
 }
 
 // VerifyECCSign ...
-func VerifyECCSign(data interface{}, sign *ECCSig, pubkey string) (bool, error) {
-	buf, _ := json.Marshal(data)
-	decoder := json.NewDecoder(bytes.NewReader(buf))
-	decoder.UseNumber()
-	obj := make(map[string]interface{})
-	err := decoder.Decode(&obj)
-	if err != nil {
-		return false, err
-	}
-
+func VerifyECCSign(obj map[string]interface{}, sign *ECCSig, pubkey string) (bool, error) {
 	pubKeyBytes, err := hex.DecodeString(pubkey)
 	if err != nil {
 		return false, err
@@ -99,4 +93,49 @@ func VerifyECCSign(data interface{}, sign *ECCSig, pubkey string) (bool, error) 
 		S: new(big.Int).SetBytes(decodedS),
 	}
 	return signature.Verify(msgBuf, pubKey), nil
+}
+
+// BuildMsg ...
+func BuildMsg(val interface{}) string {
+	if val == nil {
+		return ""
+	}
+
+	msg := ""
+	switch reflect.TypeOf(val).Kind() {
+	case reflect.Map:
+		obj := val.(map[string]interface{})
+		keyVals := make(map[string]string)
+		keys := make([]string, len(obj))
+
+		for k, v := range obj {
+			_msg := BuildMsg(v)
+			keyVals[k] = _msg
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, key := range keys {
+			msg += key + keyVals[key]
+		}
+	case reflect.Slice:
+		arr := val.([]interface{})
+		for i, v := range arr {
+			itemMsg := BuildMsg(v)
+			msg += fmt.Sprintf("%d%s", i, itemMsg)
+		}
+	default:
+		msg = fmt.Sprintf("%v", val)
+	}
+
+	return msg
+}
+
+// PriToPub ...
+func PriToPub(prikey string) string {
+	pkBytes, err := hex.DecodeString(prikey)
+	if err != nil {
+		return ""
+	}
+	_, pubKey := btcec.PrivKeyFromBytes(btcec.S256(), pkBytes)
+	return hex.EncodeToString(pubKey.SerializeCompressed())
 }
