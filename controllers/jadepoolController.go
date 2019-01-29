@@ -56,12 +56,15 @@ type OrderNotiResult struct {
 	Sid           string                 `json:"sid,omitempty"`
 }
 
-//JPRequest ...
-type JPRequest struct {
+//JPComeData ...
+type JPComeData struct {
+	Code      int                    `json:"code"`
+	Message   string                 `json:"message"`
+	Status    int                    `json:"status"`
 	Result    map[string]interface{} `json:"result"`
 	Crypto    string                 `json:"crypto"`
 	Timestamp int64                  `json:"timestamp"`
-	Sig       *utils.ECCSig          `json:"sig"`
+	Sig       utils.ECCSig           `json:"sig"`
 }
 
 //NotiOrder ...
@@ -74,7 +77,7 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 	}
 	utils.Infof("order noti request:\n %s", requestBody)
 
-	request := JPRequest{}
+	request := JPComeData{}
 	decoder := json.NewDecoder(bytes.NewReader(requestBody))
 	decoder.UseNumber()
 	err = decoder.Decode(&request)
@@ -85,10 +88,10 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 	}
 	request.Result["timestamp"] = request.Timestamp
 
-	if os.Getenv("env") != "dev" && os.Getenv("env") != "staging" {
+	if os.Getenv("env") != "dev" {
 		// verify sig
 		pubKey := os.Getenv("pub_key")
-		ok, err := utils.VerifyECCSign(request.Result, request.Sig, pubKey)
+		ok, err := utils.VerifyECCSign(request.Result, &request.Sig, pubKey)
 		if err != nil {
 			utils.Errorf("verifySign error: %v", err)
 			utils.Respond(w, utils.Message(false, "Sign error"), http.StatusForbidden)
@@ -305,17 +308,6 @@ type JPSendData struct {
 	Data      interface{}   `json:"data"`
 }
 
-//JPOrderResponse ...
-type JPOrderResponse struct {
-	Code      int              `json:"code"`
-	Message   string           `json:"message"`
-	Status    int              `json:"status"`
-	Result    *OrderNotiResult `json:"result"`
-	Crypto    string           `json:"crypto"`
-	Timestamp int64            `json:"timestamp"`
-	Sig       *utils.ECCSig    `json:"sig"`
-}
-
 // SendOrder ...
 func SendOrder(w http.ResponseWriter, r *http.Request) {
 	bodyBytes, err := ioutil.ReadAll(r.Body)
@@ -362,7 +354,7 @@ func SendOrder(w http.ResponseWriter, r *http.Request) {
 	jadepoolURL := os.Getenv("jadepool_url")
 	url := jadepoolURL + "/api/v1/transactions/"
 
-	orderResp := JPOrderResponse{}
+	orderResp := JPComeData{}
 	for i := 0; i < 3; i++ {
 		resp, err := http.Post(url, "application/json", bytes.NewReader(bs))
 		if err != nil {
@@ -412,17 +404,6 @@ type JPAddressResult struct {
 	Sid       string `json:"sid,omitempty"`
 }
 
-//JPAddressResponse ...
-type JPAddressResponse struct {
-	Code      int              `json:"code"`
-	Message   string           `json:"message"`
-	Status    int              `json:"status"`
-	Result    *JPAddressResult `json:"result"`
-	Crypto    string           `json:"crypto"`
-	Timestamp int64            `json:"timestamp"`
-	Sig       *utils.ECCSig    `json:"sig"`
-}
-
 //GetNewAddress ...
 func GetNewAddress(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
@@ -460,7 +441,7 @@ func GetNewAddress(w http.ResponseWriter, r *http.Request) {
 	jadepoolURL := os.Getenv("jadepool_url")
 	url := jadepoolURL + "/api/v1/addresses/new"
 
-	addrResp := JPAddressResponse{}
+	data := JPComeData{}
 	for i := 0; i < 3; i++ {
 		resp, err := http.Post(url, "application/json", bytes.NewReader(bs))
 		if err != nil {
@@ -474,20 +455,36 @@ func GetNewAddress(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		err = json.Unmarshal(bodyBytes, &addrResp)
+		err = json.Unmarshal(bodyBytes, &data)
 		if err != nil {
 			utils.Errorf("Unmarshal error: %v, body: %s", err, string(bodyBytes))
 			continue
 		}
 		break
 	}
-	if addrResp.Code != 0 || addrResp.Status != 0 || addrResp.Result == nil || len(addrResp.Result.Address) == 0 {
-		utils.Errorln("not found address")
+	if data.Code != 0 || data.Status != 0 || data.Result == nil || data.Result["address"] == nil {
+		utils.Errorf("not found address, data: %#v", data)
 		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
 
-	resp := utils.Message(true, "success", addrResp.Result)
+	if os.Getenv("env") != "dev" {
+		// verify sig
+		pubKey := os.Getenv("pub_key")
+		ok, err := utils.VerifyECCSign(data.Result, &data.Sig, pubKey)
+		if err != nil {
+			utils.Errorf("verifySign error: %v, data: %#v", err, data)
+			utils.Respond(w, utils.Message(false, "Sign error"), http.StatusForbidden)
+			return
+		}
+		if !ok {
+			utils.Errorf("verify result: %v, data: %#v", ok, data)
+			utils.Respond(w, utils.Message(false, "Sign error"), http.StatusForbidden)
+			return
+		}
+	}
+
+	resp := utils.Message(true, "success", data.Result)
 	utils.Respond(w, resp)
 }
 

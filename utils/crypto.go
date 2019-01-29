@@ -23,11 +23,14 @@ type ECCSig struct {
 
 // SignECCData ...
 func SignECCData(prikey string, data interface{}) (*ECCSig, error) {
-	buf, _ := json.Marshal(data)
+	buf, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
 	decoder := json.NewDecoder(bytes.NewReader(buf))
 	decoder.UseNumber()
 	obj := make(map[string]interface{})
-	err := decoder.Decode(&obj)
+	err = decoder.Decode(&obj)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +64,19 @@ func SignECCData(prikey string, data interface{}) (*ECCSig, error) {
 }
 
 // VerifyECCSign ...
-func VerifyECCSign(obj map[string]interface{}, sign *ECCSig, pubkey string) (bool, error) {
+func VerifyECCSign(data interface{}, sign *ECCSig, pubkey string) (bool, error) {
+	buf, err := json.Marshal(data)
+	if err != nil {
+		return false, err
+	}
+	decoder := json.NewDecoder(bytes.NewReader(buf))
+	decoder.UseNumber()
+	obj := make(map[string]interface{})
+	err = decoder.Decode(&obj)
+	if err != nil {
+		return false, err
+	}
+
 	pubKeyBytes, err := hex.DecodeString(pubkey)
 	if err != nil {
 		return false, err
