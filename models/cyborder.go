@@ -1,6 +1,7 @@
 package model
 
 import (
+	u "git.coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/cockroachdb/apd"
 	"github.com/jinzhu/gorm"
 )
@@ -47,11 +48,12 @@ type CybOrder struct {
 	Amount      *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"amount"`
 	Fee         *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"fee"` // fee in Asset
 
-	Hash    string `gorm:"unique;index;type:varchar(128);not null" json:"hash"`
-	UUHash  string `gorm:"unique;nidex;type:varchar(256);not null" json:"uuhash"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
-	Status  string `gorm:"type:varchar(32);not null" json:"status"`               // INIT, HOLDING, PENDING, DONE, FAILED
-	Type    string `gorm:"type:varchar(32);not null" json:"type"`                 // DEPOSIT, WITHDRAW, RECHARGE, SWEEP, FEESETTLE
-	Settled bool   `gorm:"not null;default:false" json:"settled"`                 // if order is created and count amount to balance, then Settled = true
+	Hash      string `gorm:"unique;index;type:varchar(128);not null" json:"hash"`
+	UUHash    string `gorm:"unique;nidex;type:varchar(256);not null" json:"uuhash"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
+	Status    string `gorm:"type:varchar(32);not null" json:"status"`               // INIT, HOLDING, PENDING, DONE, FAILED
+	Type      string `gorm:"type:varchar(32);not null" json:"type"`                 // DEPOSIT, WITHDRAW, RECHARGE, SWEEP, FEESETTLE
+	Settled   bool   `gorm:"not null;default:false" json:"settled"`                 // if count amount to balance, then Settled = true
+	Finalized bool   `gorm:"not null;default:false" json:"finalized"`               // if jporder was done or failed before
 }
 
 //UpdateColumns ...
@@ -74,44 +76,196 @@ func (a *CybOrder) Delete() (err error) {
 	return GetDB().Delete(&a).Error
 }
 
-//AfterSave ... will be called each time after CREATE / SAVE / UPDATE
-func (a CybOrder) AfterSave(tx *gorm.DB) (err error) {
+// balance: balance += cyborder.Amount, inLocked -= cyborder.TotalAmount, inLockedFee -= cyborder.Fee, case 7
+func (a *CybOrder) computeInLocked(tx *gorm.DB, oper string) error {
+	var bal Balance
+	err := tx.FirstOrCreate(&bal, Balance{AppID: a.AppID, AssetID: a.AssetID}).Error
+
+	if err != nil {
+		u.Errorln("get balance error", a.ID)
+		return err
+	}
+	u.Debugln("get balance record", a.ID)
+
+	moper := "SUB"
+	if oper == "SUB" {
+		moper = "ADD"
+	}
+
+	data := GetBalanceInitData()
+
+	data["Balance"].Oper = moper
+	data["Balance"].Value = a.Amount // deposit Amount to user, not TotalAmount
+	data["InLocked"].Oper = oper
+	data["InLocked"].Value = a.TotalAmount
+	data["InLockedFee"].Oper = oper
+	data["InLockedFee"].Value = a.Fee
+
+	err = ComputeBalance(tx, &bal, &data)
+	if err != nil {
+		u.Errorln("compute balance error", a.ID)
+		return err
+	}
+	u.Debugln("compute balance error", a.ID)
+
+	return nil
+}
+
+// balance: OutLock += cyborder.TotalAmount, OutLockedFee +=cyborder.Fee, balance -= cyborder.TotalAmount, case 1 & 3
+// balance: OutLock -= cyborder.TotalAmount, OutLockedFee -=cyborder.Fee, balance += cyborder.TotalAmount, case 5
+func (a *CybOrder) computeOutLocked(tx *gorm.DB, oper string) error {
+	var bal Balance
+	err := tx.FirstOrCreate(&bal, Balance{AppID: a.AppID, AssetID: a.AssetID}).Error
+
+	if err != nil {
+		u.Errorln("get balance error", a.ID)
+		return err
+	}
+	u.Debugln("get balance record", a.ID)
+
+	moper := "SUB"
+	if oper == "SUB" {
+		moper = "ADD"
+	}
+
+	data := GetBalanceInitData()
+
+	data["Balance"].Oper = moper
+	data["Balance"].Value = a.TotalAmount
+	data["OutLocked"].Oper = oper
+	data["OutLocked"].Value = a.TotalAmount
+	data["OutLockedFee"].Oper = oper
+	data["OutLockedFee"].Value = a.Fee
+
+	err = ComputeBalance(tx, &bal, &data)
+	if err != nil {
+		u.Errorln("compute balance error", a.ID)
+		return err
+	}
+	u.Debugln("compute balance error", a.ID)
+
+	return nil
+}
+
+// CreateOrder ...
+// create ORDER, order.TotalAmount = cyborder.TotalAmount, order.Fee = cyborder.Fee, order.Amount = cyborder.Amount, case 1 & 4
+func (a *CybOrder) CreateOrder(tx *gorm.DB) error {
+	// save order
+	order := new(Order)
+	order.TotalAmount = a.TotalAmount
+	order.Amount = a.Amount
+	order.Fee = a.Fee
+	order.AssetID = a.AssetID
+	order.AppID = a.AppID
+	order.CybOrderID = a.ID
+	order.CybHash = a.Hash
+	order.CybUUHash = a.UUHash
+	order.Status = OrderStatusInit
+	order.Type = OrderTypeWithdraw
+	order.Settled = false
+	order.Finalized = false
+
+	return tx.Save(order).Error
+}
+
+// Clone ...
+func (a *CybOrder) Clone(tx *gorm.DB) (*CybOrder, error) {
+	// save order
+	order := new(CybOrder)
+
+	order.AssetID = a.AssetID
+	order.AppID = a.AppID
+
+	order.To = a.To
+	order.TotalAmount = a.TotalAmount
+	order.Amount = a.Amount
+	order.Fee = a.Fee
+	order.Type = a.Type
+
+	order.Status = OrderStatusInit
+	order.Settled = false
+	order.Finalized = false
+
+	err := tx.Save(order).Error
+	return order, err
+}
+
+//AfterSave1 ... will be called each time after CREATE / SAVE / UPDATE
+func (a CybOrder) AfterSave1(tx *gorm.DB) (err error) {
+	if a.Finalized {
+		return nil
+	}
+
 	if a.Type == CybOrderTypeWithdraw {
 		if a.Settled == false {
 			// case 1, 2, 4, 6 will executed only once
 
 			// set CybOrder Settled = true and SAVE to DB
+			a.Settled = true
+			err := tx.Save(a).Error
+			if err != nil {
+				u.Errorln("set order settled to true error", a.ID)
+				return err
+			}
+			u.Debugln("set order settled to true", a.ID)
 
 			if a.Status == CybOrderStatusDone { // case 1
 				// DEPOSIT CybOrder NOT settled before
 				// status: -> DONE
-				// balance: OutLock += cyborder.amount, balance -= cyborder.amount, same as case 3
-				// create ORDER, order.TotalAmount = cyborder.amount
+				// balance: OutLock += cyborder.TotalAmount, OutLockedFee +=cyborder.Fee, balance -= cyborder.TotalAmount, same as case 3
+				// create ORDER
 
+				// update balance record
+				err = a.computeOutLocked(tx, "ADD")
+				if err != nil {
+					u.Errorf("compute balance error,", err, a.ID)
+					return err
+				}
+
+				// create order
+				err = a.CreateOrder(tx)
+				if err != nil {
+					u.Errorf("save order error,", err, a.ID)
+					return err
+				}
 			} else if a.Status == CybOrderStatusFailed { // case 2
 				// DEPOSIT CybOrder NOT settled before
 				// status: -> FAILED
-				// balance: OutLock -= 0, balance -= 0
 				// do NOTHING
 
 			} else if a.Status == CybOrderStatusPending || a.Status == CybOrderStatusInit || a.Status == CybOrderStatusHolding { // case 3
 				// DEPOSIT CybOrder NOT settled before
 				// status: -> PENDING
-				// balance: OutLock += cyborder.amount, balance -= cyborder.amount, same as case 1
+				// balance: OutLock += cyborder.TotalAmount, OutLockedFee +=cyborder.Fee, balance -= cyborder.TotalAmount, same as case 1
 
+				err = a.computeOutLocked(tx, "ADD")
+				if err != nil {
+					u.Errorf("compute balance error,", err, a.ID)
+					return err
+				}
 			}
 		} else if a.Settled {
 			if a.Status == CybOrderStatusDone { // case 4
 				// DEPOSIT CybOrder settled before
 				// status: PENDING -> DONE
-				// balance: OutLock -= 0, balance += 0
-				// create ORDER, order.TotalAmount = cyborder.amount
+				// create ORDER, same as case 1
 
+				// create order
+				err = a.CreateOrder(tx)
+				if err != nil {
+					u.Errorf("save order error,", err, a.ID)
+					return err
+				}
 			} else if a.Status == CybOrderStatusFailed { // case 5, symmetrical to case 3 & 1
 				// DEPOSIT CybOrder settled before
 				// status: PENDING -> FAILED
-				// balance: OutLock -= cyborder.amount, balance += cyborder.amount
+				// balance: OutLock -= cyborder.TotalAmount, OutLockedFee -=cyborder.Fee, balance += cyborder.TotalAmount
 
+				err = a.computeOutLocked(tx, "SUB")
+				if err != nil {
+					u.Errorf("compute balance error,", err, a.ID)
+					return err
+				}
 			} else if a.Status == CybOrderStatusPending || a.Status == CybOrderStatusInit || a.Status == CybOrderStatusHolding { // case 6
 				// DEPOSIT CybOrder settled before
 				// status: PENDING -> PENDING
@@ -120,24 +274,47 @@ func (a CybOrder) AfterSave(tx *gorm.DB) (err error) {
 			}
 		}
 	} else if a.Type == CybOrderTypeDeposit { // map to jporder's part
-		if a.Status == CybOrderStatusDone {
-			// WITHDRAW CybOrder NOT settled before
+		if a.Status == CybOrderStatusDone { // case 7
 			// status: -> DONE
-			// balance: balance = balance + order.Amount, inLocked -= order.TotalAmount, inLockedFee -= order.Fee
+			// balance: balance += cyborder.Amount, inLocked -= cyborder.TotalAmount, inLockedFee -= cyborder.Fee
 
-		} else if a.Status == CybOrderStatusFailed {
-			// WITHDRAW CybOrder NOT settled before
+			err = a.computeInLocked(tx, "SUB")
+			if err != nil {
+				u.Errorf("compute balance error,", err, a.ID)
+				return err
+			}
+		} else if a.Status == CybOrderStatusFailed { // case 8
 			// status: -> FAILED
 			// balance: InLock -= 0, balance -= 0, inLockedFee -=0
 			// create NEW cyborder, set it to order, move old cyborder to order's FailedCybOrders
 
-		} else if a.Status == CybOrderStatusPending || a.Status == CybOrderStatusInit || a.Status == CybOrderStatusHolding {
+			b, err := a.Clone(tx)
+			if err != nil {
+				u.Errorf("clone cyborder error,", err, a.ID)
+				return err
+			}
+
+			err = b.Save()
+			if err != nil {
+				u.Errorf("create cyborder error,", err, a.ID)
+				return err
+			}
+
+			// TODO ...
+		} else if a.Status == CybOrderStatusPending || a.Status == CybOrderStatusInit || a.Status == CybOrderStatusHolding { // case 9
 			// status: -> PENDING
 			// do NOTHING
 		}
 	}
 
-	// return errors.New("test error for rollback")
+	if a.Status == CybOrderStatusDone || a.Status == CybOrderStatusFailed {
+		a.Finalized = true
+		err := a.Save()
+		if err != nil {
+			u.Errorf("set cyborder's Finalized to true error,", err, a.ID)
+			return err
+		}
+	}
 
 	return nil
 }
