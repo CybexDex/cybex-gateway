@@ -56,12 +56,12 @@ type OrderNotiResult struct {
 	Sid           string                 `json:"sid,omitempty"`
 }
 
-//OrderNotiRequest ...
-type OrderNotiRequest struct {
-	Result    *OrderNotiResult `json:"result"`
-	Crypto    string           `json:"crypto"`
-	Timestamp int64            `json:"timestamp"`
-	Sig       *utils.ECCSig    `json:"sig"`
+//JPRequest ...
+type JPRequest struct {
+	Result    map[string]interface{} `json:"result"`
+	Crypto    string                 `json:"crypto"`
+	Timestamp int64                  `json:"timestamp"`
+	Sig       *utils.ECCSig          `json:"sig"`
 }
 
 //NotiOrder ...
@@ -74,21 +74,21 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 	}
 	utils.Infof("order noti request:\n %s", requestBody)
 
-	request := OrderNotiRequest{}
-	err = json.Unmarshal(requestBody, &request)
+	request := JPRequest{}
+	decoder := json.NewDecoder(bytes.NewReader(requestBody))
+	decoder.UseNumber()
+	err = decoder.Decode(&request)
 	if err != nil {
 		utils.Errorf("Unmarshal error: %v", err)
 		utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
 		return
 	}
-
-	result := request.Result
-	result.Timestamp = request.Timestamp
+	request.Result["timestamp"] = request.Timestamp
 
 	if os.Getenv("env") != "dev" && os.Getenv("env") != "staging" {
 		// verify sig
 		pubKey := os.Getenv("pub_key")
-		ok, err := utils.VerifyECCSign(result, request.Sig, pubKey)
+		ok, err := utils.VerifyECCSign(request.Result, request.Sig, pubKey)
 		if err != nil {
 			utils.Errorf("verifySign error: %v", err)
 			utils.Respond(w, utils.Message(false, "Sign error"), http.StatusForbidden)
@@ -100,6 +100,21 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+
+	resultBytes, err := json.Marshal(request.Result)
+	if err != nil {
+		utils.Errorf("Marshal error: %v", err)
+		utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
+		return
+	}
+	result := &OrderNotiResult{}
+	err = json.Unmarshal(resultBytes, result)
+	if err != nil {
+		utils.Errorf("Marshal error: %v", err)
+		utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
+		return
+	}
+
 	result.State = strings.ToUpper(result.State)
 
 	// begin transaction
@@ -385,9 +400,11 @@ type JPAddressRequest struct {
 
 // JPAddressResult ...
 type JPAddressResult struct {
-	Type    string `json:"type"`
-	SubType string `json:"subType"`
-	Address string `json:"address"`
+	Type      string `json:"type"`
+	SubType   string `json:"subType"`
+	Address   string `json:"address"`
+	Namespace string `json:"namespace,omitempty"`
+	Sid       string `json:"sid,omitempty"`
 }
 
 //JPAddressResponse ...
