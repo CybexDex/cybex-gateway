@@ -48,12 +48,12 @@ type CybOrder struct {
 	Amount      *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"amount"`
 	Fee         *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"fee"` // fee in Asset
 
-	Hash      string `gorm:"unique;index;type:varchar(128);not null" json:"hash"`
-	UUHash    string `gorm:"unique;nidex;type:varchar(256);not null" json:"uuhash"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
-	Status    string `gorm:"type:varchar(32);not null" json:"status"`               // INIT, HOLDING, PENDING, DONE, FAILED
-	Type      string `gorm:"type:varchar(32);not null" json:"type"`                 // DEPOSIT, WITHDRAW, RECHARGE, SWEEP, FEESETTLE
-	Settled   bool   `gorm:"not null;default:false" json:"settled"`                 // if count amount to balance, then Settled = true
-	Finalized bool   `gorm:"not null;default:false" json:"finalized"`               // if jporder was done or failed before
+	Hash      string `gorm:"unique;index;type:varchar(128)" json:"hash"`
+	UUHash    string `gorm:"unique;nidex;type:varchar(256)" json:"uuhash"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
+	Status    string `gorm:"type:varchar(32);not null" json:"status"`      // INIT, HOLDING, PENDING, DONE, FAILED
+	Type      string `gorm:"type:varchar(32);not null" json:"type"`        // DEPOSIT, WITHDRAW, RECHARGE, SWEEP, FEESETTLE
+	Settled   bool   `gorm:"not null;default:false" json:"settled"`        // if count amount to balance, then Settled = true
+	Finalized bool   `gorm:"not null;default:false" json:"finalized"`      // if jporder was done or failed before
 }
 
 //UpdateColumns ...

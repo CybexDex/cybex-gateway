@@ -28,20 +28,20 @@ type JPOrder struct {
 	AppID           uint `gorm:"not null" json:"appID"`      // n to 1
 	JadepoolOrderID uint `json:"jadepoolOrderID"`            // n to 1
 
-	Index         int          `json:"index"`                                                 //
-	Hash          string       `gorm:"unique;index;type:varchar(128);not null" json:"hash"`   //
-	UUHash        string       `gorm:"unique;index;type:varchar(256);not null" json:"uuhash"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
-	From          string       `gorm:"type:varchar(128)" json:"from"`                         //
-	To            string       `gorm:"type:varchar(128)" json:"to"`                           //
-	TotalAmount   *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"totalAmount"`       // totalAmount = amount + fee
-	Amount        *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"amount"`            //
-	Fee           *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"fee"`               // fee in Asset
-	Confirmations int          `json:"confirmations"`                                         //
-	Resend        bool         `gorm:"not null;default:false" json:"resend"`                  //
-	Status        string       `gorm:"type:varchar(32);not null" json:"status"`               // INIT, PENDING, DONE, FAILED
-	Type          string       `gorm:"type:varchar(32);not null" json:"type"`                 // DEPOSIT, WITHDRAW
-	Settled       bool         `gorm:"not null;default:false" json:"settled"`                 // if count amount to balance, then Settled = true
-	Finalized     bool         `gorm:"not null;default:false" json:"finalized"`               // if jporder was done or failed before
+	Index         int          `json:"index"`                                           //
+	Hash          string       `gorm:"unique;index;type:varchar(128)" json:"hash"`      //
+	UUHash        string       `gorm:"unique;index;type:varchar(256)" json:"uuhash"`    // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
+	From          string       `gorm:"type:varchar(128)" json:"from"`                   //
+	To            string       `gorm:"type:varchar(128)" json:"to"`                     //
+	TotalAmount   *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"totalAmount"` // totalAmount = amount + fee
+	Amount        *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"amount"`      //
+	Fee           *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"fee"`         // fee in Asset
+	Confirmations int          `json:"confirmations"`                                   //
+	Resend        bool         `gorm:"not null;default:false" json:"resend"`            //
+	Status        string       `gorm:"type:varchar(32);not null" json:"status"`         // INIT, PENDING, DONE, FAILED
+	Type          string       `gorm:"type:varchar(32);not null" json:"type"`           // DEPOSIT, WITHDRAW
+	Settled       bool         `gorm:"not null;default:false" json:"settled"`           // if count amount to balance, then Settled = true
+	Finalized     bool         `gorm:"not null;default:false" json:"finalized"`         // if jporder was done or failed before
 }
 
 //UpdateColumns ...
