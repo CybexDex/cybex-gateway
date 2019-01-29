@@ -63,6 +63,81 @@ func (a *JPOrder) Delete() (err error) {
 	return GetDB().Delete(&a).Error
 }
 
+//ComputeInLocked ...
+func (a *JPOrder) ComputeInLocked(tx *gorm.DB, oper string) error {
+	var bal Balance
+	err := tx.FirstOrCreate(&bal, Balance{AppID: a.AppID, AssetID: a.AssetID}).Error
+
+	if err != nil {
+		u.Errorln("get balance error", a.ID)
+		return err
+	}
+	u.Debugln("get balance record", a.ID)
+
+	data := GetBalanceInitData()
+
+	data["InLocked"].Oper = oper
+	data["InLocked"].Value = a.Amount
+	data["InLockedFee"].Oper = oper
+	data["InLockedFee"].Value = a.Fee
+
+	err = ComputeBalance(tx, &bal, &data)
+	if err != nil {
+		u.Errorln("compute balance error", a.ID)
+		return err
+	}
+	u.Debugln("compute balance error", a.ID)
+
+	return nil
+}
+
+//ComputeOutLocked ...
+func (a *JPOrder) ComputeOutLocked(tx *gorm.DB, oper string) error {
+	var bal Balance
+	err := tx.FirstOrCreate(&bal, Balance{AppID: a.AppID, AssetID: a.AssetID}).Error
+
+	if err != nil {
+		u.Errorln("get balance error", a.ID)
+		return err
+	}
+	u.Debugln("get balance record", a.ID)
+
+	data := GetBalanceInitData()
+
+	data["OutLocked"].Oper = oper
+	data["OutLocked"].Value = a.TotalAmount
+	data["OutLockedFee"].Oper = oper
+	data["OutLockedFee"].Value = a.Fee
+
+	err = ComputeBalance(tx, &bal, &data)
+	if err != nil {
+		u.Errorln("compute balance error", a.ID)
+		return err
+	}
+	u.Debugln("compute balance error", a.ID)
+
+	return nil
+}
+
+//CreateOrder ...
+func (a *JPOrder) CreateOrder(tx *gorm.DB) error {
+	// save order
+	order := new(Order)
+	order.TotalAmount = a.TotalAmount
+	order.Amount = a.Amount
+	order.Fee = a.Fee
+	order.AssetID = a.AssetID
+	order.AppID = a.AppID
+	order.JPOrderID = a.ID
+	order.JPHash = a.Hash
+	order.JPUUHash = a.UUHash
+	order.Status = OrderStatusInit
+	order.Type = OrderTypeDeposit
+	order.Settled = false
+
+	return tx.Save(order).Error
+}
+
 //AfterSave ... will be called each time after CREATE / SAVE / UPDATE
 func (a *JPOrder) AfterSave1(tx *gorm.DB) (err error) {
 	if a.Type == JPOrderTypeDeposit {
@@ -85,46 +160,14 @@ func (a *JPOrder) AfterSave1(tx *gorm.DB) (err error) {
 				// create ORDER, order.TotalAmount = jporder.amount, order.Fee = fee from asset table, order.Amount = order.TotalAmount - order.Fee
 
 				// update balance record
-				var bal Balance
-				err = tx.FirstOrCreate(&bal, Balance{
-					AppID:   a.AppID,
-					AssetID: a.AssetID,
-				}).Preload("Asset").Error
-
+				err = a.ComputeInLocked(tx, "ADD")
 				if err != nil {
-					u.Errorln("get balance error", a.ID)
+					u.Errorf("compute balance error,", err, a.ID)
 					return err
 				}
-				u.Debugln("get balance record", a.ID)
 
-				data := GetBalanceInitData()
-
-				data["InLocked"].Oper = "ADD"
-				data["InLocked"].Value = a.Amount
-				data["InLockedFee"].Oper = "ADD"
-				data["InLockedFee"].Value = a.Fee
-
-				err = ComputeBalance(tx, &bal, &data)
-				if err != nil {
-					u.Errorln("compute balance error", a.ID)
-					return err
-				}
-				u.Debugln("compute balance error", a.ID)
-
-				// save order
-				order := new(Order)
-				order.TotalAmount = a.TotalAmount
-				order.Amount = a.Amount
-				order.Fee = a.Fee
-				order.AssetID = a.AssetID
-				order.AppID = a.AppID
-				order.JPOrderID = a.ID
-				order.JPHash = a.Hash
-				order.JPUUHash = a.UUHash
-				order.Status = OrderStatusInit
-				order.Type = OrderTypeDeposit
-				order.Settled = false
-				tx.Save(order)
+				// create order
+				err = a.CreateOrder(tx)
 				if err != nil {
 					u.Errorf("save order error,", err, a.ID)
 					return err
@@ -140,6 +183,11 @@ func (a *JPOrder) AfterSave1(tx *gorm.DB) (err error) {
 				// status: -> PENDING
 				// balance: InLock += jporder.amount, balance += 0, InLockedFee += fee from asset same as case 1
 
+				err = a.ComputeInLocked(tx, "ADD")
+				if err != nil {
+					u.Errorf("compute balance error,", err, a.ID)
+					return err
+				}
 			}
 		} else if a.Settled {
 			if a.Status == JPOrderStatusDone { // case 4
@@ -148,11 +196,22 @@ func (a *JPOrder) AfterSave1(tx *gorm.DB) (err error) {
 				// balance: InLock -= 0, balance += 0, InLockedFee -= 0
 				// create ORDER, order.TotalAmount = jporder.amount, order.Fee = from Asset table, order.Amount = order.TotalAmount - order.Fee, same as case 1
 
+				// create order
+				err = a.CreateOrder(tx)
+				if err != nil {
+					u.Errorf("save order error,", err, a.ID)
+					return err
+				}
 			} else if a.Status == JPOrderStatusFailed { // case 5, symmetrical to case 3 & 1
 				// DEPOSIT JPOrder settled before
 				// status: PENDING -> FAILED
 				// balance: InLock -= jporder.amount, balance += 0, InLockedFee -= fee
 
+				err = a.ComputeInLocked(tx, "ADD")
+				if err != nil {
+					u.Errorf("compute balance error,", err, a.ID)
+					return err
+				}
 			} else if a.Status == JPOrderStatusPending { // case 6
 				// DEPOSIT JPOrder settled before
 				// status: PENDING -> PENDING
@@ -165,10 +224,16 @@ func (a *JPOrder) AfterSave1(tx *gorm.DB) (err error) {
 			// status: -> DONE
 			// balance: balance -= 0, outLocked -= TotalAmount, outLockedFee -= Fee
 
+			err = a.ComputeOutLocked(tx, "SUB")
+			if err != nil {
+				u.Errorf("compute balance error,", err, a.ID)
+				return err
+			}
 		} else if a.Status == JPOrderStatusFailed {
 			// status: -> FAILED
 			// balance: balance -= 0, outLocked -= 0, outLockedFee -= 0
 			// create NEW jporder - status INIT, set it to order, move old jporder to order's FailedJPOrders
+			// todo...
 
 		} else if a.Status == JPOrderStatusPending {
 			// status: -> PENDING
