@@ -37,10 +37,10 @@ type Order struct {
 	FailedJPOrders  pq.Int64Array `gorm:"type:integer[]" json:"failedJPOrders"`
 	FailedCybOrders pq.Int64Array `gorm:"type:integer[]" json:"failedCybOrders"`
 
-	JPHash    string `gorm:"unique;index;type:varchar(128)" json:"jpHash"`    //
-	JPUUHash  string `gorm:"unique;index;type:varchar(256)" json:"jpUUHash"`  // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
-	CybHash   string `gorm:"unique;index;type:varchar(128)" json:"cybHash"`   //
-	CybUUHash string `gorm:"unique;index;type:varchar(256)" json:"cybUUHash"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
+	JPHash    string `gorm:"index;type:varchar(128)" json:"jpHash"`    //
+	JPUUHash  string `gorm:"index;type:varchar(256)" json:"jpUUHash"`  // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
+	CybHash   string `gorm:"index;type:varchar(128)" json:"cybHash"`   //
+	CybUUHash string `gorm:"index;type:varchar(256)" json:"cybUUHash"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
 
 	TotalAmount *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"totalAmount"` // totalAmount = amount + fee
 	Amount      *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"amount"`      //
