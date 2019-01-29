@@ -29,8 +29,8 @@ type JPOrder struct {
 	JadepoolOrderID uint `json:"jadepoolOrderID"`            // n to 1
 
 	Index         int          `json:"index"`                                           //
-	Hash          string       `gorm:"unique;index;type:varchar(128)" json:"hash"`      //
-	UUHash        string       `gorm:"unique;index;type:varchar(256)" json:"uuhash"`    // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
+	Hash          string       `gorm:"index;type:varchar(128)" json:"hash"`             //
+	UUHash        string       `gorm:"index;type:varchar(256)" json:"uuhash"`           // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
 	From          string       `gorm:"type:varchar(128)" json:"from"`                   //
 	To            string       `gorm:"type:varchar(128)" json:"to"`                     //
 	TotalAmount   *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"totalAmount"` // totalAmount = amount + fee
