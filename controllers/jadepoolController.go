@@ -241,6 +241,7 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 
 		jporderEntity.Fee = asset.DepositFee
 		jporderEntity.Confirmations = result.Confirmations
+		jporderEntity.Resend = result.SendAgain
 
 		err = jporderRepo.Create(jporderEntity)
 		if err != nil {
@@ -264,6 +265,7 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 		updateEntity := &model.JPOrder{}
 		updateEntity.Status = result.State
 		updateEntity.Confirmations = result.Confirmations
+		updateEntity.Resend = result.SendAgain
 		jporderEntity.Status = result.State
 		err = jporderRepo.UpdateColumns(jporderEntity.ID, updateEntity)
 		if err != nil {
