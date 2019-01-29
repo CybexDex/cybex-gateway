@@ -145,7 +145,7 @@ func (a *JPOrder) CreateOrder(tx *gorm.DB) error {
 }
 
 // Clone ...
-func (a *JPOrder) Clone(tx *gorm.DB) (*JPOrder, error) {
+func (a *JPOrder) Clone() *JPOrder {
 	// save order
 	order := new(JPOrder)
 
@@ -167,8 +167,7 @@ func (a *JPOrder) Clone(tx *gorm.DB) (*JPOrder, error) {
 	order.Settled = false
 	order.Finalized = false
 
-	err := tx.Save(order).Error
-	return order, err
+	return order
 }
 
 //AfterSave1 ... will be called each time after CREATE / SAVE / UPDATE
@@ -269,7 +268,7 @@ func (a *JPOrder) AfterSave1(tx *gorm.DB) (err error) {
 			// balance: balance -= 0, outLocked -= 0, outLockedFee -= 0
 			// create NEW jporder - status INIT, set it to order, move old jporder to order's FailedJPOrders
 
-			b, err := a.Clone(tx)
+			b := a.Clone()
 			if err != nil {
 				u.Errorf("clone jporder error,", err, a.ID)
 				return err

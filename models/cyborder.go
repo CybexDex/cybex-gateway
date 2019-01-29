@@ -169,7 +169,7 @@ func (a *CybOrder) CreateOrder(tx *gorm.DB) error {
 }
 
 // Clone ...
-func (a *CybOrder) Clone(tx *gorm.DB) (*CybOrder, error) {
+func (a *CybOrder) Clone() *CybOrder {
 	// save order
 	order := new(CybOrder)
 
@@ -186,8 +186,7 @@ func (a *CybOrder) Clone(tx *gorm.DB) (*CybOrder, error) {
 	order.Settled = false
 	order.Finalized = false
 
-	err := tx.Save(order).Error
-	return order, err
+	return order
 }
 
 //AfterSave1 ... will be called each time after CREATE / SAVE / UPDATE
@@ -288,7 +287,7 @@ func (a CybOrder) AfterSave1(tx *gorm.DB) (err error) {
 			// balance: InLock -= 0, balance -= 0, inLockedFee -=0
 			// create NEW cyborder, set it to order, move old cyborder to order's FailedCybOrders
 
-			b, err := a.Clone(tx)
+			b := a.Clone()
 			if err != nil {
 				u.Errorf("clone cyborder error,", err, a.ID)
 				return err
