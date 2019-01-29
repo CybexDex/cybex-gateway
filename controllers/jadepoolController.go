@@ -233,7 +233,9 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		if jporderEntity.Status == result.State {
+		if jporderEntity.Status == result.State &&
+			(jporderEntity.Status == model.JPOrderStatusDone ||
+				jporderEntity.Status == model.JPOrderStatusFailed) {
 			// repeat request
 			utils.Infof("repeat request, jadepool order id: %d", jporderEntity.JadepoolOrderID)
 			tx.Commit()
@@ -413,7 +415,7 @@ func GetNewAddress(w http.ResponseWriter, r *http.Request) {
 	requestAddress := JPAddressRequest{}
 	requestAddress.Timestamp = timestamp
 	requestAddress.Type = coinType
-	requestAddress.Callback = ""
+	requestAddress.Callback = os.Getenv("self_url") + "/api/order/noti"
 
 	sendData := &JPSendData{}
 	sendData.Crypto = "ecc"
