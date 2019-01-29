@@ -14,6 +14,7 @@ type Repository interface {
 	GetByID(id uint) (*m.CybOrder, error)
 	DeleteByID(id uint) error
 	Create(a *m.CybOrder) (err error)
+	MDB() *gorm.DB
 }
 
 //Repo ...
@@ -26,6 +27,11 @@ func NewRepo(db *gorm.DB) Repository {
 	return &Repo{
 		DB: db,
 	}
+}
+
+// MDB ...
+func (repo *Repo) MDB() *gorm.DB {
+	return repo.DB.Model(&m.CybOrder{})
 }
 
 //FetchAll ...
