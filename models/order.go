@@ -1,6 +1,7 @@
 package model
 
 import (
+	u "git.coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/cockroachdb/apd"
 	"github.com/jinzhu/gorm"
 	"github.com/lib/pq"
@@ -36,20 +37,19 @@ type Order struct {
 	FailedJPOrders  pq.Int64Array `gorm:"type:integer[]" json:"failedJPOrders"`
 	FailedCybOrders pq.Int64Array `gorm:"type:integer[]" json:"failedCybOrders"`
 
-	JPHash   string `gorm:"unique;index;type:varchar(128)" json:"jpHash"`
-	JPUUHash string `gorm:"unique;index;type:varchar(256)" json:"jpUUHash"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
-
-	CybHash   string `gorm:"unique;index;type:varchar(128)" json:"cybHash"`
+	JPHash    string `gorm:"unique;index;type:varchar(128)" json:"jpHash"`    //
+	JPUUHash  string `gorm:"unique;index;type:varchar(256)" json:"jpUUHash"`  // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
+	CybHash   string `gorm:"unique;index;type:varchar(128)" json:"cybHash"`   //
 	CybUUHash string `gorm:"unique;index;type:varchar(256)" json:"cybUUHash"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
 
 	TotalAmount *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"totalAmount"` // totalAmount = amount + fee
-	Amount      *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"amount"`
-	Fee         *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"fee"` // fee in Asset
+	Amount      *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"amount"`      //
+	Fee         *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"fee"`         // fee in Asset
 
 	Status    string `gorm:"type:varchar(32);not null" json:"status"` // INIT, PROCESSING, DONE, TERMINATED
 	Type      string `gorm:"type:varchar(32);not null" json:"type"`   // DEPOSIT, WITHDRAW
-	Settled   bool   `gorm:"not null;default:false" json:"settled"`   // whether the third phase's order is created
-	Finalized bool   `gorm:"not null;default:false" json:"finalized"` // if order was done or failed before
+	Settled   bool   `gorm:"not null;default:false" json:"settled"`   // if the third phase's order is created
+	Finalized bool   `gorm:"not null;default:false" json:"finalized"` // if order was done or terminated before
 }
 
 //UpdateColumns ...
@@ -72,29 +72,44 @@ func (a *Order) Delete() (err error) {
 	return GetDB().Delete(&a).Error
 }
 
-//AfterSave ... will be called each time after CREATE / SAVE / UPDATE
-func (a Order) AfterSave(tx *gorm.DB) (err error) {
-	if a.Settled == false {
-		// set order's settled = true and SAVE to DB
+func (a *Order) createCybOrder() (*CybOrder, error) {
+	return nil, nil
+}
 
-		//保证只做一次
+func (a *Order) createJPOrder() (*JPOrder, error) {
+	return nil, nil
+}
 
-		if a.Status == OrderStatusDone && a.Type == OrderTypeDeposit {
-			// create cyborder
-		} else if a.Status == OrderStatusDone && a.Type == OrderTypeWithdraw {
-			// create jporder
-		}
+//AfterSave1 ... will be called each time after CREATE / SAVE / UPDATE
+func (a *Order) AfterSave1(tx *gorm.DB) (err error) {
+	if a.Finalized {
+		return nil
+	}
 
-		if a.Status == OrderStatusTerminated && a.Type == OrderTypeDeposit {
-			// inlock -= amount
+	if a.Status == OrderStatusDone && a.Type == OrderTypeDeposit {
+		// create cyborder
 
-		} else if a.Status == OrderStatusTerminated && a.Type == OrderTypeWithdraw {
-			// outlock -= amount, balance += amount
-		}
+	} else if a.Status == OrderStatusDone && a.Type == OrderTypeWithdraw {
+		// create jporder
 
 	}
 
-	// return errors.New("test error for rollback")
+	if a.Status == OrderStatusTerminated && a.Type == OrderTypeDeposit {
+		// do NOTHING
+
+	} else if a.Status == OrderStatusTerminated && a.Type == OrderTypeWithdraw {
+		// do NOTHING
+
+	}
+
+	if a.Status == OrderStatusDone || a.Status == OrderStatusTerminated {
+		a.Finalized = true
+		err := a.Save()
+		if err != nil {
+			u.Errorf("set jporder's Finalized to true error,", err, a.ID)
+			return err
+		}
+	}
 
 	return nil
 }
