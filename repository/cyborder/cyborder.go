@@ -41,7 +41,7 @@ func (repo *Repo) FetchAll() ([]*m.CybOrder, error) {
 
 //Fetch ...
 func (repo *Repo) Fetch(p r.Page) (res []*m.CybOrder, err error) {
-	err = repo.DB.CybOrder(p.OrderBy + " " + p.Sort).Offset(p.Offset).Find(&res).Limit(p.Amount).Error
+	err = repo.DB.Order(p.OrderBy + " " + p.Sort).Offset(p.Offset).Find(&res).Limit(p.Amount).Error
 	if err != nil {
 		return nil, err
 	}
