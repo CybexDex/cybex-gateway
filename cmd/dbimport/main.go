@@ -20,7 +20,8 @@ func main() {
 	tExOrder()
 	tQueryPreload()
 	tQueryPreload2()
-	tOrder()
+	tOrder1()
+	tBalance()
 }
 
 func tBlockchain() {
@@ -211,12 +212,19 @@ func tQueryPreload2() {
 	fmt.Println(com)
 }
 
-func tOrder() {
+func tOrder1() {
+	var db = m.GetDB()
+
+	zero := apd.New(0, 0)
+
 	jporderEntity := new(m.JPOrder)
 	jporderEntity.From = "3QQDiUoKwNUVVnRY5Cyt5gKDhcocL7w5YP"
 	jporderEntity.To = "1CvVvwwtVMaxvA4dLWHvrf47bkYJXCeV1j"
 	jporderEntity.Hash = "cb51b5174b1059549be8b54cd9a8710f510889a465da28fe590c43a38052574b"
 	jporderEntity.UUHash = "BTC:cb51b5174b1059549be8b54cd9a8710f510889a465da28fe590c43a38052574b:1"
+	jporderEntity.Fee = zero
+	jporderEntity.Amount = zero
+	jporderEntity.TotalAmount = zero
 	jporderEntity.Index = 1
 	jporderEntity.JadepoolOrderID = uint(408)
 	jporderEntity.Status = "DONE"
@@ -226,7 +234,7 @@ func tOrder() {
 	jporderEntity.JadepoolID = 1
 	amount, _, _ := apd.NewFromString("0.01000000")
 	jporderEntity.Amount = amount
-	err := jporderEntity.Create()
+	err := db.Save(jporderEntity).Error
 	if err != nil {
 		fmt.Println("jporderEntity.Create", err)
 		return
@@ -241,11 +249,14 @@ func tOrder() {
 	cyborderEntity.Amount = amount
 	cyborderEntity.Hash = "400000:3"
 	cyborderEntity.UUHash = "cyb:400000:3"
+	cyborderEntity.Fee = zero
+	cyborderEntity.Amount = zero
+	cyborderEntity.TotalAmount = zero
 	cyborderEntity.Status = "PENDING"
 	cyborderEntity.Type = "DEPOSIT"
 	err = cyborderEntity.Create()
 	if err != nil {
-		fmt.Println("orderEntity", err)
+		fmt.Println("cyborderEntity", err)
 		return
 	}
 
@@ -258,6 +269,13 @@ func tOrder() {
 	orderEntity.FailedCybOrders = *new(pq.Int64Array)
 	orderEntity.FailedCybOrders = append(orderEntity.FailedCybOrders, 1)
 	orderEntity.FailedCybOrders = append(orderEntity.FailedCybOrders, 1)
+	orderEntity.JPHash = "cb51b5174b1059549be8b54cd9a8710f510889a465da28fe590c43a38052574b1"
+	orderEntity.JPUUHash = "BTC:cb51b5174b1059549be8b54cd9a8710f510889a465da28fe590c43a38052574b1:1"
+	orderEntity.CybHash = "cb51b5174b1059549be8b54cd9a8710f510889a465da28fe590c43a38052574b"
+	orderEntity.CybUUHash = "BTC:cb51b5174b1059549be8b54cd9a8710f510889a465da28fe590c43a38052574b:1"
+	orderEntity.Fee = zero
+	orderEntity.Amount = zero
+	orderEntity.TotalAmount = zero
 	orderEntity.JPHash = jporderEntity.Hash
 	orderEntity.Status = "INIT"
 	orderEntity.Type = jporderEntity.Type
@@ -270,7 +288,19 @@ func tOrder() {
 	orderEntity.AppID = 1
 	err = orderEntity.Create()
 	if err != nil {
-		fmt.Println("orderEntity", err)
+		fmt.Println("orderEntity...", err)
+		return
+	}
+}
+
+func tBalance() {
+	bal := new(m.Balance)
+	bal.AppID = 1
+	bal.AssetID = 1
+	err := bal.Save()
+
+	if err != nil {
+		fmt.Println("balance", err)
 		return
 	}
 }
