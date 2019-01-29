@@ -25,6 +25,11 @@ startJPSrv: buildJPSrv
 	@echo "start jpsrv......"
 	@(cd ${curDir}/config/jpsrv; \
 	${curDir}/bin/jpsrv;)
+	
+scpJPSrvDev: buildJPSrvLinux
+	@echo "scp jpsrv......"
+	@(scp bin/jpsrv_linux_amd64 root@39.98.58.238:~/jpsrv/jpsrv_)
+
 
 #######################################adminSrv#####################################
 .PHONY: buildAdminSrv buildAdminSrvLinux startAdminSrv

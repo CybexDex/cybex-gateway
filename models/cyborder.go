@@ -106,7 +106,7 @@ func (a *CybOrder) computeInLocked(tx *gorm.DB, oper string) error {
 		u.Errorln("compute balance error", a.ID)
 		return err
 	}
-	u.Debugln("compute balance error", a.ID)
+	u.Debugln("compute balance", a.ID)
 
 	return nil
 }
@@ -142,7 +142,7 @@ func (a *CybOrder) computeOutLocked(tx *gorm.DB, oper string) error {
 		u.Errorln("compute balance error", a.ID)
 		return err
 	}
-	u.Debugln("compute balance error", a.ID)
+	u.Debugln("compute balance", a.ID)
 
 	return nil
 }

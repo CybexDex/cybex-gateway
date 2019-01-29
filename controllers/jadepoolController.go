@@ -42,7 +42,7 @@ type OrderNotiResult struct {
 	From          string                 `json:"from"`
 	To            string                 `json:"to"`
 	Value         string                 `json:"value"`
-	Confirmations int64                  `json:"confirmations"`
+	Confirmations int                    `json:"confirmations"`
 	CreateAt      int64                  `json:"create_at"`
 	UpdateAt      int64                  `json:"update_at"`
 	Fee           string                 `json:"fee"`
@@ -240,6 +240,8 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 		}
 
 		jporderEntity.Fee = asset.DepositFee
+		jporderEntity.Confirmations = result.Confirmations
+
 		err = jporderRepo.Create(jporderEntity)
 		if err != nil {
 			tx.Rollback()
@@ -261,6 +263,7 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 
 		updateEntity := &model.JPOrder{}
 		updateEntity.Status = result.State
+		updateEntity.Confirmations = result.Confirmations
 		jporderEntity.Status = result.State
 		err = jporderRepo.UpdateColumns(jporderEntity.ID, updateEntity)
 		if err != nil {
