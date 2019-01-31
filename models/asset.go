@@ -9,16 +9,19 @@ import (
 type Asset struct {
 	gorm.Model
 
-	ExEvents  []ExEvent `json:"exEvents"`                            // 1 to n
-	JPOrders  []JPOrder `json:"jpOrders"`                            // 1 to n
-	Orders    []Order   `json:"orders"`                              // 1 to n
-	Addresses []Address `gorm:"ForeignKey:AssetId" json:"addresses"` // 1 to n
-	Balances  []Balance `gorm:"ForeignKey:AssetId" json:"balances"`  // 1 to n
+	ExEvents  []ExEvent  `json:"exEvents"` // 1 to n
+	JPOrders  []JPOrder  `json:"jpOrders"` // 1 to n
+	Orders    []Order    `json:"orders"`   // 1 to n
+	CybOrders []CybOrder `gorm:"ForeignKey:AssetId" json:"cybOrder"`
+	Addresses []Address  `gorm:"ForeignKey:AssetId" json:"addresses"` // 1 to n
+	Balances  []Balance  `gorm:"ForeignKey:AssetId" json:"balances"`  // 1 to n
 
 	BlockchainID uint       `json:"blockchainID"` // n to 1
 	Blockchain   Blockchain `gorm:"ForeignKey:BlockchainID" json:"blockchain"`
 
 	Name           string       `gorm:"index;type:varchar(32);not null" json:"name"`
+	CybName        string       `gorm:"index;type:varchar(32);not null" json:"cybname"`
+	CybID          string       `gorm:"index;type:varchar(32);not null" json:"cybid"`
 	Description    string       `gorm:"type:text" json:"description"`
 	SmartContract  string       `gorm:"type:varchar(255)" json:"smartContract"`
 	WithdrawSwitch bool         `json:"withdrawSwith"`

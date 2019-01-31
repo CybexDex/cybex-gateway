@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 
-	"github.com/lib/pq"
-
+	"git.coding.net/bobxuyang/cy-gateway-BN/cmd/dbimport/cyborder"
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	"github.com/cockroachdb/apd"
+	"github.com/lib/pq"
 )
 
 func main() {
@@ -22,6 +22,7 @@ func main() {
 	tQueryPreload2()
 	tOrder1()
 	tBalance()
+	cyborder.ToCYBOrders()
 }
 
 func tBlockchain() {
@@ -48,6 +49,8 @@ func tAsset() {
 	st, _, _ := new(apd.Decimal).SetString("1000.0")
 	asset := m.Asset{
 		Name:           "ETH",
+		CybName:        "CYB",
+		CybID:          "1.3.0",
 		Description:    "ETH",
 		BlockchainID:   1,
 		WithdrawSwitch: true,
@@ -224,7 +227,7 @@ func tOrder1() {
 	jporderEntity.UUHash = "BTC:cb51b5174b1059549be8b54cd9a8710f510889a465da28fe590c43a38052574b:1"
 	jporderEntity.Fee = zero
 	jporderEntity.Amount = zero
-	jporderEntity.TotalAmount = zero
+
 	jporderEntity.Index = 1
 	jporderEntity.JadepoolOrderID = uint(408)
 	jporderEntity.Status = "DONE"
