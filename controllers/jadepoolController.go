@@ -36,6 +36,7 @@ var (
 //OrderNotiResult ...
 type OrderNotiResult struct {
 	ID            string                 `json:"id"`
+	Sequence      uint                   `json:"sequence"`
 	State         string                 `json:"state"`
 	BizType       string                 `json:"bizType"`
 	CoinType      string                 `json:"coinType"`
@@ -294,6 +295,7 @@ type JPSendRequest struct {
 
 // JPTransaction ...
 type JPTransaction struct {
+	Sequence  uint   `json:"sequence"`
 	Type      string `json:"type"`
 	Value     string `json:"value"`
 	To        string `json:"to"`
@@ -355,8 +357,10 @@ func SendOrder(w http.ResponseWriter, r *http.Request) {
 		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
+
 	timestamp := time.Now().Unix() * 1000
 	jptransaction := &JPTransaction{}
+	jptransaction.Sequence = jporder.ID
 	jptransaction.Type = asset.Name
 	jptransaction.Value = jporder.Amount.String()
 	jptransaction.To = jporder.To
