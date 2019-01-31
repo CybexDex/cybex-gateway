@@ -287,6 +287,11 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 
 ///////////////////////////////////////////////send transaction///////////////////////////////////////////////
 
+// JPSendRequest ...
+type JPSendRequest struct {
+	ID uint `json:"id"`
+}
+
 // JPTransaction ...
 type JPTransaction struct {
 	Type      string `json:"type"`
@@ -316,20 +321,45 @@ func SendOrder(w http.ResponseWriter, r *http.Request) {
 		utils.Respond(w, utils.Message(false, "bad request error"), http.StatusBadRequest)
 		return
 	}
-	jptransaction := JPTransaction{}
-	err = json.Unmarshal(bodyBytes, &jptransaction)
+	reqData := JPSendRequest{}
+	err = json.Unmarshal(bodyBytes, &reqData)
 	if err != nil {
 		utils.Errorf("error: %v", err)
 		utils.Respond(w, utils.Message(false, "bad request error"), http.StatusBadRequest)
 		return
 	}
-	if len(jptransaction.Type) == 0 || len(jptransaction.Value) == 0 || len(jptransaction.To) == 0 {
+
+	if reqData.ID <= 0 {
+		utils.Errorf("invalid id: %d", reqData.ID)
+		utils.Respond(w, utils.Message(false, "bad request error"), http.StatusBadRequest)
+		return
+	}
+	jporderRepo := jporder.NewRepo(model.GetDB())
+	jporder, err := jporderRepo.GetByID(reqData.ID)
+	if err != nil {
+		utils.Errorf("error: %v", err)
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
+
+	if jporder.AssetID == 0 || len(jporder.To) == 0 {
 		utils.Errorf("error: %v", err)
 		utils.Respond(w, utils.Message(false, "bad request error"), http.StatusBadRequest)
 		return
 	}
 
+	assetRepo := asset.NewRepo(model.GetDB())
+	asset, err := assetRepo.GetByID(jporder.AssetID)
+	if err != nil {
+		utils.Errorf("error: %v", err)
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
 	timestamp := time.Now().Unix() * 1000
+	jptransaction := &JPTransaction{}
+	jptransaction.Type = asset.Name
+	jptransaction.Value = jporder.Amount.String()
+	jptransaction.To = jporder.To
 	jptransaction.Timestamp = timestamp
 	jptransaction.Callback = os.Getenv("self_url") + "/api/order/noti"
 
@@ -344,7 +374,7 @@ func SendOrder(w http.ResponseWriter, r *http.Request) {
 	prikey := os.Getenv("pri_key")
 	sig, err := utils.SignECCData(prikey, sendData.Data)
 	if err != nil {
-		utils.Errorf("create jporder error: %v", err)
+		utils.Errorf("error: %v", err)
 		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
@@ -355,35 +385,58 @@ func SendOrder(w http.ResponseWriter, r *http.Request) {
 	url := jadepoolURL + "/api/v1/transactions/"
 
 	orderResp := JPComeData{}
-	for i := 0; i < 3; i++ {
-		resp, err := http.Post(url, "application/json", bytes.NewReader(bs))
-		if err != nil {
-			utils.Errorf("post error: %v", err)
-			continue
-		}
-		_bodyBytes, err := ioutil.ReadAll(resp.Body)
-		resp.Body.Close()
-		if err != nil {
-			utils.Errorf("ReadAll error: %v", err)
-			continue
-		}
-
-		err = json.Unmarshal(_bodyBytes, &orderResp)
-		if err != nil {
-			utils.Errorf("Unmarshal error: %v, body: %s", err, string(_bodyBytes))
-			continue
-		}
-		break
+	resp, err := http.Post(url, "application/json", bytes.NewReader(bs))
+	if err != nil {
+		utils.Errorf("post error: %v", err)
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
 	}
-
-	if orderResp.Code != 0 || orderResp.Status != 0 || orderResp.Result == nil {
-		utils.Errorln("not found address")
+	_bodyBytes, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	if err != nil {
+		utils.Errorf("ReadAll error: %v", err)
 		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
 
-	resp := utils.Message(true, "success", orderResp.Result)
-	utils.Respond(w, resp)
+	err = json.Unmarshal(_bodyBytes, &orderResp)
+	if err != nil {
+		utils.Errorf("Unmarshal error: %v, body: %s", err, string(_bodyBytes))
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
+
+	if orderResp.Code != 0 || orderResp.Status != 0 || orderResp.Result == nil {
+		utils.Errorln("response: %#v", orderResp)
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
+
+	resultBytes, err := json.Marshal(orderResp.Result)
+	if err != nil {
+		utils.Errorf("error: %v", err)
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
+	result := OrderNotiResult{}
+	err = json.Unmarshal(resultBytes, &result)
+	if err != nil {
+		utils.Errorf("error: %v", err)
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
+
+	jporder.From = result.From
+	jporder.Confirmations = result.Confirmations
+	err = jporder.Save()
+	if err != nil {
+		utils.Errorf("error: %v", err)
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
+
+	respData := utils.Message(true, "success", orderResp.Result)
+	utils.Respond(w, respData)
 }
 
 /////////////////////////////////////////////address/////////////////////////////////////////

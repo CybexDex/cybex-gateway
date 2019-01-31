@@ -9,7 +9,7 @@ buildAll: buildJPSrv buildAdminSrv
 
 buildAllLinux: buildJPSrvLinux buildAdminSrvLinux
 
-#######################################jpSrv#####################################
+#######################################jpSrv#########################################
 .PHONY: buildJPSrv buildJPSrvLinux startJPSrv 
 buildJPSrv:
 	@echo "build jpsrv......"
