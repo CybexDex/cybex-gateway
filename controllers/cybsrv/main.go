@@ -29,23 +29,29 @@ func init() {
 }
 func findOrders() (*m.CybOrder, error) {
 	db := m.GetDB()
-	tx := db.Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
 	// do some database operations in the transaction (use 'tx' from this point, not 'db')
 	var order1 m.CybOrder
-	tx.Raw("select * from cyb_orders  where status='INIT' limit 1  for update").Scan(&order1)
 
-	// time.Sleep(time.Second * 1)
+	// time.Sleep(time.Second * 2)
 	// fmt.Println("ID", order1.ID)
-	tx.Exec("update cyb_orders set status='HOLDING' where id=?", order1.ID).Scan(&order1)
+	s := `update cyb_orders 
+	set status = 'HOLDING' 
+	where id = (
+				select id 
+				from cyb_orders 
+				where status = 'INIT' 
+				order by id
+				limit 1
+			)
+	returning *`
+	db.Raw(s).Scan(&order1)
 	// ...
 	// Or commit the transaction
-	tx.Commit()
 	return &order1, nil
+}
+func handleOrders2(order1 *m.CybOrder) {
+	fmt.Println("send cyborder id", order1.ID, order1.From, order1.To, order1.Amount, order1.AssetID)
+	// time.Sleep(time.Second * 1)
 }
 func handleOrders(order1 *m.CybOrder) {
 	// fmt.Println("order1", order1)
