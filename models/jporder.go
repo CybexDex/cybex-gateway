@@ -40,8 +40,10 @@ type JPOrder struct {
 	Resend        bool         `gorm:"not null;default:false" json:"resend"`            //
 	Status        string       `gorm:"type:varchar(32);not null" json:"status"`         // INIT, PENDING, DONE, FAILED
 	Type          string       `gorm:"type:varchar(32);not null" json:"type"`           // DEPOSIT, WITHDRAW
-	Settled       bool         `gorm:"not null;default:false" json:"settled"`           // if count amount to balance, then Settled = true
-	Finalized     bool         `gorm:"not null;default:false" json:"finalized"`         // if jporder was done or failed before
+
+	Settled   bool `gorm:"not null;default:false" json:"settled"`   // if count amount to balance, then Settled = true
+	Finalized bool `gorm:"not null;default:false" json:"finalized"` // if jporder was done or failed before
+	EnterHook bool `gorm:"not null;default:false" json:"enterHook"` // set it to true if biz-logic need go-through after-save hook
 }
 
 //UpdateColumns ...
@@ -170,10 +172,17 @@ func (a *JPOrder) Clone() *JPOrder {
 	return order
 }
 
-//AfterSave1 ... will be called each time after CREATE / SAVE / UPDATE
-func (a *JPOrder) AfterSave1(tx *gorm.DB) (err error) {
-	if a.Finalized {
+//AfterSaveHook ... will be called each time after CREATE / SAVE / UPDATE
+func (a *JPOrder) AfterSaveHook(tx *gorm.DB) (err error) {
+	if a.Finalized || !a.EnterHook {
 		return nil
+	}
+
+	a.EnterHook = false
+	err = tx.Save(a).Error
+	if err != nil {
+		u.Errorf("save jporder error,", err, a.ID)
+		return err
 	}
 
 	if a.Type == JPOrderTypeDeposit {
@@ -274,7 +283,7 @@ func (a *JPOrder) AfterSave1(tx *gorm.DB) (err error) {
 				return err
 			}
 
-			err = b.Save()
+			err = tx.Save(b).Error
 			if err != nil {
 				u.Errorf("create jporder error,", err, a.ID)
 				return err
@@ -289,7 +298,7 @@ func (a *JPOrder) AfterSave1(tx *gorm.DB) (err error) {
 
 	if a.Status == JPOrderStatusDone || a.Status == JPOrderStatusFailed {
 		a.Finalized = true
-		err := a.Save()
+		err := tx.Save(a).Error
 		if err != nil {
 			u.Errorf("set jporder's Finalized to true error,", err, a.ID)
 			return err

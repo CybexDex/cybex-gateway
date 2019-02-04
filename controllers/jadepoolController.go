@@ -254,6 +254,15 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 			utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 			return
 		}
+
+		jporderEntity.EnterHook = true
+		err  = jporderEntity.AfterSaveHook(tx)
+		if err != nil {
+			tx.Rollback()
+			utils.Errorf("call jporder after-save hook error: %v", err)
+			utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+			return
+		}
 	} else {
 		if jporderEntity.Status == result.State &&
 			(jporderEntity.Status == model.JPOrderStatusDone ||
@@ -275,6 +284,15 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			tx.Rollback()
 			utils.Errorf("Update jporder error: %v", err)
+			utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+			return
+		}
+
+		jporderEntity.EnterHook = true
+		err  = jporderEntity.AfterSaveHook(tx)
+		if err != nil {
+			tx.Rollback()
+			utils.Errorf("call jporder after-save hook error: %v", err)
 			utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 			return
 		}
