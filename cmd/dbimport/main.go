@@ -190,7 +190,10 @@ func tExOrder() {
 		Type:            "DEPOSIT",
 	}
 	err := db.Create(&jporder).Error
-	fmt.Println(err)
+	if err != nil {
+		fmt.Println("jporderEntity", err)
+		return
+	}
 }
 
 func tQueryPreload() {
@@ -226,6 +229,7 @@ func tOrder1() {
 	jporderEntity.Hash = "cb51b5174b1059549be8b54cd9a8710f510889a465da28fe590c43a38052574b"
 	jporderEntity.UUHash = "BTC:cb51b5174b1059549be8b54cd9a8710f510889a465da28fe590c43a38052574b:1"
 	jporderEntity.Fee = zero
+	jporderEntity.TotalAmount = zero
 	jporderEntity.Amount = zero
 
 	jporderEntity.Index = 1
