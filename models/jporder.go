@@ -172,7 +172,7 @@ func (a *JPOrder) Clone() *JPOrder {
 	return order
 }
 
-//AfterSaveHook ... will be called each time after CREATE / SAVE / UPDATE
+//AfterSaveHook ... should be called manually
 func (a *JPOrder) AfterSaveHook(tx *gorm.DB) (err error) {
 	if a.Finalized || !a.EnterHook {
 		return nil

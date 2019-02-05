@@ -1,19 +1,21 @@
 package model
 
 import (
-	"testing"
-
-	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
-
+	"fmt"
 	"github.com/cockroachdb/apd"
+	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestUpdateBalance(t *testing.T) {
 	db := GetDB()
 
-	bal := Balance{}
-	db.Where("ID=?", 1).First(&bal)
-	//fmt.Println(bal)
+	bal := new(Balance)
+	err := db.First(bal).Error
+	assert.Nil(t, err)
+	assert.Equal(t, false, db.NewRecord(bal))
+
+	fmt.Println(bal)
 
 	data := GetBalanceInitData()
 
@@ -35,10 +37,8 @@ func TestUpdateBalance(t *testing.T) {
 
 	data["OutLockedFee"].Oper = "SUB"
 	five := apd.New(123, 0)
-	data["OutLocked"].Value = five
+	data["OutLockedFee"].Value = five
 
-	err := ComputeBalance(db, &bal, &data)
-	if err != nil {
-		utils.Errorln(err.Error())
-	}
+	err = ComputeBalance(db, bal, &data)
+	assert.Nil(t, err)
 }
