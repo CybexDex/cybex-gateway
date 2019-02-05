@@ -1,6 +1,33 @@
 package model
 
-import "testing"
+import (
+	"github.com/stretchr/testify/assert"
+	"testing"
+)
+
+func init () {
+	db := GetDB()
+	db.Exec("DELETE from jp_orders")
+	db.Exec("DELETE from orders")
+	db.Exec("DELETE from balances")
+}
+
+func TestJPOrderOne(t *testing.T) {
+	//	test case 1
+	// 		send "DONE" jporder
+	// 		create "DONE" jporder, calculate TotalAmount, Amount and Fee of jporder
+	// 		add InLocked & InLockedFee to balance
+	// 		create "INIT" order, set TotalAmount, Amount and Fee of jporder
+
+	err := db.DB().Ping()
+	assert.Nil(t, err)
+
+	// assert equality
+	assert.Equal(t, 123, 123, "they should be equal")
+
+	// assert inequality
+	assert.NotEqual(t, 123, 456, "they should not be equal")
+}
 
 func TestOne(t *testing.T) {
 	//	test case 1
