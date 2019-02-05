@@ -2,6 +2,7 @@ package blockchain
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"testing"
 
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
@@ -28,4 +29,17 @@ func TestOne(t *testing.T) {
 
 	// delete by ID
 	//fmt.Println(repo.DeleteByID(4))
+}
+
+func TestTwo(t *testing.T) {
+	db := m.GetDB()
+	err := db.DB().Ping()
+	assert.Nil(t, err)
+
+	repo := NewRepo(db)
+	re, err := repo.FetchAll()
+	assert.Nil(t, err)
+	assert.Equal(t, true, len(re) > 0)
+
+	fmt.Println(re)
 }
