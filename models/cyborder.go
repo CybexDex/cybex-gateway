@@ -45,15 +45,17 @@ type CybOrder struct {
 	// FeeAssetID uint
 
 	TotalAmount *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"totalAmount"` // totalAmount = amount + fee
-	Amount      *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"amount"`
-	Fee         *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"fee"` // fee in Asset
+	Amount      *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"amount"`      //
+	Fee         *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"fee"`         // fee in Asset
 
-	Hash      string `gorm:"unique;index;type:varchar(128);default:null" json:"hash"`
-	UUHash    string `gorm:"unique;nidex;type:varchar(256);default:null" json:"uuhash"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
-	Status    string `gorm:"type:varchar(32);not null" json:"status"`                   // INIT, HOLDING, PENDING, DONE, FAILED
-	Type      string `gorm:"type:varchar(32);not null" json:"type"`                     // DEPOSIT, WITHDRAW, RECHARGE, SWEEP, FEESETTLE
-	Settled   bool   `gorm:"not null;default:false" json:"settled"`                     // if count amount to balance, then Settled = true
-	Finalized bool   `gorm:"not null;default:false" json:"finalized"`                   // if jporder was done or failed before
+	Hash   string `gorm:"unique;index;type:varchar(128);default:null" json:"hash"`
+	UUHash string `gorm:"unique;nidex;type:varchar(256);default:null" json:"uuhash"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
+	Status string `gorm:"type:varchar(32);not null" json:"status"`                   // INIT, HOLDING, PENDING, DONE, FAILED
+	Type   string `gorm:"type:varchar(32);not null" json:"type"`                     // DEPOSIT, WITHDRAW, RECHARGE, SWEEP, FEESETTLE
+
+	Settled   bool `gorm:"not null;default:false" json:"settled"`   // if count amount to balance, then Settled = true
+	Finalized bool `gorm:"not null;default:false" json:"finalized"` // if jporder was done or failed before
+	EnterHook bool `gorm:"not null;default:false" json:"enterHook"` // set it to true if biz-logic need go-through after-save hook
 }
 
 //UpdateColumns ...
@@ -189,10 +191,17 @@ func (a *CybOrder) Clone() *CybOrder {
 	return order
 }
 
-//AfterSave1 ... will be called each time after CREATE / SAVE / UPDATE
-func (a CybOrder) AfterSave1(tx *gorm.DB) (err error) {
-	if a.Finalized {
+//AfterSaveHook ... should be called manually
+func (a CybOrder) AfterSaveHook(tx *gorm.DB) (err error) {
+	if a.Finalized || !a.EnterHook {
 		return nil
+	}
+
+	a.EnterHook = false
+	err = tx.Save(a).Error
+	if err != nil {
+		u.Errorf("save jporder error,", err, a.ID)
+		return err
 	}
 
 	if a.Type == CybOrderTypeWithdraw {
@@ -293,7 +302,7 @@ func (a CybOrder) AfterSave1(tx *gorm.DB) (err error) {
 				return err
 			}
 
-			err = b.Save()
+			err = tx.Save(b).Error
 			if err != nil {
 				u.Errorf("create cyborder error,", err, a.ID)
 				return err
@@ -308,7 +317,7 @@ func (a CybOrder) AfterSave1(tx *gorm.DB) (err error) {
 
 	if a.Status == CybOrderStatusDone || a.Status == CybOrderStatusFailed {
 		a.Finalized = true
-		err := a.Save()
+		err := tx.Save(a).Error
 		if err != nil {
 			u.Errorf("set cyborder's Finalized to true error,", err, a.ID)
 			return err
