@@ -3,29 +3,27 @@ package cybsrv
 import (
 	"fmt"
 	"log"
-	"os"
 	"strings"
 	"time"
 
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
+	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
 	apim "git.coding.net/yundkyy/cybexgolib/api"
-	"github.com/joho/godotenv"
 	"github.com/juju/errors"
+	"github.com/spf13/viper"
 )
 
 var api apim.BitsharesAPI
 var gatewayPassword string
 
 func init() {
-	api = apim.New("wss://shanghai.51nebula.com/", "")
+	utils.InitConfig()
+	node := viper.GetString("cybsrv.node")
+	api = apim.New(node, "")
 	if err := api.Connect(); err != nil {
 		log.Fatal(errors.Annotate(err, "OnConnect"))
 	}
-	e := godotenv.Load()
-	if e != nil {
-		fmt.Print(e)
-	}
-	gatewayPassword = os.Getenv("gatewayPassword")
+	gatewayPassword = viper.GetString("cybsrv.gatewayPassword")
 }
 func findOrders() (*m.CybOrder, error) {
 	db := m.GetDB()
