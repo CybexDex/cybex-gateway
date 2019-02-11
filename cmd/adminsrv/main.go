@@ -11,6 +11,7 @@ import (
 	"github.com/facebookgo/grace/gracehttp"
 	"github.com/gorilla/mux"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -20,9 +21,11 @@ var (
 )
 
 func main() {
+	// init config
+	utils.InitConfig()
+	logDir := viper.GetString("adminsrv.log_dir")
+	logLevel := viper.GetString("adminsrv.log_level")
 	// init logger
-	logDir := os.Getenv("log_dir")
-	logLevel := os.Getenv("log_level")
 	utils.InitLog(logDir, logLevel)
 	utils.Infof("build info: %s_%s_%s", buildtime, branch, githash)
 
@@ -51,7 +54,7 @@ func main() {
 	router.Use(app.NewLoggingMiddle(utils.GetLogger()))
 	router.Use(app.JwtAuthentication) //attach JWT auth middleware
 
-	listenAddr := os.Getenv("listen_addr")
+	listenAddr := os.Getenv("adminsrv.listen_addr")
 	if len(listenAddr) == 0 {
 		listenAddr = ":8082"
 	}

@@ -23,8 +23,7 @@ buildJPSrvLinux:
 
 startJPSrv: buildJPSrv
 	@echo "start jpsrv......"
-	@(cd ${curDir}/config/jpsrv; \
-	${curDir}/bin/jpsrv;)
+	@(${curDir}/bin/jpsrv;)
 	
 scpJPSrvDev: buildJPSrvLinux
 	@echo "scp jpsrv......"
@@ -45,5 +44,4 @@ buildAdminSrvLinux:
 
 startAdminSrv: buildAdminSrv
 	@echo "start adminsrv......"
-	@(cd ${curDir}/config/adminsrv; \
-	${curDir}/bin/adminsrv;)
+	@(${curDir}/bin/adminsrv;)

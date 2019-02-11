@@ -1,0 +1,16 @@
+
+jpsrv:
+  listen_addr: ":8081"
+  log_dir: ""
+  log_level: "DEBUG"
+
+adminsrv:
+  listen_addr: ":8082"
+  log_dir: ""
+  log_level: "DEBUG"
+
+jadepool:
+  pri_key: "bf12996feeaa2977b6ca0d33a0e8bd2ccfc4844c6f8a7e6d15c099f8da4a255c"
+  pub_key: "03ace32532c90652e1bae916248e427a7ab10aeeea1067949669a3f4da10965ef9"
+  callback_url: "http://127.0.0.1:8081"
+  jadepool_url: "http://121.196.217.176:7001"

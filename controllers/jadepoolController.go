@@ -16,9 +16,9 @@ import (
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/asset"
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/jadepool"
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/jporder"
-
 	"github.com/cockroachdb/apd"
 	"github.com/jinzhu/gorm"
+	"github.com/spf13/viper"
 
 	model "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/exevent"
@@ -91,7 +91,7 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 
 	if os.Getenv("env") != "dev" {
 		// verify sig
-		pubKey := os.Getenv("pub_key")
+		pubKey := viper.GetString("jadepool.pub_key")
 		ok, err := utils.VerifyECCSign(request.Result, &request.Sig, pubKey)
 		if err != nil {
 			utils.Errorf("verifySign error: %v", err)
@@ -256,7 +256,7 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 		}
 
 		jporderEntity.EnterHook = true
-		err  = jporderEntity.AfterSaveHook(tx)
+		err = jporderEntity.AfterSaveHook(tx)
 		if err != nil {
 			tx.Rollback()
 			utils.Errorf("call jporder after-save hook error: %v", err)
@@ -289,7 +289,7 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 		}
 
 		jporderEntity.EnterHook = true
-		err  = jporderEntity.AfterSaveHook(tx)
+		err = jporderEntity.AfterSaveHook(tx)
 		if err != nil {
 			tx.Rollback()
 			utils.Errorf("call jporder after-save hook error: %v", err)
@@ -383,7 +383,7 @@ func SendOrder(w http.ResponseWriter, r *http.Request) {
 	jptransaction.Value = jporder.Amount.String()
 	jptransaction.To = jporder.To
 	jptransaction.Timestamp = timestamp
-	jptransaction.Callback = os.Getenv("self_url") + "/api/order/noti"
+	jptransaction.Callback = viper.GetString("jadepool.self_url") + "/api/order/noti"
 
 	sendData := &JPSendData{}
 	sendData.Crypto = "ecc"
@@ -393,7 +393,7 @@ func SendOrder(w http.ResponseWriter, r *http.Request) {
 	sendData.AppID = "app"
 	sendData.Data = &jptransaction
 
-	prikey := os.Getenv("pri_key")
+	prikey := viper.GetString("jadepool.pri_key")
 	sig, err := utils.SignECCData(prikey, sendData.Data)
 	if err != nil {
 		utils.Errorf("error: %v", err)
@@ -403,7 +403,7 @@ func SendOrder(w http.ResponseWriter, r *http.Request) {
 	sendData.Sig = sig
 
 	bs, _ := json.Marshal(sendData)
-	jadepoolURL := os.Getenv("jadepool_url")
+	jadepoolURL := viper.GetString("jadepool.jadepool_url")
 	url := jadepoolURL + "/api/v1/transactions/"
 
 	orderResp := JPComeData{}
@@ -493,7 +493,7 @@ func GetNewAddress(w http.ResponseWriter, r *http.Request) {
 	requestAddress := JPAddressRequest{}
 	requestAddress.Timestamp = timestamp
 	requestAddress.Type = coinType
-	requestAddress.Callback = os.Getenv("self_url") + "/api/order/noti"
+	requestAddress.Callback = viper.GetString("jadepool.self_url") + "/api/order/noti"
 
 	sendData := &JPSendData{}
 	sendData.Crypto = "ecc"
@@ -503,17 +503,17 @@ func GetNewAddress(w http.ResponseWriter, r *http.Request) {
 	sendData.AppID = "app"
 	sendData.Data = &requestAddress
 
-	prikey := os.Getenv("pri_key")
+	prikey := viper.GetString("jadepool.pri_key")
 	sig, err := utils.SignECCData(prikey, sendData.Data)
 	if err != nil {
-		utils.Errorf("create jporder error: %v", err)
+		utils.Errorf("SignECCData error: %v", err)
 		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
 	sendData.Sig = sig
 
 	bs, _ := json.Marshal(sendData)
-	jadepoolURL := os.Getenv("jadepool_url")
+	jadepoolURL := viper.GetString("jadepool.jadepool_url")
 	url := jadepoolURL + "/api/v1/addresses/new"
 
 	data := JPComeData{}
@@ -545,7 +545,7 @@ func GetNewAddress(w http.ResponseWriter, r *http.Request) {
 
 	if os.Getenv("env") != "dev" {
 		// verify sig
-		pubKey := os.Getenv("pub_key")
+		pubKey := viper.GetString("jadepool.pub_key")
 		ok, err := utils.VerifyECCSign(data.Result, &data.Sig, pubKey)
 		if err != nil {
 			utils.Errorf("verifySign error: %v, data: %#v", err, data)

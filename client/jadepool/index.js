@@ -9,7 +9,7 @@
         "bizType":"DEPOSIT",
         "coinType":"ETH",
         "to":"0x9014f690a2e6ae544c69ff2c3f12fa46f67e956f",
-        "value":"0.01",
+        "value":"0.10",
         "confirmations":3,
         "create_at":1520229729535,
         "update_at":1520229783025,

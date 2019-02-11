@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/http"
-	"os"
 	"time"
 
 	"git.coding.net/bobxuyang/cy-gateway-BN/app"
@@ -11,6 +10,7 @@ import (
 	"github.com/facebookgo/grace/gracehttp"
 	"github.com/gorilla/mux"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -20,9 +20,11 @@ var (
 )
 
 func main() {
+	// init config
+	utils.InitConfig()
 	// init loggger
-	logDir := os.Getenv("log_dir")
-	logLevel := os.Getenv("log_level")
+	logDir := viper.GetString("jpsrv.log_dir")
+	logLevel := viper.GetString("jpsrv.log_level")
 	utils.InitLog(logDir, logLevel)
 	utils.Infof("build info: %s_%s_%s", buildtime, branch, githash)
 
@@ -36,7 +38,7 @@ func main() {
 	router.HandleFunc("/api/order/send", controllers.SendOrder).Methods("POST")
 	router.Use(app.NewLoggingMiddle(utils.GetLogger()))
 
-	listenAddr := os.Getenv("listen_addr")
+	listenAddr := viper.GetString("jpsrv.listen_addr")
 	if len(listenAddr) == 0 {
 		listenAddr = ":8081"
 	}
