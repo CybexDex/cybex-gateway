@@ -46,10 +46,12 @@ type Order struct {
 	Amount      *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"amount"`      //
 	Fee         *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"fee"`         // fee in Asset
 
-	Status    string `gorm:"type:varchar(32);not null" json:"status"` // INIT, PROCESSING, DONE, TERMINATED
-	Type      string `gorm:"type:varchar(32);not null" json:"type"`   // DEPOSIT, WITHDRAW
-	Settled   bool   `gorm:"not null;default:false" json:"settled"`   // if the third phase's order is created
-	Finalized bool   `gorm:"not null;default:false" json:"finalized"` // if order was done or terminated before
+	Status string `gorm:"type:varchar(32);not null" json:"status"` // INIT, PROCESSING, DONE, TERMINATED
+	Type   string `gorm:"type:varchar(32);not null" json:"type"`   // DEPOSIT, WITHDRAW
+
+	Settled   bool `gorm:"not null;default:false" json:"settled"`   // if the third phase's order is created
+	Finalized bool `gorm:"not null;default:false" json:"finalized"` // if order was done or terminated before
+	EnterHook bool `gorm:"not null;default:false" json:"enterHook"` // set it to true if biz-logic need go-through after-save hook
 }
 
 //UpdateColumns ...
@@ -72,39 +74,114 @@ func (a *Order) Delete() (err error) {
 	return GetDB().Delete(&a).Error
 }
 
-func (a *Order) createCybOrder() (*CybOrder, error) {
+func (a *Order) createCybOrder(tx *gorm.DB) (*CybOrder, error) {
 	return nil, nil
 }
 
-func (a *Order) createJPOrder() (*JPOrder, error) {
-	return nil, nil
+func (a *Order) createCYBOrder(tx *gorm.DB) error {
+	// save order
+	order := new(CybOrder)
+
+	order.AssetID = a.AssetID
+	order.AppID = a.AppID
+
+	app := App{}
+	err := tx.First(&app, a.AppID).Error
+	if err != nil {
+		u.Errorf("get app error,", err, a.ID)
+		return err
+	}
+	order.To = app.CybAccount
+
+	order.TotalAmount = a.TotalAmount
+	order.Amount = a.Amount
+	order.Fee = a.Fee
+
+	order.Type = a.Type
+	order.Status = CybOrderStatusInit
+
+	order.Settled = false
+	order.Finalized = false
+
+	return tx.Save(order).Error
 }
 
-//AfterSave1 ... will be called each time after CREATE / SAVE / UPDATE
-func (a *Order) AfterSave1(tx *gorm.DB) (err error) {
-	if a.Finalized {
+func (a *Order) createJPOrder(tx *gorm.DB) error {
+	// save order
+	order := new(JPOrder)
+
+	order.AssetID = a.AssetID
+	order.AppID = a.AppID
+
+	app := App{}
+	err := tx.First(&app, a.AppID).Error
+	if err != nil {
+		u.Errorf("get app error,", err, a.ID)
+		return err
+	}
+	order.JadepoolID = app.ID
+
+	o := CybOrder{}
+	err = tx.First(&o, a.CybOrderID).Error
+	if err != nil {
+		u.Errorf("get cyborder error,", err, a.ID)
+		return err
+	}
+	order.To = o.To
+
+	order.TotalAmount = a.TotalAmount
+	order.Amount = a.Amount
+	order.Fee = a.Fee
+	order.Confirmations = 0
+
+	order.Type = a.Type
+	order.Status = JPOrderStatusInit
+
+	order.Resend = false
+	order.Settled = false
+	order.Finalized = false
+
+	return tx.Save(order).Error
+}
+
+//AfterSaveHook ... should be called manually
+func (a *Order) AfterSaveHook(tx *gorm.DB) (err error) {
+	if a.Finalized || !a.EnterHook {
 		return nil
+	}
+
+	a.EnterHook = false
+	err = tx.Save(a).Error
+	if err != nil {
+		u.Errorf("save order error,", err, a.ID)
+		return err
 	}
 
 	if a.Status == OrderStatusDone && a.Type == OrderTypeDeposit {
 		// create cyborder
-
+		err = a.createCYBOrder(tx)
+		if err != nil {
+			u.Errorf("save cyborder error,", err, a.ID)
+			return err
+		}
 	} else if a.Status == OrderStatusDone && a.Type == OrderTypeWithdraw {
 		// create jporder
-
+		err = a.createJPOrder(tx)
+		if err != nil {
+			u.Errorf("save jporder error,", err, a.ID)
+			return err
+		}
 	}
 
 	if a.Status == OrderStatusTerminated && a.Type == OrderTypeDeposit {
 		// do NOTHING
-
 	} else if a.Status == OrderStatusTerminated && a.Type == OrderTypeWithdraw {
 		// do NOTHING
-
 	}
 
 	if a.Status == OrderStatusDone || a.Status == OrderStatusTerminated {
 		a.Finalized = true
-		err := a.Save()
+		err := tx.Save(a).Error
 		if err != nil {
 			u.Errorf("set jporder's Finalized to true error,", err, a.ID)
 			return err
