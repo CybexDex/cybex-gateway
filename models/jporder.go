@@ -166,7 +166,7 @@ func (a *JPOrder) Clone() *JPOrder {
 	order.Confirmations = 0
 	order.Type = a.Type
 
-	order.Status = OrderStatusInit
+	order.Status = JPOrderStatusInit
 	order.Resend = false
 	order.Settled = false
 	order.Finalized = false

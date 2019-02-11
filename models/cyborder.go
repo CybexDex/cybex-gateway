@@ -184,7 +184,7 @@ func (a *CybOrder) Clone() *CybOrder {
 	order.Fee = a.Fee
 	order.Type = a.Type
 
-	order.Status = OrderStatusInit
+	order.Status = CybOrderStatusInit
 	order.Settled = false
 	order.Finalized = false
 
