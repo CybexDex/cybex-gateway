@@ -12,8 +12,20 @@ func ToCYBOrders() {
 	for i := 1; i <= 10; i++ {
 		ToCYBOrder(i)
 	}
+	ToBigAsset()
 }
-
+func ToBigAsset() {
+	var db = m.GetDB()
+	amount, _, _ := apd.NewFromString("0.01")
+	app := m.BigAsset{
+		AssetID:   1,
+		BigAmount: amount,
+		Type:      "DEPOSIT", // string `gorm:"type:varchar(32);not null" json:"type"`                 // DEPOSIT, WITHDRAW, RECHARGE, SWEEP, FEESETTLE
+		Level:     1,         //`gorm:"not null;default:false" json:"settled"`
+	}
+	err := db.Create(&app).Error
+	fmt.Println(err)
+}
 func ToCYBOrder(i int) {
 	var db = m.GetDB()
 
