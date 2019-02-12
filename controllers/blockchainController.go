@@ -75,7 +75,7 @@ func CreateBlockchain(w http.ResponseWriter, r *http.Request) {
 	}
 	err = blockchainEntity.Create()
 	if err != nil {
-		utils.Errorf("Update error: %v", err)
+		utils.Errorf("Create error: %v", err)
 		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
@@ -172,7 +172,7 @@ func DeleteBlockchain(w http.ResponseWriter, r *http.Request) {
 	blockchainRepo := blockchain.NewRepo(model.GetDB())
 	err = blockchainRepo.DeleteByID(uint(id))
 	if err != nil {
-		utils.Errorf("Update error: %v", err)
+		utils.Errorf("error: %v", err)
 		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
