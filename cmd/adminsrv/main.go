@@ -38,6 +38,12 @@ func main() {
 	router.HandleFunc("/api/account/login", controllers.Authenticate).Methods("POST")
 	router.HandleFunc("/api/debug/info", controllers.DebugInfo).Methods("GET")
 
+	router.HandleFunc("/api/jadepool/new", controllers.CreateJadepool).Methods("POST")
+	router.HandleFunc("/api/jadepool/{id}", controllers.UpdateJadepool).Methods("PUT")
+	router.HandleFunc("/api/jadepool/{id}", controllers.GetJadepool).Methods("GET")
+	router.HandleFunc("/api/jadepool", controllers.GetAllJadepool).Methods("GET")
+	router.HandleFunc("/api/jadepool/{id}", controllers.DeleteJadepool).Methods("DELETE")
+
 	router.HandleFunc("/api/blockchain/new", controllers.CreateBlockchain).Methods("POST")
 	router.HandleFunc("/api/blockchain/{id}", controllers.UpdateBlockchain).Methods("PUT")
 	router.HandleFunc("/api/blockchain/{id}", controllers.GetBlockchain).Methods("GET")
@@ -52,7 +58,7 @@ func main() {
 
 	// init middleware
 	router.Use(app.NewLoggingMiddle(utils.GetLogger()))
-	router.Use(app.JwtAuthentication) //attach JWT auth middleware
+	//router.Use(app.JwtAuthentication) //attach JWT auth middleware
 
 	listenAddr := os.Getenv("adminsrv.listen_addr")
 	if len(listenAddr) == 0 {
