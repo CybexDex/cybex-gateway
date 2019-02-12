@@ -101,9 +101,3 @@ func HandleOneTime() int {
 	// check order to process it
 	return 0
 }
-func WorkerStart() {
-
-}
-func WorkerStop() {
-
-}
