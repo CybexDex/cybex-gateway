@@ -2,9 +2,11 @@ package ordersrv
 
 import (
 	"fmt"
+	"runtime/debug"
 	"time"
 
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
+	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
 	apim "git.coding.net/yundkyy/cybexgolib/api"
 )
 
@@ -43,35 +45,37 @@ func handleOrders(order1 *m.Order) {
 	asset := &m.Asset{}
 	db.First(asset, order1.AssetID)
 	amount, _ := order1.Amount.Float64()
+	tx := m.GetDB().Begin()
+	defer func() {
+		tx.Save(order1)
+		tx.Commit()
+		if r := recover(); r != nil {
+			utils.Errorf("%v, stack: %s", r, debug.Stack())
+			tx.Rollback()
+		}
+	}()
 	isopen, _ := IsOpen(order1)
+
 	if !isopen {
 		fmt.Println("handle Open")
-		order1.UpdateColumns(&m.Order{
-			Status: "TERMINATED",
-		})
+		order1.Status = "TERMINATED"
 		return
 	}
 	isblack, _ := IsBlack(order1)
 	if isblack {
 		fmt.Println("handle Black")
-		order1.UpdateColumns(&m.Order{
-			Status: "TERMINATED",
-		})
+		order1.Status = "TERMINATED"
 		return
 	}
 	isbig, _ := IsBig(order1)
 	if isbig {
 		fmt.Println("handle WAITING")
-		order1.UpdateColumns(&m.Order{
-			Status: "WAITING",
-		})
+		order1.Status = "WAITING"
 		return
 	}
 	fmt.Println("handle finished", amount)
-	order1.UpdateColumns(&m.Order{
-		Status: "DONE",
-	})
-
+	order1.Status = "DONE"
+	order1.CreateNext(tx)
 }
 
 // HandleWorker ...

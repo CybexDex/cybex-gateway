@@ -143,6 +143,24 @@ func (a *Order) createJPOrder(tx *gorm.DB) error {
 
 	return tx.Save(order).Error
 }
+func (a *Order) CreateNext(tx *gorm.DB) (err error) {
+	if a.Status == OrderStatusDone && a.Type == OrderTypeDeposit {
+		// create cyborder
+		err = a.createCYBOrder(tx)
+		if err != nil {
+			u.Errorf("save cyborder error,", err, a.ID)
+			return err
+		}
+	} else if a.Status == OrderStatusDone && a.Type == OrderTypeWithdraw {
+		// create jporder
+		err = a.createJPOrder(tx)
+		if err != nil {
+			u.Errorf("save jporder error,", err, a.ID)
+			return err
+		}
+	}
+	return nil
+}
 
 //AfterSaveHook ... should be called manually
 func (a *Order) AfterSaveHook(tx *gorm.DB) (err error) {

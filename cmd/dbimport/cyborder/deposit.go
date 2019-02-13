@@ -6,6 +6,7 @@ import (
 
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	"github.com/cockroachdb/apd"
+	"github.com/lib/pq"
 )
 
 func ToCYBOrders() {
@@ -15,6 +16,34 @@ func ToCYBOrders() {
 	}
 	ToBigAsset()
 	ToBlack()
+	ToOrder()
+}
+func ToOrder() {
+	// var db = m.GetDB()
+	amount, _, _ := apd.NewFromString("0.01")
+	orderEntity := new(m.Order)
+	orderEntity.JPOrderID = 1
+	orderEntity.CybOrderID = 1
+	orderEntity.FailedJPOrders = *new(pq.Int64Array)
+	orderEntity.FailedJPOrders = append(orderEntity.FailedJPOrders, 1)
+	orderEntity.FailedJPOrders = append(orderEntity.FailedJPOrders, 1)
+	orderEntity.FailedCybOrders = *new(pq.Int64Array)
+	orderEntity.FailedCybOrders = append(orderEntity.FailedCybOrders, 1)
+	orderEntity.FailedCybOrders = append(orderEntity.FailedCybOrders, 1)
+	orderEntity.JPHash = "cb51b5174b1059549be8b54cd9a8710f510889a465da28fe590c43a38052574b1"
+	orderEntity.JPUUHash = "BTC:cb51b5174b1059549be8b54cd9a8710f510889a465da28fe590c43a38052574b1:1"
+	orderEntity.CybHash = "cb51b5174b1059549be8b54cd9a8710f510889a465da28fe590c43a38052574b"
+	orderEntity.CybUUHash = "BTC:cb51b5174b1059549be8b54cd9a8710f510889a465da28fe590c43a38052574b:1"
+	orderEntity.Status = "INIT"
+	orderEntity.Type = "DEPOSIT"
+	orderEntity.AssetID = 1
+	orderEntity.TotalAmount = amount
+	orderEntity.Amount = amount
+	fee, _, _ := apd.NewFromString("0")
+	orderEntity.Fee = fee
+	orderEntity.AppID = 1
+	err := orderEntity.Create()
+	fmt.Println(err)
 }
 func ToBlack() {
 	var db = m.GetDB()
