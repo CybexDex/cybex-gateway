@@ -58,6 +58,7 @@ func main() {
 
 	// init middleware
 	router.Use(app.NewLoggingMiddle(utils.GetLogger()))
+	router.Use(app.CorsMiddle)
 	//router.Use(app.JwtAuthentication) //attach JWT auth middleware
 
 	listenAddr := os.Getenv("adminsrv.listen_addr")
