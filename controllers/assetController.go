@@ -135,16 +135,27 @@ func UpdateAsset(w http.ResponseWriter, r *http.Request) {
 	}
 	utils.Debugf("request: %s", requestBody)
 
-	assetEntity := model.Asset{}
-	err = json.Unmarshal(requestBody, &assetEntity)
+	updateEntity := model.Asset{}
+	err = json.Unmarshal(requestBody, &updateEntity)
 	if err != nil {
 		utils.Errorf("json.Unmarshal error: %v", err)
 		utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
 		return
 	}
 
-	assetEntity.ID = uint(id)
-	err = assetEntity.Save()
+	assetRepo := asset.NewRepo(model.GetDB())
+	assetEntity, err := assetRepo.GetByID(uint(id))
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utils.Errorf("error: %v", err)
+			utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadGateway)
+			return
+		}
+		utils.Errorf("error: %v", err)
+		utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusInternalServerError)
+		return
+	}
+	err = assetEntity.UpdateColumns(&updateEntity)
 	if err != nil {
 		utils.Errorf("Update error: %v", err)
 		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
