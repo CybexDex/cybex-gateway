@@ -183,7 +183,7 @@ func (a *Order) AfterSaveHook(tx *gorm.DB) (err error) {
 		a.Finalized = true
 		err := tx.Save(a).Error
 		if err != nil {
-			u.Errorf("set jporder's Finalized to true error,", err, a.ID)
+			u.Errorf("set order's Finalized to true error,", err, a.ID)
 			return err
 		}
 	}
