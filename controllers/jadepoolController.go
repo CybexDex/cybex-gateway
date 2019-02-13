@@ -134,16 +134,28 @@ func UpdateJadepool(w http.ResponseWriter, r *http.Request) {
 	}
 	utils.Debugf("request: %s", requestBody)
 
-	jadepoolEntity := model.Jadepool{}
-	err = json.Unmarshal(requestBody, &jadepoolEntity)
+	updateEntity := model.Jadepool{}
+	err = json.Unmarshal(requestBody, &updateEntity)
 	if err != nil {
 		utils.Errorf("json.Unmarshal error: %v", err)
 		utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
 		return
 	}
 
-	jadepoolEntity.ID = uint(id)
-	err = jadepoolEntity.Save()
+	jadepoolRepo := jadepool.NewRepo(model.GetDB())
+	jadepoolEntity, err := jadepoolRepo.GetByID(uint(id))
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			utils.Errorf("error: %v", err)
+			utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadGateway)
+			return
+		}
+		utils.Errorf("error: %v", err)
+		utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusInternalServerError)
+		return
+	}
+
+	err = jadepoolEntity.UpdateColumns(&updateEntity)
 	if err != nil {
 		utils.Errorf("Update error: %v", err)
 		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
