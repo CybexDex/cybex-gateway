@@ -9,6 +9,7 @@ import (
 	"git.coding.net/bobxuyang/cy-gateway-BN/controllers"
 	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/facebookgo/grace/gracehttp"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/spf13/viper"
@@ -58,8 +59,11 @@ func main() {
 
 	// init middleware
 	router.Use(app.NewLoggingMiddle(utils.GetLogger()))
-	router.Use(app.CorsMiddle)
 	//router.Use(app.JwtAuthentication) //attach JWT auth middleware
+	corsHeaders := handlers.AllowedHeaders([]string{"Content-Type", "Content-Length", "Authorization", "Accept", "X-Requested-With", "Current-Page"})
+	corsMethods := handlers.AllowedMethods([]string{"GET", "PUT", "POST", "PATCH", "OPTIONS"})
+	corsOrigins := handlers.AllowedOrigins([]string{"*"})
+	handler := handlers.CORS(corsHeaders, corsMethods, corsOrigins)(router)
 
 	listenAddr := os.Getenv("adminsrv.listen_addr")
 	if len(listenAddr) == 0 {
@@ -67,7 +71,7 @@ func main() {
 	}
 	server := &http.Server{
 		Addr:         listenAddr,
-		Handler:      router,
+		Handler:      handler,
 		ReadTimeout:  time.Second * 10,
 		WriteTimeout: time.Second * 10,
 	}
