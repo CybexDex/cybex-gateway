@@ -2,6 +2,7 @@ package cyborder
 
 import (
 	"fmt"
+	"math/rand"
 
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	"github.com/cockroachdb/apd"
@@ -10,9 +11,19 @@ import (
 func ToCYBOrders() {
 	// tOrder()
 	for i := 1; i <= 10; i++ {
-		ToCYBOrder(i)
+		// ToCYBOrder(i)
 	}
 	ToBigAsset()
+	ToBlack()
+}
+func ToBlack() {
+	var db = m.GetDB()
+	black := m.Black{
+		Address:    "yangyu1",
+		Blockchain: "CYB",
+	}
+	err := db.Create(&black).Error
+	fmt.Println(err)
 }
 func ToBigAsset() {
 	var db = m.GetDB()
@@ -34,9 +45,13 @@ func ToCYBOrder(i int) {
 	fee, _, _ := apd.NewFromString("0.00200000")
 	s := fmt.Sprintf("0.001%d", i)
 	amount, _, _ := apd.NewFromString(s)
+	tos := []string{"yangyu1", "yangyu2"}
+
+	j := rand.Intn(len(tos))
+	to := tos[j]
 	app := m.CybOrder{
 		From: "yangyu123",
-		To:   "yangyu1",
+		To:   to,
 		// FeeAssetID uint
 
 		TotalAmount: totalamount, // totalAmount = amount + fee
