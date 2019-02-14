@@ -1,7 +1,6 @@
 package ordersrv
 
 import (
-	"fmt"
 	"runtime/debug"
 	"time"
 
@@ -57,23 +56,19 @@ func handleOrders(order1 *m.Order) {
 	isopen, _ := IsOpen(order1)
 
 	if !isopen {
-		fmt.Println("handle Open")
 		order1.Status = "TERMINATED"
 		return
 	}
 	isblack, _ := IsBlack(order1)
 	if isblack {
-		fmt.Println("handle Black")
 		order1.Status = "TERMINATED"
 		return
 	}
 	isbig, _ := IsBig(order1)
 	if isbig {
-		fmt.Println("handle WAITING")
 		order1.Status = "WAITING"
 		return
 	}
-	fmt.Println("handle finished", amount)
 	order1.Status = "DONE"
 	order1.CreateNext(tx)
 }
@@ -81,7 +76,6 @@ func handleOrders(order1 *m.Order) {
 // HandleWorker ...
 func HandleWorker() {
 	for {
-		fmt.Println("start handle...")
 		for {
 			ret := HandleOneTime()
 			if ret != 0 {
@@ -90,7 +84,7 @@ func HandleWorker() {
 		}
 		db := m.GetDB()
 		rownum := db.Exec("update orders set status='INIT' where status='FAIL'").RowsAffected
-		fmt.Println("fails=>init", rownum, "waiting next...", 10)
+		utils.Infof("fails=>init... %d", rownum)
 		time.Sleep(time.Second * 10)
 	}
 }

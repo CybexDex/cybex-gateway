@@ -1,7 +1,6 @@
 package cybsrv
 
 import (
-	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -49,21 +48,20 @@ func findOrders() (*m.CybOrder, error) {
 }
 func handleOrders(order1 *m.CybOrder) {
 	// fmt.Println("order1", order1)
-	fmt.Println("send cyborder id", order1.ID, order1.From, order1.To, order1.Amount, order1.AssetID)
+	// utils.Infof("order noti request:\n %s", requestBody)
+	// fmt.Println("send cyborder id", order1.ID, order1.From, order1.To, order1.Amount, order1.AssetID)
 	db := m.GetDB()
 	asset := &m.Asset{}
 	db.First(asset, order1.AssetID)
 	amount, _ := order1.Amount.Float64()
 	re, err := api.Send(order1.From, order1.To, amount, asset.CybID, "", gatewayPassword)
 	if err != nil {
-		fmt.Println(1, err)
 		if strings.Contains(err.Error(), "skip_transaction_dupe_check") {
 			order1.UpdateColumns(&m.CybOrder{
 				Status: "FAIL",
 			})
 		}
 	} else {
-		fmt.Println(re)
 		order1.UpdateColumns(&m.CybOrder{
 			Status: "PENDING",
 		})
@@ -73,7 +71,7 @@ func handleOrders(order1 *m.CybOrder) {
 // HandleWorker ...
 func HandleWorker() {
 	for {
-		fmt.Println("start handle...")
+		utils.Infof("start...")
 		for {
 			ret := HandleOneTime()
 			if ret != 0 {
@@ -82,7 +80,8 @@ func HandleWorker() {
 		}
 		db := m.GetDB()
 		rownum := db.Exec("update cyb_orders set status='INIT' where status='FAIL'").RowsAffected
-		fmt.Println("fails=>init", rownum, "waiting next...", 10)
+		// fmt.Println("fails=>init", rownum, "waiting next...", 10)
+		utils.Infof("fails=>init... %d", rownum)
 		time.Sleep(time.Second * 10)
 	}
 }

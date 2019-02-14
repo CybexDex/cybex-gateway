@@ -2,7 +2,6 @@ package order
 
 import (
 	"database/sql"
-	"fmt"
 
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	r "git.coding.net/bobxuyang/cy-gateway-BN/repository"
@@ -87,8 +86,6 @@ func (repo *Repo) MDB() *gorm.DB {
 
 //Rows
 func (repo *Repo) Rows(o *m.Order) (*sql.Rows, error) {
-	x := repo.DB.Where(o)
-	fmt.Println("ss", x)
 	rows, err := repo.DB.Where(o).Rows()
 	defer rows.Close()
 	return rows, err

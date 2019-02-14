@@ -2,7 +2,6 @@ package ordersrv
 
 import (
 	"errors"
-	"fmt"
 
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
 )
@@ -34,7 +33,7 @@ func IsBlack(order1 *m.Order) (bool, error) {
 	db.First(blockchain, asset.BlockchainID)
 	db.First(jporder, order1.JPOrderID)
 	db.First(app, order1.AppID)
-	fmt.Println(blockchain.Name, jporder.To, jporder.From, app.CybAccount)
+	// fmt.Println(blockchain.Name, jporder.To, jporder.From, app.CybAccount)
 	black := &m.Black{}
 	db.Where(&m.Black{
 		Blockchain: blockchain.Name,
@@ -61,7 +60,7 @@ func IsBig(order1 *m.Order) (bool, error) {
 	db := m.GetDB()
 	big := &m.BigAsset{}
 	db.Raw("SELECT * FROM big_assets WHERE asset_id = ? and type =? and big_amount < ?", order1.AssetID, order1.Type, order1.TotalAmount).Scan(&big)
-	fmt.Println("big", big)
+	// fmt.Println("big", big)
 	if big.AssetID > 0 {
 		return true, nil
 	}

@@ -2,7 +2,6 @@ package usersrvc
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -49,9 +48,6 @@ func saveTokenExp(user string, token string, expiration uint) error {
 		Expiration: expiration,
 	}
 	err := cybtoken.SaveUniqueBy(m.CybToken{CybAccount: user})
-	if err != nil {
-		fmt.Println(err)
-	}
 	return err
 }
 
@@ -63,7 +59,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	}
 	user, token, timestamp := checkIsUser(opMsg.Signer, opMsg.Op)
-	fmt.Println(user, token, timestamp)
 	saveTokenExp(user, token, timestamp)
 	msg := makeRes(user, opMsg.Signer)
 	u.Respond(w, msg, 200)
@@ -82,7 +77,6 @@ func Asset(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, msg, 200)
 }
 func createCybexUserApp(user string) *m.App {
-	fmt.Println("create app")
 	newapp := &m.App{
 		CybAccount: user,
 	}
@@ -99,16 +93,13 @@ type JPData struct {
 }
 
 func createCybexUserAddress(addrQ *m.Address) *m.Address {
-	fmt.Println("create address")
 	asset := &m.Asset{}
 	db := m.GetDB()
 	db.First(asset, addrQ.AssetID)
 	url := viper.GetString("usersrv.jpsrv_url") + "/api/address/new?type=" + asset.Name
 	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Println(err)
 	}
-	fmt.Println(resp)
 	_bodyBytes, err := ioutil.ReadAll(resp.Body)
 	resObj := &JPData{}
 	err = json.Unmarshal(_bodyBytes, resObj)
