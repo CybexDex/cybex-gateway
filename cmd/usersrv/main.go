@@ -27,7 +27,7 @@ func main() {
 	logLevel := viper.GetString("usersrv.log_level")
 	utils.InitLog(logDir, logLevel)
 	utils.Infof("build info: %s_%s_%s", buildtime, branch, githash)
-	// 配置路由
+	// route
 	router := mux.NewRouter()
 	router.HandleFunc("/api/test", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("ok"))
