@@ -93,69 +93,88 @@ func AllAsset(w http.ResponseWriter, r *http.Request) {
 	}
 	u.Respond(w, msg, 200)
 }
-func createCybexUserApp(user string) *m.App {
+func createCybexUserApp(user string) (*m.App, error) {
 	newapp := &m.App{
 		CybAccount: user,
 	}
-	newapp.Save()
-	return newapp
+	err := newapp.Save()
+	return newapp, err
 }
 
 type JPData struct {
-	Status string `json:"status"`
+	Status bool `json:"status"`
 	Data   struct {
 		Address string `json:"address"`
 		Type    string `json:"type"`
 	} `json:"data"`
 }
 
-func createCybexUserAddress(addrQ *m.Address) *m.Address {
+func createCybexUserAddress(addrQ *m.Address) (*m.Address, error) {
 	asset := &m.Asset{}
 	db := m.GetDB()
 	db.First(asset, addrQ.AssetID)
 	url := viper.GetString("usersrv.jpsrv_url") + "/api/address/new?type=" + asset.Name
+	// u.Infoln(url)
 	resp, err := http.Get(url)
 	if err != nil {
+		return nil, err
 	}
 	_bodyBytes, err := ioutil.ReadAll(resp.Body)
 	resObj := &JPData{}
 	err = json.Unmarshal(_bodyBytes, resObj)
+	if err != nil {
+		u.Errorf("error %v", err)
+		return nil, err
+	}
 	addrQ.Address = resObj.Data.Address
-	addrQ.Save()
-	return addrQ
+	err = addrQ.Save()
+	if err != nil {
+		u.Errorf("error %v", err)
+		return nil, err
+	}
+	return addrQ, nil
 }
-func findAppOrCreate(user string) *m.App {
+func findAppOrCreate(user string) (*m.App, error) {
 	appQ := &m.App{
 		CybAccount: user,
 	}
 	apps, err := rep.App.FetchWith(appQ)
 	if err != nil {
-
+		return nil, err
 	}
 	var app1 *m.App
 	if len(apps) == 0 {
-		app1 = createCybexUserApp(user)
+		app1, err := createCybexUserApp(user)
+		if err != nil {
+			return app1, err
+		}
 	} else {
 		app1 = apps[0]
 	}
-	return app1
+	return app1, nil
 }
 func findAssetByName(name string) (*m.Asset, error) {
 	return rep.Asset.GetByName(name)
 }
-func findAddrOrCreate(app *m.App, asset *m.Asset) *m.Address {
+func findAddrOrCreate(app *m.App, asset *m.Asset) (*m.Address, error) {
 	addrQ := &m.Address{
 		AppID:   app.ID,
 		AssetID: asset.ID,
 	}
-	addrs, _ := rep.Address.FetchWith(addrQ)
+	addrs, err := rep.Address.FetchWith(addrQ)
+	if err != nil {
+		return nil, err
+	}
 	var addr1 *m.Address
 	if len(addrs) == 0 {
-		addr1 = createCybexUserAddress(addrQ)
+		addr1, err = createCybexUserAddress(addrQ)
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		addr1 = addrs[0]
 	}
-	return addr1
+	return addr1, nil
 }
 
 // DepositAddress ...
@@ -163,13 +182,24 @@ func DepositAddress(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	user := vars["user"]
 	asset := vars["asset"]
-	app1 := findAppOrCreate(user)
+	app1, err := findAppOrCreate(user)
+	if err != nil {
+		u.Errorf("error %v", err)
+		u.Respond(w, u.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
 	asset1, err := findAssetByName(asset)
 	if err != nil {
+		u.Errorf("error %v", err)
 		u.Respond(w, u.Message(false, "asset not support!"), http.StatusBadRequest)
 		return
 	}
-	addr := findAddrOrCreate(app1, asset1)
+	addr, err := findAddrOrCreate(app1, asset1)
+	if err != nil {
+		u.Errorf("error %v", err)
+		u.Respond(w, u.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
 	msg := map[string]interface{}{
 		"code": 200, // 200:ok  400:fail
 		"data": map[string]interface{}{
