@@ -56,24 +56,41 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	opMsg := &OpMsg{}
 	err := json.NewDecoder(r.Body).Decode(opMsg)
 	if err != nil {
-
+		u.Errorf("err: %v", err)
+		u.Respond(w, u.Message(false, "Invalid request"), http.StatusBadRequest)
+		return
 	}
 	user, token, timestamp := checkIsUser(opMsg.Signer, opMsg.Op)
-	saveTokenExp(user, token, timestamp)
+	err = saveTokenExp(user, token, timestamp)
+	if err != nil {
+		u.Errorf("err: %v", err)
+		u.Respond(w, u.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
 	msg := makeRes(user, opMsg.Signer)
 	u.Respond(w, msg, 200)
 
 }
-func findAsset() map[string]interface{} {
-	return map[string]interface{}{
-		"code": 200, // 200:ok  400:fail
-		"data": []string{"BTC", "ETH"},
+func findAsset() ([]*m.Asset, error) {
+	assets, err := rep.Asset.FetchAll()
+	if err != nil {
+		return nil, err
 	}
+	return assets, err
 }
 
-// Asset ...
-func Asset(w http.ResponseWriter, r *http.Request) {
-	msg := findAsset()
+// AllAsset ...
+func AllAsset(w http.ResponseWriter, r *http.Request) {
+	assets, err := findAsset()
+	if err != nil {
+		u.Errorf("err: %v", err)
+		u.Respond(w, u.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
+	msg := map[string]interface{}{
+		"code": 200, // 200:ok  400:fail
+		"data": assets,
+	}
 	u.Respond(w, msg, 200)
 }
 func createCybexUserApp(user string) *m.App {
