@@ -15,6 +15,8 @@ type Repository interface {
 	DeleteByID(id uint) error
 	Create(a *m.CybOrder) (err error)
 	MDB() *gorm.DB
+	HoldingOne() *m.CybOrder
+	UpdateAll(where *m.CybOrder, update *m.CybOrder) *gorm.DB
 }
 
 //Repo ...
@@ -32,6 +34,28 @@ func NewRepo(db *gorm.DB) Repository {
 // MDB ...
 func (repo *Repo) MDB() *gorm.DB {
 	return repo.DB.Model(&m.CybOrder{})
+}
+
+// UpdateAll ...
+func (repo *Repo) UpdateAll(where *m.CybOrder, update *m.CybOrder) *gorm.DB {
+	return repo.DB.Model(&m.CybOrder{}).Where(where).Update(update)
+}
+
+//HoldingOne ...
+func (repo *Repo) HoldingOne() *m.CybOrder {
+	var order1 m.CybOrder
+	s := `update cyb_orders 
+	set status = 'HOLDING' 
+	where id = (
+				select id 
+				from cyb_orders 
+				where status = 'INIT' 
+				order by id
+				limit 1
+			)
+	returning *`
+	repo.DB.Raw(s).Scan(&order1)
+	return &order1
 }
 
 //FetchAll ...
