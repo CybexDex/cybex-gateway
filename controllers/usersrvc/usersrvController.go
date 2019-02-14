@@ -3,12 +3,14 @@ package usersrvc
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	rep "git.coding.net/bobxuyang/cy-gateway-BN/help/singleton"
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	u "git.coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/gorilla/mux"
+	"github.com/spf13/viper"
 )
 
 // OpMsg ...
@@ -87,11 +89,32 @@ func createCybexUserApp(user string) *m.App {
 	newapp.Save()
 	return newapp
 }
+
+type JPData struct {
+	Status string `json:"status"`
+	Data   struct {
+		Address string `json:"address"`
+		Type    string `json:"type"`
+	} `json:"data"`
+}
+
 func createCybexUserAddress(addrQ *m.Address) *m.Address {
 	fmt.Println("create address")
-	return &m.Address{
-		Address: "ox123444444",
+	asset := &m.Asset{}
+	db := m.GetDB()
+	db.First(asset, addrQ.AssetID)
+	url := viper.GetString("usersrv.jpsrv_url") + "/api/address/new?type=" + asset.Name
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Println(err)
 	}
+	fmt.Println(resp)
+	_bodyBytes, err := ioutil.ReadAll(resp.Body)
+	resObj := &JPData{}
+	err = json.Unmarshal(_bodyBytes, resObj)
+	addrQ.Address = resObj.Data.Address
+	addrQ.Save()
+	return addrQ
 }
 func findAppOrCreate(user string) *m.App {
 	appQ := &m.App{

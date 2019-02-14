@@ -7,6 +7,7 @@ usersrv:
   listen_addr: ":8181"
   log_dir: ""
   log_level: "DEBUG"
+  jpsrv_url: "http://39.98.58.238:8081"
 adminsrv:
   listen_addr: ":8082"
   log_dir: ""
