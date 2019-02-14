@@ -12,8 +12,8 @@ adminsrv:
 jadepool:
   pri_key: "bf12996feeaa2977b6ca0d33a0e8bd2ccfc4844c6f8a7e6d15c099f8da4a255c"
   pub_key: "03ace32532c90652e1bae916248e427a7ab10aeeea1067949669a3f4da10965ef9"
-  callback_url: "http://39.98.58.238:8081"
-  jadepool_url: "http://39.98.58.238:7001"
+  self_addr: "http://39.98.58.238:8081"
+  jadepool_addr: "http://39.98.58.238:7001"
 
 cybsrv:
   node: "wss://shanghai.51nebula.com/"

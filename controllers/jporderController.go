@@ -387,7 +387,7 @@ func SendOrder(w http.ResponseWriter, r *http.Request) {
 	jptransaction.Value = jporder.Amount.String()
 	jptransaction.To = jporder.To
 	jptransaction.Timestamp = timestamp
-	jptransaction.Callback = viper.GetString("jadepool.self_url") + "/api/order/noti"
+	jptransaction.Callback = viper.GetString("jadepool.self_addr") + "/api/order/noti"
 
 	sendData := &JPSendData{}
 	sendData.Crypto = "ecc"
@@ -407,7 +407,7 @@ func SendOrder(w http.ResponseWriter, r *http.Request) {
 	sendData.Sig = sig
 
 	bs, _ := json.Marshal(sendData)
-	jadepoolURL := viper.GetString("jadepool.jadepool_url")
+	jadepoolURL := viper.GetString("jadepool.jadepool_addr")
 	url := jadepoolURL + "/api/v1/transactions/"
 
 	orderResp := JPComeData{}
@@ -497,7 +497,7 @@ func GetNewAddress(w http.ResponseWriter, r *http.Request) {
 	requestAddress := JPAddressRequest{}
 	requestAddress.Timestamp = timestamp
 	requestAddress.Type = coinType
-	requestAddress.Callback = viper.GetString("jadepool.self_url") + "/api/order/noti"
+	requestAddress.Callback = viper.GetString("jadepool.self_addr") + "/api/order/noti"
 
 	sendData := &JPSendData{}
 	sendData.Crypto = "ecc"
@@ -517,7 +517,7 @@ func GetNewAddress(w http.ResponseWriter, r *http.Request) {
 	sendData.Sig = sig
 
 	bs, _ := json.Marshal(sendData)
-	jadepoolURL := viper.GetString("jadepool.jadepool_url")
+	jadepoolURL := viper.GetString("jadepool.jadepool_addr")
 	url := jadepoolURL + "/api/v1/addresses/new"
 
 	data := JPComeData{}
@@ -572,8 +572,8 @@ func GetNewAddress(w http.ResponseWriter, r *http.Request) {
 func GetNewAddress2(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	coinType := query.Get("type")
-	callbackURL := viper.GetString("jadepool.self_url")
-	jadepoolURL := viper.GetString("jadepool.jadepool_url")
+	callbackURL := viper.GetString("jadepool.self_addr")
+	jadepoolURL := viper.GetString("jadepool.jadepool_addr")
 	pubKey := viper.GetString("jadepool.pub_key")
 	priKey := viper.GetString("jadepool.pri_key")
 	appID := "app"
