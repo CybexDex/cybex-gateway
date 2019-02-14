@@ -3,6 +3,7 @@ package controllers
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -549,6 +550,7 @@ func GetNewAddress(w http.ResponseWriter, r *http.Request) {
 	if os.Getenv("env") != "dev" {
 		// verify sig
 		pubKey := viper.GetString("jadepool.pub_key")
+		data.Result["timestamp"] = data.Timestamp
 		ok, err := utils.VerifyECCSign(data.Result, &data.Sig, pubKey)
 		if err != nil {
 			utils.Errorf("verifySign error: %v, data: %#v", err, data)
@@ -564,6 +566,90 @@ func GetNewAddress(w http.ResponseWriter, r *http.Request) {
 
 	resp := utils.Message(true, "success", data.Result)
 	utils.Respond(w, resp)
+}
+
+// GetNewAddress2 ...
+func GetNewAddress2(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query()
+	coinType := query.Get("type")
+	callbackURL := viper.GetString("jadepool.self_url")
+	jadepoolURL := viper.GetString("jadepool.jadepool_url")
+	pubKey := viper.GetString("jadepool.pub_key")
+	priKey := viper.GetString("jadepool.pri_key")
+	appID := "app"
+	result, err := GetAddressFromJadepool(coinType, callbackURL, appID, jadepoolURL, priKey, pubKey)
+	if err != nil {
+		utils.Errorf("err: %v", err)
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
+
+	resp := utils.Message(true, "success", result)
+	utils.Respond(w, resp)
+}
+
+// GetAddressFromJadepool ...
+func GetAddressFromJadepool(coinType, callbackURL, appID, jadepoolURL string, priKey string, pubKey string) (map[string]interface{}, error) {
+	if len(coinType) == 0 {
+		return nil, errors.New("coin type is empty")
+	}
+	coinType = strings.ToUpper(coinType)
+
+	timestamp := time.Now().Unix() * 1000
+	requestAddress := JPAddressRequest{}
+	requestAddress.Timestamp = timestamp
+	requestAddress.Type = coinType
+	requestAddress.Callback = callbackURL + "/api/order/noti"
+
+	sendData := &JPSendData{}
+	sendData.Crypto = "ecc"
+	sendData.Encode = "base64"
+	sendData.Timestamp = timestamp
+	sendData.Hash = "sha3"
+	sendData.AppID = appID
+	sendData.Data = &requestAddress
+
+	sig, err := utils.SignECCData(priKey, sendData.Data)
+	if err != nil {
+		return nil, fmt.Errorf("SignECCData error: %v", err)
+	}
+	sendData.Sig = sig
+
+	bs, _ := json.Marshal(sendData)
+	url := jadepoolURL + "/api/v1/addresses/new"
+
+	data := JPComeData{}
+	resp, err := http.Post(url, "application/json", bytes.NewReader(bs))
+	if err != nil {
+		return nil, fmt.Errorf("post error: %v", err)
+	}
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		return nil, fmt.Errorf("ReadAll error: %v", err)
+	}
+
+	err = json.Unmarshal(bodyBytes, &data)
+	if err != nil {
+		return nil, fmt.Errorf("Unmarshal error: %v, body: %s", err, string(bodyBytes))
+	}
+	if os.Getenv("env") != "dev" {
+		// verify sig
+		data.Result["timestamp"] = data.Timestamp
+		ok, err := utils.VerifyECCSign(data.Result, &data.Sig, pubKey)
+		if err != nil {
+			return nil, fmt.Errorf("verifySign error: %v, data: %#v", err, data)
+		}
+		if !ok {
+			return nil, fmt.Errorf("verify result: %v, data: %#v", ok, data)
+		}
+	}
+
+	if data.Code != 0 || data.Status != 0 || data.Result == nil || data.Result["address"] == nil {
+		return nil, fmt.Errorf("not found address, data: %#v", data)
+	}
+
+	return data.Result, nil
 }
 
 func parseIndexFromResult(result *OrderNotiResult) int {
