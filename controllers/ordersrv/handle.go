@@ -23,8 +23,6 @@ func IsOpen(order1 *m.Order) (bool, error) {
 
 // IsBlack ...
 func IsBlack(order1 *m.Order) (bool, error) {
-
-	db := m.GetDB()
 	asset, err := rep.Asset.GetByID(order1.AssetID)
 	if err != nil {
 		return false, err
@@ -41,24 +39,28 @@ func IsBlack(order1 *m.Order) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	// fmt.Println(blockchain.Name, jporder.To, jporder.From, app.CybAccount)
-	black := &m.Black{}
-	db.Where(&m.Black{
+	blacks, err := rep.Black.FetchWithOr(&m.Black{
 		Blockchain: blockchain.Name,
 		Address:    jporder.To,
-	}).Or(&m.Black{
+	}, &m.Black{
 		Blockchain: blockchain.Name,
 		Address:    jporder.From,
-	}).First(black)
-	if black.ID > 0 {
-		return true, errors.New("black:" + black.Address)
+	})
+	if err != nil {
+		return false, err
 	}
-	db.Where(&m.Black{
+	if len(blacks) > 0 {
+		return true, nil
+	}
+	blacks, err = rep.Black.FetchWith(&m.Black{
 		Blockchain: "CYB",
 		Address:    app.CybAccount,
-	}).First(black)
-	if black.ID > 0 {
-		return true, errors.New("black:" + black.Address)
+	})
+	if err != nil {
+		return false, err
+	}
+	if len(blacks) > 0 {
+		return true, nil
 	}
 	return false, nil
 }

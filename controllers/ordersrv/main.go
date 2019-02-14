@@ -39,6 +39,7 @@ func handleOrders(order1 *m.Order) {
 	}()
 	isopen, err := IsOpen(order1)
 	if err != nil {
+		utils.Errorln("handleOrders IsOpen", err)
 		order1.Status = m.OrderStatusFailed
 		return
 	}
@@ -48,6 +49,7 @@ func handleOrders(order1 *m.Order) {
 	}
 	isblack, err := IsBlack(order1)
 	if err != nil {
+		utils.Errorln("handleOrders isblack", err)
 		order1.Status = m.OrderStatusFailed
 		return
 	}
@@ -55,7 +57,12 @@ func handleOrders(order1 *m.Order) {
 		order1.Status = m.OrderStatusTerminated
 		return
 	}
-	isbig, _ := IsBig(order1)
+	isbig, err := IsBig(order1)
+	if err != nil {
+		utils.Errorln("handleOrders isbig", err)
+		order1.Status = m.OrderStatusFailed
+		return
+	}
 	if isbig {
 		order1.Status = m.OrderStatusWaiting
 		return
