@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	ordersrv.HandleOneTime()
+	ordersrv.HandleWorker()
 }
