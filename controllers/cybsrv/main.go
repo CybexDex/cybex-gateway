@@ -47,10 +47,6 @@ func findOrders() (*m.CybOrder, error) {
 	// Or commit the transaction
 	return &order1, nil
 }
-func handleOrders2(order1 *m.CybOrder) {
-	fmt.Println("send cyborder id", order1.ID, order1.From, order1.To, order1.Amount, order1.AssetID)
-	// time.Sleep(time.Second * 1)
-}
 func handleOrders(order1 *m.CybOrder) {
 	// fmt.Println("order1", order1)
 	fmt.Println("send cyborder id", order1.ID, order1.From, order1.To, order1.Amount, order1.AssetID)
