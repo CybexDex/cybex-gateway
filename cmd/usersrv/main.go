@@ -1,9 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
-	"os"
 	"time"
 
 	"git.coding.net/bobxuyang/cy-gateway-BN/app"
@@ -12,7 +10,7 @@ import (
 	"github.com/facebookgo/grace/gracehttp"
 	"github.com/gorilla/mux"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"github.com/joho/godotenv"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -23,12 +21,10 @@ var (
 
 func main() {
 	// 配置初始化日志
-	e := godotenv.Load()
-	if e != nil {
-		fmt.Print(e)
-	}
-	logDir := os.Getenv("log_dir")
-	logLevel := os.Getenv("log_level")
+	utils.InitConfig()
+	// init loggger
+	logDir := viper.GetString("usersrv.log_dir")
+	logLevel := viper.GetString("usersrv.log_level")
 	utils.InitLog(logDir, logLevel)
 	utils.Infof("build info: %s_%s_%s", buildtime, branch, githash)
 	// 配置路由
@@ -41,7 +37,7 @@ func main() {
 	router.HandleFunc("/deposit_address/{user}/{asset}", usersrvc.DepositAddress).Methods("GET")
 	router.Use(app.NewLoggingMiddle(utils.GetLogger()))
 
-	listenAddr := os.Getenv("listen_addr")
+	listenAddr := viper.GetString("usersrv.listen_addr")
 	utils.Infof("%s", listenAddr)
 	if len(listenAddr) == 0 {
 		listenAddr = ":8081"

@@ -3,7 +3,10 @@ jpsrv:
   listen_addr: ":8081"
   log_dir: ""
   log_level: "DEBUG"
-
+usersrv:
+  listen_addr: ":8181"
+  log_dir: ""
+  log_level: "DEBUG"
 adminsrv:
   listen_addr: ":8082"
   log_dir: ""
