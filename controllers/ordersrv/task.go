@@ -43,7 +43,6 @@ func handleOrders(order1 *m.Order) {
 	db := m.GetDB()
 	asset := &m.Asset{}
 	db.First(asset, order1.AssetID)
-	amount, _ := order1.Amount.Float64()
 	tx := m.GetDB().Begin()
 	defer func() {
 		tx.Save(order1)

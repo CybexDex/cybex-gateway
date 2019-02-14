@@ -54,7 +54,7 @@ func handleOrders(order1 *m.CybOrder) {
 	asset := &m.Asset{}
 	db.First(asset, order1.AssetID)
 	amount, _ := order1.Amount.Float64()
-	re, err := api.Send(order1.From, order1.To, amount, asset.CybID, "", gatewayPassword)
+	_, err := api.Send(order1.From, order1.To, amount, asset.CybID, "", gatewayPassword)
 	if err != nil {
 		if strings.Contains(err.Error(), "skip_transaction_dupe_check") {
 			order1.UpdateColumns(&m.CybOrder{
