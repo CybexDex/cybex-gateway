@@ -18,6 +18,8 @@ type Repository interface {
 	Create(a *m.Order) (err error)
 	Rows(o *m.Order) (*sql.Rows, error)
 	MDB() *gorm.DB
+	UpdateAll(where *m.Order, update *m.Order) *gorm.DB
+	HoldingOne() *m.Order
 }
 
 //Repo ...
@@ -30,6 +32,28 @@ func NewRepo(db *gorm.DB) Repository {
 	return &Repo{
 		DB: db,
 	}
+}
+
+// UpdateAll ...
+func (repo *Repo) UpdateAll(where *m.Order, update *m.Order) *gorm.DB {
+	return repo.DB.Model(&m.Order{}).Where(where).Update(update)
+}
+
+//HoldingOne ...
+func (repo *Repo) HoldingOne() *m.Order {
+	var order1 m.Order
+	s := `update orders 
+	set status = 'PROCESSING' 
+	where id = (
+				select id 
+				from orders 
+				where status = 'INIT' 
+				order by id
+				limit 1
+			)
+	returning *`
+	repo.DB.Raw(s).Scan(&order1)
+	return &order1
 }
 
 //FetchAll ...

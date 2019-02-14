@@ -3,14 +3,16 @@ package ordersrv
 import (
 	"errors"
 
+	rep "git.coding.net/bobxuyang/cy-gateway-BN/help/singleton"
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
 )
 
 // IsOpen ...
 func IsOpen(order1 *m.Order) (bool, error) {
-	db := m.GetDB()
-	asset := &m.Asset{}
-	db.First(asset, order1.AssetID)
+	asset, err := rep.Asset.GetByID(order1.AssetID)
+	if err != nil {
+		return false, err
+	}
 	if order1.Type == m.OrderTypeDeposit {
 		return asset.DepositSwitch, nil
 	} else if order1.Type == m.OrderTypeWithdraw {
@@ -21,18 +23,24 @@ func IsOpen(order1 *m.Order) (bool, error) {
 
 // IsBlack ...
 func IsBlack(order1 *m.Order) (bool, error) {
-	// order.asset.blockchain.Name  order.jporder.to order.jporder.from
-	// order.app.cybname
 
 	db := m.GetDB()
-	blockchain := &m.Blockchain{}
-	asset := &m.Asset{}
-	jporder := &m.JPOrder{}
-	app := &m.App{}
-	db.First(asset, order1.AssetID)
-	db.First(blockchain, asset.BlockchainID)
-	db.First(jporder, order1.JPOrderID)
-	db.First(app, order1.AppID)
+	asset, err := rep.Asset.GetByID(order1.AssetID)
+	if err != nil {
+		return false, err
+	}
+	blockchain, err := rep.Blockchain.GetByID(asset.BlockchainID)
+	if err != nil {
+		return false, err
+	}
+	jporder, err := rep.JPOrder.GetByID(order1.JPOrderID)
+	if err != nil {
+		return false, err
+	}
+	app, err := rep.App.GetByID(order1.AppID)
+	if err != nil {
+		return false, err
+	}
 	// fmt.Println(blockchain.Name, jporder.To, jporder.From, app.CybAccount)
 	black := &m.Black{}
 	db.Where(&m.Black{

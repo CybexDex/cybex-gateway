@@ -4,6 +4,7 @@ import (
 	"runtime/debug"
 	"time"
 
+	rep "git.coding.net/bobxuyang/cy-gateway-BN/help/singleton"
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
 	apim "git.coding.net/yundkyy/cybexgolib/api"
@@ -16,33 +17,17 @@ func init() {
 
 }
 func findOrders() (*m.Order, error) {
-	db := m.GetDB()
-	// do some database operations in the transaction (use 'tx' from this point, not 'db')
-	var order1 m.Order
-
-	// time.Sleep(time.Second * 2)
-	// fmt.Println("ID", order1.ID)
-	s := `update orders 
-	set status = 'PROCESSING' 
-	where id = (
-				select id 
-				from orders 
-				where status = 'INIT' 
-				order by id
-				limit 1
-			)
-	returning *`
-	db.Raw(s).Scan(&order1)
-	// ...
-	// Or commit the transaction
-	return &order1, nil
+	return rep.Order.HoldingOne(), nil
 }
 func handleOrders(order1 *m.Order) {
-	// fmt.Println("order1", order1)
-	// fmt.Println("send order id", order1.ID, order1.From, order1.To, order1.Amount, order1.AssetID)
-	db := m.GetDB()
-	asset := &m.Asset{}
-	db.First(asset, order1.AssetID)
+	_, err := rep.Asset.GetByID(order1.AssetID)
+	if err != nil {
+		utils.Errorln("handleOrders asset", err)
+		order1.UpdateColumns(&m.Order{
+			Status: m.OrderStatusFailed,
+		})
+		return
+	}
 	tx := m.GetDB().Begin()
 	defer func() {
 		tx.Save(order1)
@@ -52,38 +37,43 @@ func handleOrders(order1 *m.Order) {
 			tx.Rollback()
 		}
 	}()
-	isopen, _ := IsOpen(order1)
-
-	if !isopen {
-		order1.Status = "TERMINATED"
+	isopen, err := IsOpen(order1)
+	if err != nil {
+		order1.Status = m.OrderStatusFailed
 		return
 	}
-	isblack, _ := IsBlack(order1)
+	if !isopen {
+		order1.Status = m.OrderStatusTerminated
+		return
+	}
+	isblack, err := IsBlack(order1)
+	if err != nil {
+		order1.Status = m.OrderStatusFailed
+		return
+	}
 	if isblack {
-		order1.Status = "TERMINATED"
+		order1.Status = m.OrderStatusTerminated
 		return
 	}
 	isbig, _ := IsBig(order1)
 	if isbig {
-		order1.Status = "WAITING"
+		order1.Status = m.OrderStatusWaiting
 		return
 	}
-	order1.Status = "DONE"
+	order1.Status = m.OrderStatusDone
 	order1.CreateNext(tx)
 }
 
 // HandleWorker ...
 func HandleWorker() {
 	for {
+		utils.Infoln("start...")
 		for {
 			ret := HandleOneTime()
 			if ret != 0 {
 				break
 			}
 		}
-		db := m.GetDB()
-		rownum := db.Exec("update orders set status='INIT' where status='FAIL'").RowsAffected
-		utils.Infof("fails=>init... %d", rownum)
 		time.Sleep(time.Second * 10)
 	}
 }
