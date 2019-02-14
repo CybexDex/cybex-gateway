@@ -110,11 +110,11 @@ type JPData struct {
 }
 
 func createCybexUserAddress(addrQ *m.Address) (*m.Address, error) {
-	asset := &m.Asset{}
-	db := m.GetDB()
-	db.First(asset, addrQ.AssetID)
+	asset, err := rep.Asset.GetByID(addrQ.AssetID)
+	if err != nil {
+		return nil, err
+	}
 	url := viper.GetString("usersrv.jpsrv_url") + "/api/address/new?type=" + asset.Name
-	// u.Infoln(url)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -134,7 +134,7 @@ func createCybexUserAddress(addrQ *m.Address) (*m.Address, error) {
 	}
 	return addrQ, nil
 }
-func findAppOrCreate(user string) (*m.App, error) {
+func findAppOrCreate(user string) (app1 *m.App, err error) {
 	appQ := &m.App{
 		CybAccount: user,
 	}
@@ -142,9 +142,8 @@ func findAppOrCreate(user string) (*m.App, error) {
 	if err != nil {
 		return nil, err
 	}
-	var app1 *m.App
 	if len(apps) == 0 {
-		app1, err := createCybexUserApp(user)
+		app1, err = createCybexUserApp(user)
 		if err != nil {
 			return app1, err
 		}
@@ -163,6 +162,7 @@ func findAddrOrCreate(app *m.App, asset *m.Asset) (*m.Address, error) {
 	}
 	addrs, err := rep.Address.FetchWith(addrQ)
 	if err != nil {
+		u.Errorln(err)
 		return nil, err
 	}
 	var addr1 *m.Address
