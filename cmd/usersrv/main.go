@@ -33,7 +33,7 @@ func main() {
 		w.Write([]byte("ok"))
 	}).Methods("GET")
 	router.HandleFunc("/login", usersrvc.Login).Methods("POST")
-	router.HandleFunc("/asset", usersrvc.Asset).Methods("GET")
+	router.HandleFunc("/asset", usersrvc.AllAsset).Methods("GET")
 	router.HandleFunc("/deposit_address/{user}/{asset}", usersrvc.DepositAddress).Methods("GET")
 	router.Use(app.NewLoggingMiddle(utils.GetLogger()))
 
