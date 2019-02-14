@@ -67,11 +67,14 @@ func IsBlack(order1 *m.Order) (bool, error) {
 
 // IsBig ...
 func IsBig(order1 *m.Order) (bool, error) {
-	db := m.GetDB()
-	big := &m.BigAsset{}
-	db.Raw("SELECT * FROM big_assets WHERE asset_id = ? and type =? and big_amount < ?", order1.AssetID, order1.Type, order1.TotalAmount).Scan(&big)
-	// fmt.Println("big", big)
-	if big.AssetID > 0 {
+	bigs, err := rep.BigAsset.FindBig(&m.BigAsset{
+		AssetID: order1.AssetID,
+		Type:    order1.Type,
+	}, order1.TotalAmount)
+	if err != nil {
+		return false, err
+	}
+	if len(bigs) > 0 {
 		return true, nil
 	}
 	return false, nil

@@ -6,6 +6,7 @@ import (
 	address "git.coding.net/bobxuyang/cy-gateway-BN/repository/address"
 	app "git.coding.net/bobxuyang/cy-gateway-BN/repository/app"
 	asset "git.coding.net/bobxuyang/cy-gateway-BN/repository/asset"
+	"git.coding.net/bobxuyang/cy-gateway-BN/repository/bigasset"
 	black "git.coding.net/bobxuyang/cy-gateway-BN/repository/black"
 	cyborder "git.coding.net/bobxuyang/cy-gateway-BN/repository/cyborder"
 	jporder "git.coding.net/bobxuyang/cy-gateway-BN/repository/jporder"
@@ -36,6 +37,9 @@ var JPOrder jporder.Repository
 // Black ...
 var Black black.Repository
 
+// BigAsset ...
+var BigAsset bigasset.Repository
+
 func init() {
 	App = app.NewRepo(m.GetDB())
 	Address = address.NewRepo(m.GetDB())
@@ -45,4 +49,5 @@ func init() {
 	Blockchain = blockchain.NewRepo(m.GetDB())
 	JPOrder = jporder.NewRepo(m.GetDB())
 	Black = black.NewRepo(m.GetDB())
+	BigAsset = bigasset.NewRepo(m.GetDB())
 }
