@@ -17,6 +17,7 @@ type Repository interface {
 	DeleteByID(id uint) error
 	Create(a *m.JPOrder) (err error)
 	UpdateColumns(id uint, b *m.JPOrder) (err error)
+	HoldingOne() (*m.JPOrder, error)
 }
 
 //Repo ...
@@ -104,4 +105,24 @@ func (repo *Repo) Create(a *m.JPOrder) (err error) {
 //for transaction base use
 func (repo *Repo) UpdateColumns(id uint, b *m.JPOrder) error {
 	return repo.DB.Model(m.JPOrder{}).Where("ID=?", id).UpdateColumns(b).Error
+}
+
+//HoldingOne ...
+func (repo *Repo) HoldingOne() (*m.JPOrder, error) {
+	var order m.JPOrder
+	s := `update jp_orders 
+	set status = 'HOLDING'
+	where id = (
+				select id 
+				from jp_orders 
+				where status = 'INIT' 
+				order by id
+				limit 1
+			)
+	returning *`
+	err := repo.DB.Raw(s).Scan(&order).Error
+	if err != nil {
+		return nil, err
+	}
+	return &order, err
 }

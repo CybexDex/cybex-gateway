@@ -228,7 +228,7 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		jporderEntity.TotalAmount = totalAmount
-		if jporderEntity.TotalAmount.Cmp(asset.DepositFee) < 0 {
+		if jporderEntity.Type == model.JPOrderTypeDeposit && jporderEntity.TotalAmount.Cmp(asset.DepositFee) < 0 {
 			tx.Rollback()
 			utils.Errorf("total is smaller than fee: %v < %v", jporderEntity.TotalAmount, asset.DepositFee)
 			utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
@@ -352,31 +352,35 @@ func SendOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if reqData.ID <= 0 {
-		utils.Errorf("invalid id: %d", reqData.ID)
-		utils.Respond(w, utils.Message(false, "bad request error"), http.StatusBadRequest)
-		return
-	}
-	jporderRepo := jporder.NewRepo(model.GetDB())
-	jporder, err := jporderRepo.GetByID(reqData.ID)
+	result, err := DoSendOrder(reqData.ID)
 	if err != nil {
 		utils.Errorf("error: %v", err)
 		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
+	respData := utils.Message(true, "success", result)
+	utils.Respond(w, respData)
+}
+
+// DoSendOrder ...
+func DoSendOrder(id uint) (map[string]interface{}, error) {
+	if id <= 0 {
+		return nil, fmt.Errorf("invalid id: %d", id)
+	}
+	jporderRepo := jporder.NewRepo(model.GetDB())
+	jporder, err := jporderRepo.GetByID(id)
+	if err != nil {
+		return nil, fmt.Errorf("error: %v", err)
+	}
 
 	if jporder.AssetID == 0 || len(jporder.To) == 0 {
-		utils.Errorf("error: %v", err)
-		utils.Respond(w, utils.Message(false, "bad request error"), http.StatusBadRequest)
-		return
+		return nil, fmt.Errorf("error: %v", err)
 	}
 
 	assetRepo := asset.NewRepo(model.GetDB())
 	asset, err := assetRepo.GetByID(jporder.AssetID)
 	if err != nil {
-		utils.Errorf("error: %v", err)
-		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
-		return
+		return nil, fmt.Errorf("error: %v", err)
 	}
 
 	timestamp := time.Now().Unix() * 1000
@@ -399,9 +403,7 @@ func SendOrder(w http.ResponseWriter, r *http.Request) {
 	prikey := viper.GetString("jadepool.pri_key")
 	sig, err := utils.SignECCData(prikey, sendData.Data)
 	if err != nil {
-		utils.Errorf("error: %v", err)
-		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
-		return
+		return nil, fmt.Errorf("error: %v", err)
 	}
 	sendData.Sig = sig
 
@@ -412,56 +414,37 @@ func SendOrder(w http.ResponseWriter, r *http.Request) {
 	orderResp := JPComeData{}
 	resp, err := http.Post(url, "application/json", bytes.NewReader(bs))
 	if err != nil {
-		utils.Errorf("post error: %v", err)
-		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
-		return
+		return nil, fmt.Errorf("post error: %v", err)
 	}
 	_bodyBytes, err := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	if err != nil {
-		utils.Errorf("ReadAll error: %v", err)
-		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
-		return
+		return nil, fmt.Errorf("ReadAll error: %v", err)
 	}
 
 	err = json.Unmarshal(_bodyBytes, &orderResp)
 	if err != nil {
-		utils.Errorf("Unmarshal error: %v, body: %s", err, string(_bodyBytes))
-		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
-		return
+		return nil, fmt.Errorf("Unmarshal error: %v, body: %s", err, string(_bodyBytes))
 	}
 
 	if orderResp.Code != 0 || orderResp.Status != 0 || orderResp.Result == nil {
-		utils.Errorln("response: %#v", orderResp)
-		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
-		return
+		return nil, fmt.Errorf("response: %#v", orderResp)
 	}
 
-	resultBytes, err := json.Marshal(orderResp.Result)
-	if err != nil {
-		utils.Errorf("error: %v", err)
-		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
-		return
-	}
-	result := OrderNotiResult{}
-	err = json.Unmarshal(resultBytes, &result)
-	if err != nil {
-		utils.Errorf("error: %v", err)
-		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
-		return
-	}
-
-	jporder.From = result.From
-	jporder.Confirmations = result.Confirmations
-	err = jporder.Save()
-	if err != nil {
-		utils.Errorf("error: %v", err)
-		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
-		return
+	if os.Getenv("env") != "dev" {
+		// verify sig
+		orderResp.Result["timestamp"] = orderResp.Timestamp
+		pubKey := viper.GetString("jadepool.pub_key")
+		ok, err := utils.VerifyECCSign(orderResp.Result, &orderResp.Sig, pubKey)
+		if err != nil {
+			return nil, fmt.Errorf("verifySign error: %v, data: %#v", err, orderResp)
+		}
+		if !ok {
+			return nil, fmt.Errorf("verify result: %v, data: %#v", ok, orderResp)
+		}
 	}
 
-	respData := utils.Message(true, "success", orderResp.Result)
-	utils.Respond(w, respData)
+	return orderResp.Result, nil
 }
 
 func parseIndexFromResult(result *OrderNotiResult) int {

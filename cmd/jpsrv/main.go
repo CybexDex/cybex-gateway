@@ -1,8 +1,15 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
+	"runtime/debug"
 	"time"
+
+	"github.com/jinzhu/gorm"
+
+	"git.coding.net/bobxuyang/cy-gateway-BN/models"
+	"git.coding.net/bobxuyang/cy-gateway-BN/repository/jporder"
 
 	"git.coding.net/bobxuyang/cy-gateway-BN/app"
 	"git.coding.net/bobxuyang/cy-gateway-BN/controllers"
@@ -50,7 +57,69 @@ func main() {
 	}
 	server.SetKeepAlivesEnabled(false)
 
+	go startHandleJPOrder()
+
 	// start server
 	utils.Infof("listen on: %s", listenAddr)
 	gracehttp.Serve(server)
+}
+
+func startHandleJPOrder() {
+	defer func() {
+		if r := recover(); r != nil {
+			utils.Errorf("r: %v, stack: %s", r, string(debug.Stack()))
+		}
+	}()
+
+	jporderRepo := jporder.NewRepo(model.GetDB())
+	for {
+		for {
+			jporder, err := jporderRepo.HoldingOne()
+			if err != nil && err != gorm.ErrRecordNotFound {
+				utils.Errorf("jporderRepo.HoldingOne error: %v", err)
+				break
+			}
+			if jporder == nil || jporder.ID == 0 {
+				break
+			}
+
+			utils.Infof("sending jporder(%d)", jporder.ID)
+			data, err := controllers.DoSendOrder(jporder.ID)
+			if err != nil {
+				utils.Errorf("send jporder(%d) error: %v", jporder.ID, err)
+				err = jporder.UpdateColumns(&model.JPOrder{
+					Status: model.JPOrderStatusInit,
+				})
+				if err != nil {
+					utils.Errorf("UpdateColumns jporder(%d) error: %v", jporder.ID, err)
+				}
+				continue
+			}
+
+			resultBytes, err := json.Marshal(data)
+			if err != nil {
+				utils.Errorf("error: %v", err)
+				continue
+			}
+			result := controllers.OrderNotiResult{}
+			err = json.Unmarshal(resultBytes, &result)
+			if err != nil {
+				utils.Errorf("error: %v", err)
+				continue
+			}
+
+			jporder.From = result.From
+			jporder.Confirmations = result.Confirmations
+			err = jporder.Save()
+			if err != nil {
+				utils.Errorf("error: %v", err)
+				continue
+			}
+
+			utils.Infof("send jporder(%d) ok", jporder.ID)
+			utils.Debugf("send jporder(%d) result: %v", jporder.ID, result)
+		}
+
+		time.Sleep(time.Second * 10)
+	}
 }
