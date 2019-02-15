@@ -61,7 +61,7 @@ func main() {
 	router.Use(app.NewLoggingMiddle(utils.GetLogger()))
 	//router.Use(app.JwtAuthentication) //attach JWT auth middleware
 	corsHeaders := handlers.AllowedHeaders([]string{"Content-Type", "Content-Length", "Authorization", "Accept", "X-Requested-With", "Current-Page"})
-	corsMethods := handlers.AllowedMethods([]string{"GET", "PUT", "POST", "PATCH", "OPTIONS"})
+	corsMethods := handlers.AllowedMethods([]string{"GET", "DELETE", "PUT", "POST", "PATCH", "OPTIONS"})
 	corsOrigins := handlers.AllowedOrigins([]string{"*"})
 	handler := handlers.CORS(corsHeaders, corsMethods, corsOrigins)(router)
 
