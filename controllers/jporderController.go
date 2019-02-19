@@ -25,14 +25,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-const (
-	defaultJadepoolName = "Jadepool-001"
-)
-
-var (
-	defaultJadepool *model.Jadepool
-)
-
 //OrderNotiResult ...
 type OrderNotiResult struct {
 	ID            string                 `json:"id"`
@@ -59,13 +51,14 @@ type OrderNotiResult struct {
 
 //JPComeData ...
 type JPComeData struct {
-	Code      int                    `json:"code"`
-	Message   string                 `json:"message"`
-	Status    int                    `json:"status"`
-	Result    map[string]interface{} `json:"result"`
-	Crypto    string                 `json:"crypto"`
-	Timestamp int64                  `json:"timestamp"`
-	Sig       utils.ECCSig           `json:"sig"`
+	Code       int                    `json:"code"`
+	Message    string                 `json:"message"`
+	Status     int                    `json:"status"`
+	Result     map[string]interface{} `json:"result"`
+	Crypto     string                 `json:"crypto"`
+	Timestamp  int64                  `json:"timestamp"`
+	Sig        utils.ECCSig           `json:"sig"`
+	JadepoolID int                    `json:"jadepoolID"`
 }
 
 //NotiOrder ...
@@ -91,7 +84,18 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 
 	if os.Getenv("env") != "dev" {
 		// verify sig
-		pubKey := viper.GetString("defaultJadepool.pub_key")
+		// if jadepoolID not exist, use default 1
+		if request.JadepoolID == 0 {
+			request.JadepoolID = 1
+		}
+		jadepoolRepo := jadepool.NewRepo(model.GetDB())
+		jadepool, err := jadepoolRepo.GetByID(uint(request.JadepoolID))
+		if err != nil {
+			utils.Errorf("Unmarshal error: %v", err)
+			utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
+			return
+		}
+		pubKey := jadepool.EccPubKey
 		ok, err := utils.VerifyECCSign(request.Result, &request.Sig, pubKey)
 		if err != nil {
 			utils.Errorf("verifySign error: %v", err)
@@ -220,7 +224,7 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 		jporderEntity.Type = result.BizType
 		jporderEntity.AssetID = asset.ID
 		jporderEntity.AppID = appID
-		jporderEntity.JadepoolID = defaultJadepool.ID
+		jporderEntity.JadepoolID = jadepoolID
 		totalAmount, condition, err := apd.NewFromString(result.Value)
 		if err != nil || condition.Any() {
 			tx.Rollback()
@@ -391,7 +395,7 @@ func DoSendOrder(id uint) (map[string]interface{}, error) {
 	jptransaction.Value = jporder.Amount.String()
 	jptransaction.To = jporder.To
 	jptransaction.Timestamp = timestamp
-	jptransaction.Callback = viper.GetString("japsrv.self_addr") + "/api/order/noti"
+	jptransaction.Callback = viper.GetString("jpsrv.self_addr") + "/api/order/noti"
 
 	sendData := &JPSendData{}
 	sendData.Crypto = "ecc"

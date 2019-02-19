@@ -16,10 +16,6 @@ adminsrv:
   log_dir: ""
   log_level: "DEBUG"
 
-defaultJadepool:
-  pub_key: "03ace32532c90652e1bae916248e427a7ab10aeeea1067949669a3f4da10965ef9"
-  jadepool_addr: "http://39.98.58.238:7001"
-
 cybsrv:
   node: "wss://shanghai.51nebula.com/"
   gatewayPassword: "P5KNfAPu82LyAuJeD7NwgggWJvqZ9UREUpXQCwCNdGp8z"
