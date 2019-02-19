@@ -9,7 +9,7 @@ type CybToken struct {
 	gorm.Model
 	CybAccount string `gorm:"unique;type:varchar(255)" json:"accountName"` // use for GATEWAY mode
 	Signer     string `gorm:"type:varchar(255)" json:"signer"`             // user's Signer
-	Expiration uint   `json:"expiration"`                                  //timestamp seconds
+	Expiration uint   `json:"expiration"`                                  // timestamp seconds
 }
 
 //UpdateColumns ...
