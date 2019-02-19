@@ -13,16 +13,16 @@ import (
 	"strings"
 	"time"
 
+	model "git.coding.net/bobxuyang/cy-gateway-BN/models"
+	"git.coding.net/bobxuyang/cy-gateway-BN/repository/app"
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/asset"
+	"git.coding.net/bobxuyang/cy-gateway-BN/repository/exevent"
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/jadepool"
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/jporder"
+	utils "git.coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/cockroachdb/apd"
 	"github.com/jinzhu/gorm"
 	"github.com/spf13/viper"
-
-	model "git.coding.net/bobxuyang/cy-gateway-BN/models"
-	"git.coding.net/bobxuyang/cy-gateway-BN/repository/exevent"
-	utils "git.coding.net/bobxuyang/cy-gateway-BN/utils"
 )
 
 const (
@@ -91,7 +91,7 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 
 	if os.Getenv("env") != "dev" {
 		// verify sig
-		pubKey := viper.GetString("jadepool.pub_key")
+		pubKey := viper.GetString("defaultJadepool.pub_key")
 		ok, err := utils.VerifyECCSign(request.Result, &request.Sig, pubKey)
 		if err != nil {
 			utils.Errorf("verifySign error: %v", err)
@@ -132,39 +132,13 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 
 	// save exevent
 	assetRepo := asset.NewRepo(tx)
-	jadepoolRepo := jadepool.NewRepo(tx)
 	asset, err := assetRepo.GetByName(result.CoinType)
 	if err != nil {
 		utils.Errorf("assetRepo.GetByName error: %v", err)
 		utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
 		return
 	}
-	if defaultJadepool == nil {
-		jadepool, err := jadepoolRepo.GetByName(defaultJadepoolName)
-		if err != nil {
-			utils.Errorf("assetRepo.GetByName error: %v", err)
-			utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
-			return
-		}
-		defaultJadepool = jadepool
-	}
 
-	exeventEntity := new(model.ExEvent)
-	exeventEntity.AssetID = asset.ID
-	exeventEntity.Hash = result.Hash
-	exeventEntity.JadepoolID = defaultJadepool.ID
-	exeventEntity.Status = result.State
-	exeventEntity.Log = string(requestBody)
-	exeventRepo := exevent.NewRepo(tx)
-	err = exeventRepo.Create(exeventEntity)
-	if err != nil {
-		tx.Rollback()
-		utils.Errorf("error: %v", err)
-		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
-		return
-	}
-
-	appID := uint(1)
 	/*addressRepo := address.NewRepo(tx)
 	adddresses, err := addressRepo.FetchWith(&model.Address{
 		Address: result.To,
@@ -181,7 +155,34 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
-	appID = adddresses[0].AppID*/
+	appID := adddresses[0].AppID
+	appRepo := app.NewRepo(tx)
+	app, err := appRepo.GetByID(appID)
+	if err != nil {
+		tx.Rollback()
+		utils.Errorf("appRepo.GetByID error: %v", err)
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
+	jadepoolID := app.JadepoolID*/
+
+	appID := uint(1)
+	jadepoolID := uint(1)
+
+	exeventEntity := new(model.ExEvent)
+	exeventEntity.AssetID = asset.ID
+	exeventEntity.Hash = result.Hash
+	exeventEntity.JadepoolID = jadepoolID
+	exeventEntity.Status = result.State
+	exeventEntity.Log = string(requestBody)
+	exeventRepo := exevent.NewRepo(tx)
+	err = exeventRepo.Create(exeventEntity)
+	if err != nil {
+		tx.Rollback()
+		utils.Errorf("error: %v", err)
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
 
 	// find jporder and save/update jporder
 	jpOrderID, err := strconv.Atoi(result.ID)
@@ -390,17 +391,30 @@ func DoSendOrder(id uint) (map[string]interface{}, error) {
 	jptransaction.Value = jporder.Amount.String()
 	jptransaction.To = jporder.To
 	jptransaction.Timestamp = timestamp
-	jptransaction.Callback = viper.GetString("jadepool.self_addr") + "/api/order/noti"
+	jptransaction.Callback = viper.GetString("japsrv.self_addr") + "/api/order/noti"
 
 	sendData := &JPSendData{}
 	sendData.Crypto = "ecc"
 	sendData.Encode = "base64"
 	sendData.Timestamp = timestamp
 	sendData.Hash = "sha3"
-	sendData.AppID = "app"
+	sendData.AppID = viper.GetString("jpsrv.jadepool_appid")
 	sendData.Data = &jptransaction
 
-	prikey := viper.GetString("jadepool.pri_key")
+	appID := jporder.AppID
+	appRepo := app.NewRepo(model.GetDB())
+	app, err := appRepo.GetByID(appID)
+	if err != nil {
+		return nil, fmt.Errorf("appRepo.GetByID error: %v", err)
+	}
+	jadepoolID := app.JadepoolID
+	jadepoolRepo := jadepool.NewRepo(model.GetDB())
+	jadepool, err := jadepoolRepo.GetByID(jadepoolID)
+	if err != nil {
+		return nil, fmt.Errorf("jadepoolRepo.GetByID error: %v, id: %d", err, jadepoolID)
+	}
+
+	prikey := viper.GetString("jpsrv.pri_key")
 	sig, err := utils.SignECCData(prikey, sendData.Data)
 	if err != nil {
 		return nil, fmt.Errorf("error: %v", err)
@@ -408,7 +422,7 @@ func DoSendOrder(id uint) (map[string]interface{}, error) {
 	sendData.Sig = sig
 
 	bs, _ := json.Marshal(sendData)
-	jadepoolAddr := viper.GetString("jadepool.jadepool_addr")
+	jadepoolAddr := fmt.Sprintf("http://%s:%d", jadepool.Host, jadepool.Port)
 	url := jadepoolAddr + "/api/v1/transactions/"
 
 	orderResp := JPComeData{}
@@ -434,7 +448,7 @@ func DoSendOrder(id uint) (map[string]interface{}, error) {
 	if os.Getenv("env") != "dev" {
 		// verify sig
 		orderResp.Result["timestamp"] = orderResp.Timestamp
-		pubKey := viper.GetString("jadepool.pub_key")
+		pubKey := jadepool.EccPubKey
 		ok, err := utils.VerifyECCSign(orderResp.Result, &orderResp.Sig, pubKey)
 		if err != nil {
 			return nil, fmt.Errorf("verifySign error: %v, data: %#v", err, orderResp)

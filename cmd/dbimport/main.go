@@ -75,6 +75,7 @@ func tJadepool() {
 		Description: "Jadepool-001",
 		TestNet:     true,
 		EccEnabled:  false,
+		EccPubKey:   "03ace32532c90652e1bae916248e427a7ab10aeeea1067949669a3f4da10965ef9",
 		Host:        "192.168.0.1",
 		Port:        6688,
 		Version:     "1.0.0",

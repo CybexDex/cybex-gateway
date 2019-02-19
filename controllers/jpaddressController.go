@@ -40,22 +40,41 @@ func GetNewAddress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	coinType = strings.ToUpper(coinType)
+	/*strAppID := query.Get("appID")
+	appID, err := strconv.Atoi(strAppID)
+	if err != nil {
+		utils.Respond(w, utils.Message(false, "bad request"), http.StatusBadRequest)
+		return
+	}
+	appRepo := app.NewRepo(model.GetDB())
+	app, err := appRepo.GetByID(uint(appID))
+	if err != nil {
+		utils.Respond(w, utils.Message(false, "bad request"), http.StatusBadRequest)
+		return
+	}
+	jadepoolRepo := jadepool.NewRepo(model.GetDB())
+	jadepool, err := jadepoolRepo.GetByID(app.JadepoolID)
+	if err != nil {
+		utils.Respond(w, utils.Message(false, "bad request"), http.StatusBadRequest)
+		return
+	}
+	utils.Debugln("jadepoolID", jadepool.ID)*/
 
 	timestamp := time.Now().Unix() * 1000
 	requestAddress := JPAddressRequest{}
 	requestAddress.Timestamp = timestamp
 	requestAddress.Type = coinType
-	requestAddress.Callback = viper.GetString("jadepool.self_addr") + "/api/order/noti"
+	requestAddress.Callback = viper.GetString("jpsrv.self_addr") + "/api/order/noti"
 
 	sendData := &JPSendData{}
 	sendData.Crypto = "ecc"
 	sendData.Encode = "base64"
 	sendData.Timestamp = timestamp
 	sendData.Hash = "sha3"
-	sendData.AppID = "app"
+	sendData.AppID = viper.GetString("jpsrv.jadepool_appid")
 	sendData.Data = &requestAddress
 
-	prikey := viper.GetString("jadepool.pri_key")
+	prikey := viper.GetString("jpsrv.pri_key")
 	sig, err := utils.SignECCData(prikey, sendData.Data)
 	if err != nil {
 		utils.Errorf("SignECCData error: %v", err)
@@ -65,7 +84,8 @@ func GetNewAddress(w http.ResponseWriter, r *http.Request) {
 	sendData.Sig = sig
 
 	bs, _ := json.Marshal(sendData)
-	jadepoolAddr := viper.GetString("jadepool.jadepool_addr")
+	jadepoolAddr := viper.GetString("defaultJadepool.jadepool_addr")
+	//jadepoolAddr := fmt.Sprintf("http://%s:%d", jadepool.Host, jadepool.Port)
 	url := jadepoolAddr + "/api/v1/addresses/new"
 
 	data := JPComeData{}
@@ -98,6 +118,7 @@ func GetNewAddress(w http.ResponseWriter, r *http.Request) {
 	if os.Getenv("env") != "dev" {
 		// verify sig
 		pubKey := viper.GetString("jadepool.pub_key")
+		//pubKey := jadepool.EccPubKey
 		data.Result["timestamp"] = data.Timestamp
 		ok, err := utils.VerifyECCSign(data.Result, &data.Sig, pubKey)
 		if err != nil {
@@ -120,10 +141,32 @@ func GetNewAddress(w http.ResponseWriter, r *http.Request) {
 func GetNewAddress2(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	coinType := query.Get("type")
-	callbackAddr := viper.GetString("jadepool.self_addr")
-	jadepoolAddr := viper.GetString("jadepool.jadepool_addr")
-	pubKey := viper.GetString("jadepool.pub_key")
-	priKey := viper.GetString("jadepool.pri_key")
+	/*strAppID := query.Get("appID")
+	appID, err := strconv.Atoi(strAppID)
+	if err != nil {
+		utils.Respond(w, utils.Message(false, "bad request"), http.StatusBadRequest)
+		return
+	}
+	appRepo := app.NewRepo(model.GetDB())
+	app, err := appRepo.GetByID(uint(appID))
+	if err != nil {
+		utils.Respond(w, utils.Message(false, "bad request"), http.StatusBadRequest)
+		return
+	}
+	jadepoolRepo := jadepool.NewRepo(model.GetDB())
+	jadepool, err := jadepoolRepo.GetByID(app.JadepoolID)
+	if err != nil {
+		utils.Respond(w, utils.Message(false, "bad request"), http.StatusBadRequest)
+		return
+	}
+	utils.Debugln("jadepoolID", jadepool.ID)*/
+
+	callbackAddr := viper.GetString("jpsrv.self_addr")
+	jadepoolAddr := viper.GetString("defaultJadepool.jadepool_addr")
+	//jadepoolAddr := fmt.Sprintf("http://%s:%d", jadepool.Host, jadepool.Port)
+	pubKey := viper.GetString("defaultJadepool.pub_key")
+	//pubKey := jadepool.EccPubKey
+	priKey := viper.GetString("jpsrv.pri_key")
 	appID := "app"
 	result, err := GetAddressFromJadepool(coinType, callbackAddr, appID, jadepoolAddr, priKey, pubKey)
 	if err != nil {

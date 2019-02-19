@@ -38,7 +38,7 @@ func main() {
 	// init route
 	router := mux.NewRouter()
 	router.HandleFunc("/api/test", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("ok"))
+		w.Write([]byte(`{"status": true}`))
 	}).Methods("GET")
 	router.HandleFunc("/api/order/noti", controllers.NotiOrder).Methods("POST")
 	router.HandleFunc("/api/address/new", controllers.GetNewAddress).Methods("GET")
