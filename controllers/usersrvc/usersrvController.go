@@ -3,12 +3,16 @@ package usersrvc
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 
 	rep "git.coding.net/bobxuyang/cy-gateway-BN/help/singleton"
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	u "git.coding.net/bobxuyang/cy-gateway-BN/utils"
+	apim "git.coding.net/yundkyy/cybexgolib/api"
+	"git.coding.net/yundkyy/cybexgolib/types"
 	"github.com/gorilla/mux"
+	"github.com/juju/errors"
 	"github.com/spf13/viper"
 )
 
@@ -21,9 +25,19 @@ type OpMsg struct {
 // Op ...
 type Op struct {
 	AccountName string `json:"accountName"`
-	Expiration  uint   `json:"expiration"`
+	Expiration  int    `json:"expiration"`
 }
 
+var api apim.BitsharesAPI
+
+func init() {
+	u.InitConfig()
+	node := viper.GetString("cybsrv.node")
+	api = apim.New(node, "")
+	if err := api.Connect(); err != nil {
+		log.Fatal(errors.Annotate(err, "OnConnect"))
+	}
+}
 func makeRes(user string, sig string) map[string]interface{} {
 	return map[string]interface{}{
 		"code": 200, // 200:ok  400:fail
@@ -33,15 +47,24 @@ func makeRes(user string, sig string) map[string]interface{} {
 		},
 	}
 }
-func checkIsUser(sig string, op Op) (user string, token string, expiration uint) {
+func checkIsUser(sig string, op Op) (isok bool, expiration int, err error) {
+	ss := types.Fund{
+		AccountName: []byte(op.AccountName),
+		Expiration:  op.Expiration,
+	}
+	re, err := api.LoginVerify(ss, sig)
+	if err != nil {
+		return false, 0, err
+	}
 	if op.Expiration > 1048239662000 {
 		expiration = op.Expiration / 1000
 	} else {
 		expiration = op.Expiration
 	}
-	return op.AccountName, sig, expiration
+	return re, expiration, nil
 }
 func saveTokenExp(user string, token string, expiration uint) error {
+	//TODO: redis may be the better solution
 	cybtoken := &m.CybToken{
 		CybAccount: user,
 		Signer:     token,
@@ -60,14 +83,23 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message(false, "Invalid request"), http.StatusBadRequest)
 		return
 	}
-	user, token, timestamp := checkIsUser(opMsg.Signer, opMsg.Op)
-	err = saveTokenExp(user, token, timestamp)
+	isok, expiration, err := checkIsUser(opMsg.Signer, opMsg.Op)
+	if err != nil {
+		u.Errorf("err: %v", err)
+		u.Respond(w, u.Message(false, "Invalid request"), http.StatusBadRequest)
+		return
+	}
+	if !isok {
+		u.Respond(w, u.Message(false, "Invalid request"), http.StatusBadRequest)
+		return
+	}
+	err = saveTokenExp(opMsg.Op.AccountName, opMsg.Signer, uint(expiration))
 	if err != nil {
 		u.Errorf("err: %v", err)
 		u.Respond(w, u.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
-	msg := makeRes(user, opMsg.Signer)
+	msg := makeRes(opMsg.Op.AccountName, opMsg.Signer)
 	u.Respond(w, msg, 200)
 
 }
