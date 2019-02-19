@@ -1,8 +1,8 @@
 package main
 
 import (
-	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"git.coding.net/bobxuyang/cy-gateway-BN/app"
@@ -22,8 +22,32 @@ var (
 
 func authMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Do stuff here
-		log.Println(111, r.RequestURI)
+		tokenHeader := r.Header.Get("Authorization") //Grab the token from the header
+
+		if tokenHeader == "" { //Token is missing, returns with error code 403 Unauthorized
+			utils.Respond(w, utils.Message(false, "Missing auth token"), http.StatusForbidden)
+			return
+		}
+
+		splitted := strings.Split(tokenHeader, " ") //The token normally comes in format `Bearer {token-body}`, we check if the retrieved token matched this requirement
+		if len(splitted) != 2 {
+			utils.Infoln("no token")
+			utils.Respond(w, utils.Message(false, "Invalid/Malformed auth token err:1"), http.StatusForbidden)
+			return
+		}
+
+		tokenPart := splitted[1]
+		// check is tokenpart in db
+		ok, err := usersrvc.IsTokenOK(tokenPart)
+		if err != nil {
+			utils.Errorf("token err:%v", err)
+			utils.Respond(w, utils.Message(false, "Invalid/Malformed auth token err:2"), http.StatusForbidden)
+			return
+		}
+		if !ok {
+			utils.Respond(w, utils.Message(false, "Invalid/Malformed auth token err:3"), http.StatusForbidden)
+			return
+		}
 		// Call the next handler, which can be another middleware in the chain, or the final handler.
 		next.ServeHTTP(w, r)
 	})

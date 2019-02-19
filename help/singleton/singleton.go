@@ -9,6 +9,7 @@ import (
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/bigasset"
 	black "git.coding.net/bobxuyang/cy-gateway-BN/repository/black"
 	cyborder "git.coding.net/bobxuyang/cy-gateway-BN/repository/cyborder"
+	"git.coding.net/bobxuyang/cy-gateway-BN/repository/cybtoken"
 	jporder "git.coding.net/bobxuyang/cy-gateway-BN/repository/jporder"
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/order"
 )
@@ -40,6 +41,9 @@ var Black black.Repository
 // BigAsset ...
 var BigAsset bigasset.Repository
 
+// CybToken ...
+var CybToken cybtoken.Repository
+
 func init() {
 	App = app.NewRepo(m.GetDB())
 	Address = address.NewRepo(m.GetDB())
@@ -50,4 +54,5 @@ func init() {
 	JPOrder = jporder.NewRepo(m.GetDB())
 	Black = black.NewRepo(m.GetDB())
 	BigAsset = bigasset.NewRepo(m.GetDB())
+	CybToken = cybtoken.NewRepo(m.GetDB())
 }

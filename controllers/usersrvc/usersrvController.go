@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 
 	rep "git.coding.net/bobxuyang/cy-gateway-BN/help/singleton"
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
@@ -72,6 +73,28 @@ func saveTokenExp(user string, token string, expiration uint) error {
 	}
 	err := cybtoken.SaveUniqueBy(m.CybToken{CybAccount: user})
 	return err
+}
+
+// IsTokenOK ...
+func IsTokenOK(token string) (bool, error) {
+
+	t, err := rep.CybToken.FetchWith(&m.CybToken{
+		Signer: token,
+	})
+	if err != nil {
+		return false, err
+	}
+
+	if len(t) > 0 {
+		timenow := time.Now().Unix()
+		u.Infoln(t, token, t[0].Expiration, uint(timenow))
+		if t[0].Expiration < uint(timenow) {
+			u.Infoln("expire")
+			return false, nil
+		}
+		return true, nil
+	}
+	return false, nil
 }
 
 // Login ...
