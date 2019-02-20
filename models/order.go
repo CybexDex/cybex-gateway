@@ -82,7 +82,7 @@ func (a *Order) createCybOrder(tx *gorm.DB) (*CybOrder, error) {
 	return nil, nil
 }
 
-func (a *Order) createCYBOrder(tx *gorm.DB) error {
+func (a *Order) createCYBOrder(tx *gorm.DB) (*CybOrder, error) {
 	// save order
 	order := new(CybOrder)
 
@@ -93,7 +93,7 @@ func (a *Order) createCYBOrder(tx *gorm.DB) error {
 	err := tx.First(&app, a.AppID).Error
 	if err != nil {
 		u.Errorf("get app error,", err, a.ID)
-		return err
+		return nil, err
 	}
 	order.To = app.CybAccount
 
@@ -107,10 +107,10 @@ func (a *Order) createCYBOrder(tx *gorm.DB) error {
 	order.Settled = false
 	order.Finalized = false
 
-	return tx.Save(order).Error
+	return order, tx.Save(order).Error
 }
 
-func (a *Order) createJPOrder(tx *gorm.DB) error {
+func (a *Order) createJPOrder(tx *gorm.DB) (*JPOrder, error) {
 	// save order
 	order := new(JPOrder)
 
@@ -121,15 +121,15 @@ func (a *Order) createJPOrder(tx *gorm.DB) error {
 	err := tx.First(&app, a.AppID).Error
 	if err != nil {
 		u.Errorf("get app error,", err, a.ID)
-		return err
+		return nil, err
 	}
-	order.JadepoolID = app.ID
+	order.JadepoolID = app.JadepoolID
 
 	o := CybOrder{}
 	err = tx.First(&o, a.CybOrderID).Error
 	if err != nil {
 		u.Errorf("get cyborder error,", err, a.ID)
-		return err
+		return nil, err
 	}
 	order.To = o.To
 
@@ -145,19 +145,21 @@ func (a *Order) createJPOrder(tx *gorm.DB) error {
 	order.Settled = false
 	order.Finalized = false
 
-	return tx.Save(order).Error
+	return order, tx.Save(order).Error
 }
+
+// CreateNext ...
 func (a *Order) CreateNext(tx *gorm.DB) (err error) {
 	if a.Status == OrderStatusDone && a.Type == OrderTypeDeposit {
 		// create cyborder
-		err = a.createCYBOrder(tx)
+		_, err = a.createCYBOrder(tx)
 		if err != nil {
 			u.Errorf("save cyborder error,", err, a.ID)
 			return err
 		}
 	} else if a.Status == OrderStatusDone && a.Type == OrderTypeWithdraw {
 		// create jporder
-		err = a.createJPOrder(tx)
+		_, err = a.createJPOrder(tx)
 		if err != nil {
 			u.Errorf("save jporder error,", err, a.ID)
 			return err
@@ -181,16 +183,28 @@ func (a *Order) AfterSaveHook(tx *gorm.DB) (err error) {
 
 	if a.Status == OrderStatusDone && a.Type == OrderTypeDeposit {
 		// create cyborder
-		err = a.createCYBOrder(tx)
+		cybOrder, err := a.createCYBOrder(tx)
 		if err != nil {
 			u.Errorf("save cyborder error,", err, a.ID)
 			return err
 		}
+		a.CybOrderID = cybOrder.ID
+		err = tx.Save(a).Error
+		if err != nil {
+			u.Errorf("save order error,", err, a.ID)
+			return err
+		}
 	} else if a.Status == OrderStatusDone && a.Type == OrderTypeWithdraw {
 		// create jporder
-		err = a.createJPOrder(tx)
+		jpOrder, err := a.createJPOrder(tx)
 		if err != nil {
 			u.Errorf("save jporder error,", err, a.ID)
+			return err
+		}
+		a.JPOrderID = jpOrder.ID
+		err = tx.Save(a).Error
+		if err != nil {
+			u.Errorf("save order error,", err, a.ID)
 			return err
 		}
 	}
