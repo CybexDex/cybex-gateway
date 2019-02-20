@@ -93,18 +93,21 @@ func startHandleJPOrder() {
 				if err != nil {
 					utils.Errorf("UpdateColumns jporder(%d) error: %v", jporder.ID, err)
 				}
+				time.Sleep(time.Second * 1)
 				continue
 			}
 
 			resultBytes, err := json.Marshal(data)
 			if err != nil {
 				utils.Errorf("error: %v", err)
+				time.Sleep(time.Second * 1)
 				continue
 			}
 			result := controllers.OrderNotiResult{}
 			err = json.Unmarshal(resultBytes, &result)
 			if err != nil {
 				utils.Errorf("error: %v", err)
+				time.Sleep(time.Second * 1)
 				continue
 			}
 
@@ -113,6 +116,7 @@ func startHandleJPOrder() {
 			err = jporder.Save()
 			if err != nil {
 				utils.Errorf("error: %v", err)
+				time.Sleep(time.Second * 1)
 				continue
 			}
 

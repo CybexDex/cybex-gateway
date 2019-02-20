@@ -1,3 +1,5 @@
+# make file
+
 curDir := $(shell pwd)
 date := $(shell date +%Y%m%d-%H:%M:%S)
 githash := $(shell git log -1 --format="%h")
@@ -10,7 +12,7 @@ buildAll: buildJPSrv buildAdminSrv
 buildAllLinux: buildJPSrvLinux buildAdminSrvLinux
 
 #######################################jpSrv#########################################
-.PHONY: buildJPSrv buildJPSrvLinux startJPSrv 
+.PHONY: buildJPSrv buildJPSrvLinux startJPSrv scpJPSrvDev
 buildJPSrv:
 	@echo "build jpsrv......"
 	@(cd ${curDir}/cmd/jpsrv;\
@@ -31,7 +33,7 @@ scpJPSrvDev: buildJPSrvLinux
 
 
 #######################################adminSrv#####################################
-.PHONY: buildAdminSrv buildAdminSrvLinux startAdminSrv
+.PHONY: buildAdminSrv buildAdminSrvLinux startAdminSrv scpAdminSrvDev
 buildAdminSrv:
 	@echo "build adminsrv......"
 	@(cd ${curDir}/cmd/adminsrv;\
@@ -45,3 +47,7 @@ buildAdminSrvLinux:
 startAdminSrv: buildAdminSrv
 	@echo "start adminsrv......"
 	@(${curDir}/bin/adminsrv;)
+
+scpAdminSrvDev: buildAdminSrvLinux
+	@echo "scp adminsrv......"
+	@(scp bin/adminsrv_linux_amd64 root@39.98.58.238:~/adminsrv/adminsrv_)

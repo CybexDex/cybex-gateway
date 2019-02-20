@@ -291,7 +291,20 @@ func (a *JPOrder) AfterSaveHook(tx *gorm.DB) (err error) {
 				return err
 			}
 
-			// TODO ...
+			// set it to order, move old jporder to order's FailedJPOrders
+			order := Order{}
+			err = tx.Where(&Order{JPOrderID: a.ID}).First(&order).Error
+			if err != nil {
+				u.Errorf("find order error: %v, jporder id: %d", err, a.ID)
+				return err
+			}
+			order.JPOrderID = b.ID
+			order.FailedJPOrders = append(order.FailedJPOrders, int64(a.ID))
+			err = tx.Save(order).Error
+			if err != nil {
+				u.Errorf("save order error: %v", err)
+				return err
+			}
 		} else if a.Status == JPOrderStatusPending { // case 9
 			// status: -> PENDING
 			// do NOTHING
