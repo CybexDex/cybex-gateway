@@ -9,12 +9,19 @@ import (
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
 	apim "git.coding.net/yundkyy/cybexgolib/api"
+	"git.coding.net/yundkyy/cybexgolib/crypto"
+	"git.coding.net/yundkyy/cybexgolib/types"
 	"github.com/juju/errors"
 	"github.com/spf13/viper"
 )
 
 var api apim.BitsharesAPI
 var gatewayPassword string
+var gatewayAccount *types.Account
+var coldAccount *types.Account
+var gatewaykeyBag *crypto.KeyBag
+var gatewayMemoPri types.PrivateKeys
+var gatewayPrefix string
 
 func init() {
 	utils.InitConfig()
@@ -24,6 +31,23 @@ func init() {
 		log.Fatal(errors.Annotate(err, "OnConnect"))
 	}
 	gatewayPassword = viper.GetString("cybsrv.gatewayPassword")
+	gatewayAccountStr := viper.GetString("cybsrv.gatewayAccount")
+	var err error
+	gatewayAccount, err = api.GetAccountByName(gatewayAccountStr)
+	if err != nil {
+		panic(err)
+	}
+	gatewayPrefix = viper.GetString("cybsrv.gatewayPrefix")
+	coldStr := viper.GetString("cybsrv.coldAccount")
+	coldAccount, err = api.GetAccountByName(coldStr)
+	if err != nil {
+		panic(err)
+	}
+
+	gatewaykeyBag = apim.KeyBagByUserPass(gatewayAccountStr, gatewayPassword)
+	memokey := gatewayAccount.Options.MemoKey
+	pubkeys := types.PublicKeys{memokey}
+	gatewayMemoPri = gatewaykeyBag.PrivatesByPublics(pubkeys)
 }
 func findOrders() (*m.CybOrder, error) {
 	return rep.CybOrder.HoldingOne(), nil

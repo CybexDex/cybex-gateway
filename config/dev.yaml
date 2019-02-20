@@ -18,4 +18,8 @@ adminsrv:
 
 cybsrv:
   node: "wss://shanghai.51nebula.com/"
+  blockBegin: 10282099
+  gatewayAccount: "yangyu123"
   gatewayPassword: "P5KNfAPu82LyAuJeD7NwgggWJvqZ9UREUpXQCwCNdGp8z"
+  coldAccount: "yangyu2"
+  gatewayPrefix: "withdraw:CybexGateway"
