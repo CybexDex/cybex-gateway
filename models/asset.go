@@ -30,7 +30,7 @@ type Asset struct {
 	DepositFee     *apd.Decimal `gorm:"type:numeric(30,10);default:0.0;not null" json:"depositFee"`
 	LowWaterLevel  *apd.Decimal `gorm:"type:numeric(30,10)" json:"lowWaterLevel"`  // use for GATEWAY mode
 	HighWaterLevel *apd.Decimal `gorm:"type:numeric(30,10)" json:"highWaterLevel"` // use for GATEWAY mode
-	SweepTo        *apd.Decimal `gorm:"type:numeric(30,10)" json:"SweepTo"`        // use for GATEWAY mode
+	SweepTo        *apd.Decimal `gorm:"type:numeric(30,10)" json:"sweepTo"`        // use for GATEWAY mode
 	Decimal        uint         `json:"decimal"`
 }
 
