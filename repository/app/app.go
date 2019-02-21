@@ -14,6 +14,7 @@ type Repository interface {
 	GetByName(name string) (*m.App, error)
 	GetByID(id uint) (*m.App, error)
 	DeleteByID(id uint) error
+	FindAppOrCreate(user string) (app1 *m.App, err error)
 }
 
 //Repo ...
@@ -84,4 +85,32 @@ func (repo *Repo) GetByName(name string) (*m.App, error) {
 //DeleteByID ...
 func (repo *Repo) DeleteByID(id uint) error {
 	return repo.DB.Where("ID=?", id).Delete(&m.App{}).Error
+}
+
+// FindAppOrCreate ...
+func (repo *Repo) FindAppOrCreate(user string) (app1 *m.App, err error) {
+	appQ := &m.App{
+		CybAccount: user,
+	}
+	apps, err := repo.FetchWith(appQ)
+	if err != nil {
+		return nil, err
+	}
+	if len(apps) == 0 {
+		app1, err = repo.createCybexUserApp(user)
+		if err != nil {
+			return app1, err
+		}
+	} else {
+		app1 = apps[0]
+	}
+	return app1, nil
+}
+
+func (repo *Repo) createCybexUserApp(user string) (*m.App, error) {
+	newapp := &m.App{
+		CybAccount: user,
+	}
+	err := newapp.Save()
+	return newapp, err
 }

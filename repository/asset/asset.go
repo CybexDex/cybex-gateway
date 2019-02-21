@@ -1,8 +1,12 @@
 package asset
 
 import (
+	"fmt"
+	"math"
+
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	r "git.coding.net/bobxuyang/cy-gateway-BN/repository"
+	"github.com/cockroachdb/apd"
 	"github.com/jinzhu/gorm"
 )
 
@@ -14,6 +18,7 @@ type Repository interface {
 	GetByName(name string) (*m.Asset, error)
 	GetByID(id uint) (*m.Asset, error)
 	DeleteByID(id uint) error
+	RawAmountToReal(amount int64, precision int) *apd.Decimal
 }
 
 //Repo ...
@@ -84,4 +89,13 @@ func (repo *Repo) GetByName(name string) (*m.Asset, error) {
 //DeleteByID ...
 func (repo *Repo) DeleteByID(id uint) error {
 	return repo.DB.Where("ID=?", id).Delete(&m.Asset{}).Error
+}
+
+// RawAmountToReal ...
+func (repo *Repo) RawAmountToReal(amount int64, precision int) *apd.Decimal {
+	// precics
+	real := float64(amount) / math.Pow(10, float64(precision))
+	s := fmt.Sprintf("%f", real)
+	re, _, _ := apd.NewFromString(s)
+	return re
 }
