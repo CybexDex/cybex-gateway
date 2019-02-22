@@ -31,20 +31,27 @@ func IsBlack(order1 *m.Order) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	jporder, err := rep.JPOrder.GetByID(order1.JPOrderID)
-	if err != nil {
-		return false, err
+	var addressBlockChain string
+	if order1.Type == m.OrderTypeDeposit {
+		jporder, err := rep.JPOrder.GetByID(order1.JPOrderID)
+		if err != nil {
+			return false, err
+		}
+		addressBlockChain = jporder.From
+	} else if order1.Type == m.OrderTypeWithdraw {
+		cyborder, err := rep.CybOrder.GetByID(order1.CybOrderID)
+		if err != nil {
+			return false, err
+		}
+		addressBlockChain = cyborder.WithdrawAddr
 	}
 	app, err := rep.App.GetByID(order1.AppID)
 	if err != nil {
 		return false, err
 	}
-	blacks, err := rep.Black.FetchWithOr(&m.Black{
+	blacks, err := rep.Black.FetchWith(&m.Black{
 		Blockchain: blockchain.Name,
-		Address:    jporder.To,
-	}, &m.Black{
-		Blockchain: blockchain.Name,
-		Address:    jporder.From,
+		Address:    addressBlockChain,
 	})
 	if err != nil {
 		return false, err

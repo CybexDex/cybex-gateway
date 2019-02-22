@@ -4,10 +4,10 @@ import (
 	"runtime/debug"
 	"time"
 
+	apim "coding.net/yundkyy/cybexgolib/api"
 	rep "git.coding.net/bobxuyang/cy-gateway-BN/help/singleton"
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
-	apim "coding.net/yundkyy/cybexgolib/api"
 )
 
 var api apim.BitsharesAPI
@@ -54,6 +54,7 @@ func handleOrders(order1 *m.Order) {
 		return
 	}
 	if isblack {
+		utils.Errorln("handleOrders isblack", err)
 		order1.Status = m.OrderStatusTerminated
 		return
 	}
