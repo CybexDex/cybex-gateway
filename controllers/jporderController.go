@@ -83,14 +83,15 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 	}
 	request.Result["timestamp"] = request.Timestamp
 
+	jadepoolID := uint(request.JadepoolID)
+	// if jadepoolID not exist, use default 1
+	if jadepoolID == 0 {
+		jadepoolID = 1
+	}
 	if os.Getenv("env") != "dev" {
 		// verify sig
-		// if jadepoolID not exist, use default 1
-		if request.JadepoolID == 0 {
-			request.JadepoolID = 1
-		}
 		jadepoolRepo := jadepool.NewRepo(model.GetDB())
-		jadepool, err := jadepoolRepo.GetByID(uint(request.JadepoolID))
+		jadepool, err := jadepoolRepo.GetByID(jadepoolID)
 		if err != nil {
 			utils.Errorf("Unmarshal error: %v", err)
 			utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
@@ -144,33 +145,6 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	addressRepo := address.NewRepo(tx)
-	adddresses, err := addressRepo.FetchWith(&model.Address{
-		Address: result.To,
-	})
-	if err != nil {
-		tx.Rollback()
-		utils.Errorf("addressRepo.FetchWith error: %v", err)
-		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
-		return
-	}
-	if len(adddresses) == 0 {
-		tx.Rollback()
-		utils.Errorf("addressRepo.FetchWith result: %v", adddresses)
-		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
-		return
-	}
-	appID := adddresses[0].AppID
-	appRepo := app.NewRepo(tx)
-	app, err := appRepo.GetByID(appID)
-	if err != nil {
-		tx.Rollback()
-		utils.Errorf("appRepo.GetByID error: %v", err)
-		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
-		return
-	}
-	jadepoolID := app.JadepoolID
-
 	exeventEntity := new(model.ExEvent)
 	exeventEntity.AssetID = asset.ID
 	exeventEntity.Hash = result.Hash
@@ -204,6 +178,24 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if jporderEntity == nil {
+		addressRepo := address.NewRepo(tx)
+		adddresses, err := addressRepo.FetchWith(&model.Address{
+			Address: result.To,
+		})
+		if err != nil {
+			tx.Rollback()
+			utils.Errorf("addressRepo.FetchWith error: %v", err)
+			utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+			return
+		}
+		if len(adddresses) == 0 {
+			tx.Rollback()
+			utils.Errorf("addressRepo.FetchWith result: %v", adddresses)
+			utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+			return
+		}
+		appID := adddresses[0].AppID
+
 		// parse tx index from result
 		n := parseIndexFromResult(result)
 		jporderEntity = new(model.JPOrder)
