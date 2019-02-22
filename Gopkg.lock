@@ -2,16 +2,19 @@
 
 
 [[projects]]
-  digest = "1:a6b1849bf843386d11fc2b364cf7404311f4af9eaa83bb20421be8e645a29cf2"
+  digest = "1:e64cfff46ff24e170867e1ea47b02242dfdb9f70e4ae338372c726ddb1ca0fc0"
   name = "coding.net/yundkyy/cybexgolib"
   packages = [
     "api",
+    "config",
     "crypto",
+    "operations",
     "types",
+    "util",
   ]
   pruneopts = "UT"
-  revision = "3197420a3ace756c7da235d9fa2065ee41c36a7d"
-  version = "v0.5.0"
+  revision = "6dd272d5208a244a3cc2ebb3655bc2ab17b798c4"
+  version = "v0.6.0"
 
 [[projects]]
   branch = "master"
@@ -24,7 +27,7 @@
     "wire",
   ]
   pruneopts = "UT"
-  revision = "ed77733ec07dfc8a513741138419b8d9d3de9d2d"
+  revision = "306aecffea325e97f513b3ff0cf7895a5310651d"
 
 [[projects]]
   branch = "master"
@@ -53,19 +56,6 @@
   pruneopts = "UT"
   revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
   version = "v1.1.1"
-
-[[projects]]
-  digest = "1:c4a15a5df8ad5712f305b68bf737d174dc01177c256e017779779cbf6828d0bc"
-  name = "github.com/denkhaus/bitshares"
-  packages = [
-    "config",
-    "crypto",
-    "types",
-    "util",
-  ]
-  pruneopts = "UT"
-  revision = "3197420a3ace756c7da235d9fa2065ee41c36a7d"
-  version = "v0.5.0"
 
 [[projects]]
   branch = "master"
@@ -143,14 +133,6 @@
   version = "v1.4.7"
 
 [[projects]]
-  digest = "1:c79fb010be38a59d657c48c6ba1d003a8aa651fa56b579d959d74573b7dff8e1"
-  name = "github.com/gorilla/context"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "08b5f424b9271eedf6f9f0ce86cb9396ed337a42"
-  version = "v1.1.1"
-
-[[projects]]
   digest = "1:664d37ea261f0fc73dd17f4a1f5f46d01fbb0b0d75f6375af064824424109b7d"
   name = "github.com/gorilla/handlers"
   packages = ["."]
@@ -159,12 +141,12 @@
   version = "v1.4.0"
 
 [[projects]]
-  digest = "1:e73f5b0152105f18bc131fba127d9949305c8693f8a762588a82a48f61756f5f"
+  digest = "1:ca59b1175189b3f0e9f1793d2c350114be36eaabbe5b9f554b35edee1de50aea"
   name = "github.com/gorilla/mux"
   packages = ["."]
   pruneopts = "UT"
-  revision = "e3702bed27f0d39777b0b37b664b6280e8ef8fbf"
-  version = "v1.6.2"
+  revision = "a7962380ca08b5a188038c69871b8d3fbdf31e89"
+  version = "v1.7.0"
 
 [[projects]]
   digest = "1:c0d19ab64b32ce9fe5cf4ddceba78d5bc9807f0016db6b1183599da3dcc24d10"
@@ -409,7 +391,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:801f951cf6f2d61659d629009ae753210a52b8f86a6e3deeebbd8cad6ccb005b"
+  digest = "1:3f4c151273747e27c83a34c103891ddadd27a204693be1b0078cd6afd878c458"
   name = "golang.org/x/crypto"
   packages = [
     "bcrypt",
@@ -419,7 +401,7 @@
     "ssh/terminal",
   ]
   pruneopts = "UT"
-  revision = "ff983b9c42bc9fbf91556e191cc8efb585c16908"
+  revision = "a4c6cb3142f211c99e4bf4cd769535b29a9b616f"
 
 [[projects]]
   branch = "master"
@@ -434,14 +416,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:7941e2f16c0833b438cbef7fccfe4f8346f9f7876b42b29717a75d7e8c4800cb"
+  digest = "1:a3970d9d7cb61ebdb9db882d8950c20fad0e19bbad8f6e688334756f18aec597"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "UT"
-  revision = "aca44879d5644da7c5b8ec6a1115e9b6ea6c40d9"
+  revision = "ec7b60b042fd2c54ad5ceaac0c891bd88843f4a2"
 
 [[projects]]
   digest = "1:8029e9743749d4be5bc9f7d42ea1659471767860f0cdc34d37c3111bd308a295"

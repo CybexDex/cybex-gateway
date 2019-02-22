@@ -55,7 +55,7 @@ scpAdminSrvDev: buildAdminSrvLinux
 #######################################cybSrv#########################################
 .PHONY: buildCybSrv startCybSrv
 buildCybSrv:
-	@echo "build jpsrv......"
+	@echo "build cybsrv......"
 	@(cd ${curDir}/cmd/cybsrv;\
 	go build -v -ldflags "-X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/cybsrv)
 
