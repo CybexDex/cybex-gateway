@@ -14,6 +14,7 @@ import (
 	"time"
 
 	model "git.coding.net/bobxuyang/cy-gateway-BN/models"
+	"git.coding.net/bobxuyang/cy-gateway-BN/repository/address"
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/app"
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/asset"
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/exevent"
@@ -143,7 +144,7 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	/*addressRepo := address.NewRepo(tx)
+	addressRepo := address.NewRepo(tx)
 	adddresses, err := addressRepo.FetchWith(&model.Address{
 		Address: result.To,
 	})
@@ -168,10 +169,7 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
-	jadepoolID := app.JadepoolID*/
-
-	appID := uint(1)
-	jadepoolID := uint(1)
+	jadepoolID := app.JadepoolID
 
 	exeventEntity := new(model.ExEvent)
 	exeventEntity.AssetID = asset.ID
