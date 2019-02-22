@@ -7,7 +7,7 @@ import (
 	rep "git.coding.net/bobxuyang/cy-gateway-BN/help/singleton"
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
-	apim "git.coding.net/yundkyy/cybexgolib/api"
+	apim "coding.net/yundkyy/cybexgolib/api"
 )
 
 var api apim.BitsharesAPI

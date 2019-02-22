@@ -5,12 +5,12 @@ import (
 	"strings"
 	"time"
 
+	apim "coding.net/yundkyy/cybexgolib/api"
+	"coding.net/yundkyy/cybexgolib/crypto"
+	"coding.net/yundkyy/cybexgolib/types"
 	rep "git.coding.net/bobxuyang/cy-gateway-BN/help/singleton"
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
-	apim "git.coding.net/yundkyy/cybexgolib/api"
-	"git.coding.net/yundkyy/cybexgolib/crypto"
-	"git.coding.net/yundkyy/cybexgolib/types"
 	"github.com/juju/errors"
 	"github.com/spf13/viper"
 )
