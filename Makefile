@@ -51,3 +51,36 @@ startAdminSrv: buildAdminSrv
 scpAdminSrvDev: buildAdminSrvLinux
 	@echo "scp adminsrv......"
 	@(scp bin/adminsrv_linux_amd64 root@39.98.58.238:~/adminsrv/adminsrv_)
+
+#######################################cybSrv#########################################
+.PHONY: buildCybSrv startCybSrv
+buildCybSrv:
+	@echo "build jpsrv......"
+	@(cd ${curDir}/cmd/cybsrv;\
+	go build -v -ldflags "-X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/cybsrv)
+
+startCybSrv: buildCybSrv
+	@echo "start cybsrv......"
+	@(${curDir}/bin/cybsrv;)
+
+#######################################orderSrv#########################################
+.PHONY: buildOrderSrv startOrderSrv
+buildOrderSrv:
+	@echo "build orderSrv......"
+	@(cd ${curDir}/cmd/orderSrv;\
+	go build -v -ldflags "-X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/orderSrv)
+
+startOrderSrv: buildCybSrv
+	@echo "start orderSrv......"
+	@(${curDir}/bin/orderSrv;)
+
+#######################################userSrv#########################################
+.PHONY: buildUserSrv startUserSrv
+buildUserSrv:
+	@echo "build userSrv......"
+	@(cd ${curDir}/cmd/userSrv;\
+	go build -v -ldflags "-X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/userSrv)
+
+startUserSrv: buildCybSrv
+	@echo "start userSrv......"
+	@(${curDir}/bin/userSrv;)
