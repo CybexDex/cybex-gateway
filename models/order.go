@@ -152,18 +152,20 @@ func (a *Order) createJPOrder(tx *gorm.DB) (*JPOrder, error) {
 func (a *Order) CreateNext(tx *gorm.DB) (err error) {
 	if a.Status == OrderStatusDone && a.Type == OrderTypeDeposit {
 		// create cyborder
-		_, err = a.createCYBOrder(tx)
+		cybOrder, err := a.createCYBOrder(tx)
 		if err != nil {
 			u.Errorf("save cyborder error,", err, a.ID)
 			return err
 		}
+		a.CybOrderID = cybOrder.ID
 	} else if a.Status == OrderStatusDone && a.Type == OrderTypeWithdraw {
 		// create jporder
-		_, err = a.createJPOrder(tx)
+		jpOrder, err := a.createJPOrder(tx)
 		if err != nil {
 			u.Errorf("save jporder error,", err, a.ID)
 			return err
 		}
+		a.JPOrderID = jpOrder.ID
 	}
 	return nil
 }
