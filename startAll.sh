@@ -9,7 +9,7 @@ if [ ! -d "./log" ]; then
 fi
 
 # build every servers
-make buildJPSrv buildAdminSrv buildCybSrv buildOrderSrv buildUserSrv
+make buildAll
 
 # kill & start jpsrv
 echo "start jpsrv..."
