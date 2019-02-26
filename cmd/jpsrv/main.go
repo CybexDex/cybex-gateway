@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"runtime/debug"
+	"strconv"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -111,6 +112,13 @@ func startHandleJPOrder() {
 				continue
 			}
 
+			jadepoolOrderID, err := strconv.Atoi(result.ID)
+			if err != nil {
+				utils.Errorf("error: %v", err)
+				time.Sleep(time.Second * 1)
+				continue
+			}
+			jporder.JadepoolOrderID = uint(jadepoolOrderID)
 			jporder.From = result.From
 			jporder.Confirmations = result.Confirmations
 			err = jporder.Save()
