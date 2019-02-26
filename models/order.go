@@ -131,7 +131,7 @@ func (a *Order) createJPOrder(tx *gorm.DB) (*JPOrder, error) {
 		u.Errorf("get cyborder error,", err, a.ID)
 		return nil, err
 	}
-	order.To = o.To
+	order.To = o.WithdrawAddr
 
 	order.TotalAmount = a.TotalAmount
 	order.Amount = a.Amount
