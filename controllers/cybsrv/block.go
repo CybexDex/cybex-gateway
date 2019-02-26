@@ -26,7 +26,7 @@ func BlockRead() {
 	i := 0
 	for {
 		i = i + 1
-		fmt.Println("read round:", i)
+		utils.Infoln("read round:", i)
 		handleBlock()
 		time.Sleep(time.Second * 3)
 	}
@@ -69,12 +69,12 @@ func getHeadNum() (int, error) {
 	return int(s.LastIrreversibleBlockNum), nil
 }
 func readBlock(cnum int) (orders []*m.CybOrder) {
-	// fmt.Println("block", cnum)
+	// utils.Infoln("block", cnum)
 	// do read transfers
 	blockInfo, err := api.GetBlock(uint64(cnum))
 	b, err := json.Marshal(blockInfo)
 	if err != nil {
-		fmt.Println("error json block:", cnum)
+		utils.Infoln("error json block:", cnum)
 		return orders
 	}
 	ts := gjson.GetBytes(b, "transactions")
@@ -93,7 +93,7 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 						CybID: asset,
 					})
 					if err != nil {
-						fmt.Println("asset error", err)
+						utils.Infoln("asset error", err)
 						continue
 					}
 					if len(assetObj) < 1 {
@@ -104,14 +104,14 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 					UserID := cybtypes.NewGrapheneID(fromid)
 					fromusers, err := api.GetAccounts(UserID)
 					if err != nil {
-						fmt.Println("fromusers error", err)
+						utils.Infoln("fromusers error", err)
 						continue
 					}
 					userFrom := fromusers[0]
 					cybasset, err := api.GetAsset(asset)
 					app, err := rep.App.FindAppOrCreate(userFrom.Name)
 					realAmount := rep.Asset.RawAmountToReal(amount, cybasset.Precision)
-					fmt.Println("aa", amount, cybasset.Precision, assetNow.CybName, realAmount)
+					utils.Infoln("aa", amount, cybasset.Precision, assetNow.CybName, realAmount)
 					f1, _ := realAmount.Float64()
 					f2, _ := assetNow.WithdrawFee.Float64()
 					amountNow := f1 - f2
@@ -132,7 +132,7 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 					}
 					// is recharge
 					if fromid == coldAccount.ID.ID() {
-						fmt.Println("Recharge", rawop)
+						utils.Infoln("Recharge", rawop)
 						order.Type = m.CybOrderTypeRecharge
 						orders = append(orders, order)
 						continue
@@ -140,7 +140,7 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 					memostr := rawop.Get("memo").String()
 					if memostr == "" {
 						// UR
-						fmt.Println("UR", rawop)
+						utils.Infoln("UR", rawop)
 						order.Type = m.CybOrderTypeUR
 						orders = append(orders, order)
 						continue
@@ -155,14 +155,14 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 							}
 						}
 						if amountNow < 0 {
-							fmt.Println("UR", rawop)
+							utils.Infoln("UR", rawop)
 							order.Type = m.CybOrderTypeUR
 							orders = append(orders, order)
 							continue
 						}
 						// is a withdraw
 						if !strings.HasPrefix(memoout, gatewayPrefix) {
-							fmt.Println("UR:1 ", cnum, index, fromid, asset, amount, "memo:", memoout)
+							utils.Infoln("UR:1 ", cnum, index, fromid, asset, amount, "memo:", memoout)
 							order.Type = m.CybOrderTypeUR
 							orders = append(orders, order)
 							continue
@@ -170,13 +170,13 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 						s := strings.TrimPrefix(memoout, gatewayPrefix)
 						s2 := strings.Split(s, ":")
 						if len(s2) < 3 {
-							fmt.Println("UR:2 ", cnum, index, fromid, asset, amount, "memo:", memoout, s)
+							utils.Infoln("UR:2 ", cnum, index, fromid, asset, amount, "memo:", memoout, s)
 							order.Type = m.CybOrderTypeUR
 							orders = append(orders, order)
 							continue
 						}
 						addr := strings.Join(s2[2:], ":")
-						fmt.Println("withdraw:", cnum, index, fromid, asset, amount, "memo:", memoout, "add:", addr)
+						utils.Infoln("withdraw:", cnum, index, fromid, asset, amount, "memo:", memoout, "add:", addr)
 						order.Type = m.CybOrderTypeWithdraw
 						order.Memo = memoout
 						order.WithdrawAddr = addr
@@ -203,19 +203,19 @@ func handleBlock() {
 	// get lastBlock
 	lastBlockNum, easy, err := getlastBlock()
 	if err != nil {
-		fmt.Println("err:", err)
+		utils.Infoln("err:", err)
 		return
 	}
 	// get blockhead
 	blockheadNum, err := getHeadNum()
-	fmt.Println("last", lastBlockNum, "head", blockheadNum, err)
+	utils.Infoln("last", lastBlockNum, "head", blockheadNum, err)
 	if lastBlockNum >= blockheadNum {
 		return
 	}
 	// for
 	for cnum := lastBlockNum; cnum <= blockheadNum; cnum = cnum + 1 {
 		cyborders := readBlock(cnum)
-		// fmt.Println(cyborders)
+		// utils.Infoln(cyborders)
 		// save cyborders
 		for _, order := range cyborders {
 			saveCYBOrder(order)
