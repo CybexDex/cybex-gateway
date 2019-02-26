@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"time"
 
+	apim "coding.net/yundkyy/cybexgolib/api"
+	"coding.net/yundkyy/cybexgolib/types"
 	rep "git.coding.net/bobxuyang/cy-gateway-BN/help/singleton"
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	u "git.coding.net/bobxuyang/cy-gateway-BN/utils"
-	apim "coding.net/yundkyy/cybexgolib/api"
-	"coding.net/yundkyy/cybexgolib/types"
 	"github.com/gorilla/mux"
 	"github.com/juju/errors"
 	"github.com/spf13/viper"
@@ -189,24 +189,25 @@ func createCybexUserAddress(addrQ *m.Address) (*m.Address, error) {
 	}
 	return addrQ, nil
 }
-func findAppOrCreate(user string) (app1 *m.App, err error) {
-	appQ := &m.App{
-		CybAccount: user,
-	}
-	apps, err := rep.App.FetchWith(appQ)
-	if err != nil {
-		return nil, err
-	}
-	if len(apps) == 0 {
-		app1, err = createCybexUserApp(user)
-		if err != nil {
-			return app1, err
-		}
-	} else {
-		app1 = apps[0]
-	}
-	return app1, nil
-}
+
+// func findAppOrCreate(user string) (app1 *m.App, err error) {
+// 	appQ := &m.App{
+// 		CybAccount: user,
+// 	}
+// 	apps, err := rep.App.FetchWith(appQ)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	if len(apps) == 0 {
+// 		app1, err = createCybexUserApp(user)
+// 		if err != nil {
+// 			return app1, err
+// 		}
+// 	} else {
+// 		app1 = apps[0]
+// 	}
+// 	return app1, nil
+// }
 func findAssetByName(name string) (*m.Asset, error) {
 	return rep.Asset.GetByName(name)
 }
@@ -237,7 +238,7 @@ func DepositAddress(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	user := vars["user"]
 	asset := vars["asset"]
-	app1, err := findAppOrCreate(user)
+	app1, err := rep.App.FindAppOrCreate(user)
 	if err != nil {
 		u.Errorf("error %v", err)
 		u.Respond(w, u.Message(false, "Internal server error"), http.StatusInternalServerError)

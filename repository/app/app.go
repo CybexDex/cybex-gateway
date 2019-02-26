@@ -110,6 +110,7 @@ func (repo *Repo) FindAppOrCreate(user string) (app1 *m.App, err error) {
 func (repo *Repo) createCybexUserApp(user string) (*m.App, error) {
 	newapp := &m.App{
 		CybAccount: user,
+		JadepoolID: 1,
 	}
 	err := newapp.Save()
 	return newapp, err
