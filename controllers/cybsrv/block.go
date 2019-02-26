@@ -117,6 +117,8 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 					amountNow := f1 - f2
 					amountStr := fmt.Sprintf("%f", amountNow)
 					amountA, _, _ := apd.NewFromString(amountStr)
+					hash := fmt.Sprintf("%d:%d", cnum, index)
+					uuhash := fmt.Sprintf("%s:%s", "CYB", hash)
 					order := &m.CybOrder{
 						AppID:       app.ID,
 						AssetID:     assetNow.ID,
@@ -125,6 +127,8 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 						TotalAmount: realAmount,
 						Amount:      amountA,
 						Fee:         assetNow.WithdrawFee,
+						Hash:        hash,
+						UUHash:      uuhash,
 					}
 					// is recharge
 					if fromid == coldAccount.ID.ID() {
