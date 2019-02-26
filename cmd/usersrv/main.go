@@ -45,6 +45,7 @@ func authMiddleware(next http.Handler) http.Handler {
 			return
 		}
 		if !ok {
+			// TODO uncomment this
 			// utils.Respond(w, utils.Message(false, "Invalid/Malformed auth token err:3"), http.StatusForbidden)
 			// return
 		}
