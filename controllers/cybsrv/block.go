@@ -89,6 +89,7 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 				asset := rawop.Get("amount.asset_id").String()
 				amount := rawop.Get("amount.amount").Int()
 				if toid == gatewayAccount.ID.ID() {
+					// withdraw  from-App-Name
 					assetObj, err := rep.Asset.FetchWith(&m.Asset{
 						CybID: asset,
 					})
@@ -118,7 +119,8 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 					amountStr := fmt.Sprintf("%f", amountNow)
 					amountA, _, _ := apd.NewFromString(amountStr)
 					hash := fmt.Sprintf("%d:%d", cnum, index)
-					uuhash := fmt.Sprintf("%s:%s", "CYB", hash)
+					signature := t.Get("signatures").Array()[0]
+					sig := signature.String()
 					order := &m.CybOrder{
 						AppID:       app.ID,
 						AssetID:     assetNow.ID,
@@ -128,7 +130,8 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 						Amount:      amountA,
 						Fee:         assetNow.WithdrawFee,
 						Hash:        hash,
-						UUHash:      uuhash,
+						UUHash:      sig,
+						Status:      m.CybOrderStatusDone,
 					}
 					// is recharge
 					if fromid == coldAccount.ID.ID() {
@@ -186,6 +189,52 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 				}
 				if fromid == gatewayAccount.ID.ID() {
 					// is from gateway => confirm
+					assetObj, err := rep.Asset.FetchWith(&m.Asset{
+						CybID: asset,
+					})
+					if err != nil {
+						utils.Infoln("asset error", err)
+						continue
+					}
+					if len(assetObj) < 1 {
+						continue
+					}
+					assetNow := assetObj[0]
+
+					UserID := cybtypes.NewGrapheneID(toid)
+					tousers, err := api.GetAccounts(UserID)
+					if err != nil {
+						utils.Infoln("tousers error", err)
+						continue
+					}
+					userTo := tousers[0]
+					cybasset, err := api.GetAsset(asset)
+					app, err := rep.App.FindAppOrCreate(userTo.Name)
+					realAmount := rep.Asset.RawAmountToReal(amount, cybasset.Precision)
+					utils.Infoln("aa", amount, cybasset.Precision, assetNow.CybName, realAmount)
+					f1, _ := realAmount.Float64()
+					f2, _ := assetNow.WithdrawFee.Float64()
+					amountNow := f1 - f2
+					amountStr := fmt.Sprintf("%f", amountNow)
+					amountA, _, _ := apd.NewFromString(amountStr)
+					hash := fmt.Sprintf("%d:%d", cnum, index)
+					signature := t.Get("signatures").Array()[0]
+					sig := signature.String()
+					order := &m.CybOrder{
+						AppID:       app.ID,
+						AssetID:     assetNow.ID,
+						From:        gatewayAccount.Name,
+						To:          userTo.Name,
+						TotalAmount: realAmount,
+						Amount:      amountA,
+						Fee:         assetNow.WithdrawFee,
+						Hash:        hash,
+						UUHash:      sig,
+						Type:        m.CybOrderTypeDeposit,
+						Status:      m.CybOrderStatusDone,
+					}
+					orders = append(orders, order)
+					continue
 				}
 
 			}
@@ -218,12 +267,20 @@ func handleBlock() {
 		// utils.Infoln(cyborders)
 		// save cyborders
 		for _, order := range cyborders {
-			saveCYBOrder(order)
+			if order.Type != m.CybOrderTypeDeposit {
+				saveCYBOrder(order)
+			} else {
+				updateCYBOrder(order)
+			}
 		}
 		// updateLastBlock
 		updateLastBlock(cnum, easy)
 	}
 	//
+}
+func updateCYBOrder(order *m.CybOrder) error {
+	// rep.CybOrder.FetchWith(order.)
+	return nil
 }
 func saveCYBOrder(order *m.CybOrder) error {
 	tx := m.GetDB().Begin()
