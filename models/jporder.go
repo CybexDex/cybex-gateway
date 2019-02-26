@@ -90,7 +90,7 @@ func (a *JPOrder) computeInLocked(tx *gorm.DB, oper string) error {
 
 	err = ComputeBalance(tx, &bal, &data)
 	if err != nil {
-		u.Errorln("compute balance error", a.ID)
+		u.Errorln("compute balance error", err, a.ID)
 		return err
 	}
 	u.Debugln("compute balance", a.ID)
@@ -119,10 +119,10 @@ func (a *JPOrder) computeOutLocked(tx *gorm.DB, oper string) error {
 
 	err = ComputeBalance(tx, &bal, &data)
 	if err != nil {
-		u.Errorln("compute balance error", a.ID)
+		u.Errorln("compute balance error", err, a.ID)
 		return err
 	}
-	u.Debugln("compute balance error", a.ID)
+	u.Debugln("compute balance", a.ID)
 
 	return nil
 }
