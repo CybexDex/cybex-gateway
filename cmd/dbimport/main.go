@@ -41,15 +41,15 @@ func tAsset() {
 	var db = m.GetDB()
 
 	// assets
-	wf, _, _ := new(apd.Decimal).SetString("0.05")
-	df, _, _ := new(apd.Decimal).SetString("0.05")
+	wf, _, _ := new(apd.Decimal).SetString("0.005")
+	df, _, _ := new(apd.Decimal).SetString("0")
 	lwl, _, _ := new(apd.Decimal).SetString("100.0")
 	hwl, _, _ := new(apd.Decimal).SetString("10000.0")
 	st, _, _ := new(apd.Decimal).SetString("1000.0")
 	asset := m.Asset{
 		Name:           "ETH",
-		CybName:        "CYB",
-		CybID:          "1.3.0",
+		CybName:        "TEST.ETH",
+		CybID:          "1.3.2",
 		Description:    "ETH",
 		BlockchainID:   1,
 		WithdrawSwitch: true,
@@ -76,8 +76,8 @@ func tJadepool() {
 		TestNet:     true,
 		EccEnabled:  false,
 		EccPubKey:   "03ace32532c90652e1bae916248e427a7ab10aeeea1067949669a3f4da10965ef9",
-		Host:        "192.168.0.1",
-		Port:        6688,
+		Host:        "39.98.58.238",
+		Port:        7001,
 		Version:     "1.0.0",
 		Status:      "NORMAL",
 		Type:        "DEFAULT",
