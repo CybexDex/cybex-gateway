@@ -50,8 +50,8 @@ type CybOrder struct {
 	Amount      *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"amount"`      //
 	Fee         *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"fee"`         // fee in Asset
 
-	Hash         string `gorm:"unique;index;type:varchar(128);default:null" json:"hash"`
-	UUHash       string `gorm:"unique;nidex;type:varchar(256);default:null" json:"uuhash"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
+	Hash         string `gorm:"unique;index;type:varchar(128);default:null" json:"hash"`   // block:index
+	UUHash       string `gorm:"unique;index;type:varchar(256);default:null" json:"uuhash"` // used for signature
 	Status       string `gorm:"type:varchar(32);not null" json:"status"`                   // INIT, HOLDING, PENDING, DONE, FAILED
 	Type         string `gorm:"type:varchar(32);not null" json:"type"`                     // DEPOSIT, WITHDRAW, RECHARGE, SWEEP, FEESETTLE
 	Memo         string `json:"Memo"`
