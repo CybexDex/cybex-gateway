@@ -45,8 +45,8 @@ func authMiddleware(next http.Handler) http.Handler {
 			return
 		}
 		if !ok {
-			utils.Respond(w, utils.Message(false, "Invalid/Malformed auth token err:3"), http.StatusForbidden)
-			return
+			// utils.Respond(w, utils.Message(false, "Invalid/Malformed auth token err:3"), http.StatusForbidden)
+			// return
 		}
 		// Call the next handler, which can be another middleware in the chain, or the final handler.
 		next.ServeHTTP(w, r)
