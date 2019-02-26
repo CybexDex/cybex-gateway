@@ -52,6 +52,7 @@ type CybOrder struct {
 
 	Hash         string `gorm:"unique;index;type:varchar(128);default:null" json:"hash"`   // block:index
 	UUHash       string `gorm:"unique;index;type:varchar(256);default:null" json:"uuhash"` // used for signature
+	Sig          string `gorm:"unique;index;type:varchar(256);default:null" json:"sig"`    // used for signature
 	Status       string `gorm:"type:varchar(32);not null" json:"status"`                   // INIT, HOLDING, PENDING, DONE, FAILED
 	Type         string `gorm:"type:varchar(32);not null" json:"type"`                     // DEPOSIT, WITHDRAW, RECHARGE, SWEEP, FEESETTLE
 	Memo         string `json:"Memo"`

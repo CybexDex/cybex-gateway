@@ -130,7 +130,7 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 						Amount:      amountA,
 						Fee:         assetNow.WithdrawFee,
 						Hash:        hash,
-						UUHash:      sig,
+						Sig:         sig,
 						Status:      m.CybOrderStatusDone,
 					}
 					// is recharge
@@ -229,7 +229,7 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 						Amount:      amountA,
 						Fee:         assetNow.WithdrawFee,
 						Hash:        hash,
-						UUHash:      sig,
+						Sig:         sig,
 						Type:        m.CybOrderTypeDeposit,
 						Status:      m.CybOrderStatusDone,
 					}
@@ -279,7 +279,19 @@ func handleBlock() {
 	//
 }
 func updateCYBOrder(order *m.CybOrder) error {
-	// rep.CybOrder.FetchWith(order.)
+	os, err := rep.CybOrder.FetchWith(&m.CybOrder{
+		Sig: order.Sig,
+	})
+	if err != nil {
+		return err
+	}
+	if len(os) > 0 {
+		o := os[0]
+		o.Status = m.CybOrderStatusDone
+		err := o.Save()
+		return err
+	}
+	utils.Infoln("updateerr,no order with this sig", order)
 	return nil
 }
 func saveCYBOrder(order *m.CybOrder) error {
