@@ -16,10 +16,17 @@ adminsrv:
   log_dir: ""
   log_level: "DEBUG"
 
-cybsrv:
+cybsrv_pro:
   node: "wss://shanghai.51nebula.com/"
   blockBegin: 10308726
   gatewayAccount: "yangyu123"
   gatewayPassword: "P5KNfAPu82LyAuJeD7NwgggWJvqZ9UREUpXQCwCNdGp8z"
   coldAccount: "yangyu2"
   gatewayPrefix: "withdraw:CybexGateway"
+cybsrv:
+  node: "wss://hangzhou.51nebula.com/"
+  blockBegin: 1848952
+  gatewayAccount: "yangyutest1"
+  gatewayPassword: "P5HuDhKrZsxeB3LPio8c8Kv3XNhh4cqnWj8dwnDTYordR"
+  coldAccount: "yangyutest12"
+  gatewayPrefix: "withdraw:CybexGatewayDev"

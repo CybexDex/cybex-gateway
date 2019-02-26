@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
+	cybtypes "coding.net/yundkyy/cybexgolib/types"
 	rep "git.coding.net/bobxuyang/cy-gateway-BN/help/singleton"
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
-	cybtypes "coding.net/yundkyy/cybexgolib/types"
 	"github.com/cockroachdb/apd"
 	"github.com/spf13/viper"
 	"github.com/tidwall/gjson"
@@ -52,7 +52,7 @@ func getlastBlock() (int, *m.Easy, error) {
 	bstr := strconv.Itoa(blockBegin)
 	newLast := &m.Easy{
 		Key:   "cybLastBlockNum",
-		Value: string(bstr),
+		Value: bstr,
 	}
 	err = newLast.Save()
 	if err != nil {
@@ -108,9 +108,10 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 						continue
 					}
 					userFrom := fromusers[0]
-					cybasset, err := api.GetAsset(assetNow.CybName)
+					cybasset, err := api.GetAsset(asset)
 					app, err := rep.App.FindAppOrCreate(userFrom.Name)
 					realAmount := rep.Asset.RawAmountToReal(amount, cybasset.Precision)
+					fmt.Println("aa", amount, cybasset.Precision, assetNow.CybName, realAmount)
 					f1, _ := realAmount.Float64()
 					f2, _ := assetNow.WithdrawFee.Float64()
 					amountNow := f1 - f2
@@ -201,10 +202,9 @@ func handleBlock() {
 		fmt.Println("err:", err)
 		return
 	}
-	fmt.Println(lastBlockNum)
 	// get blockhead
 	blockheadNum, err := getHeadNum()
-	fmt.Println(blockheadNum, err)
+	fmt.Println("last", lastBlockNum, "head", blockheadNum, err)
 	if lastBlockNum >= blockheadNum {
 		return
 	}
