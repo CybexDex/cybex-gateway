@@ -89,7 +89,7 @@ func IsTokenOK(token string) (bool, error) {
 		timenow := time.Now().Unix()
 		u.Infoln(t, token, t[0].Expiration, uint(timenow))
 		if t[0].Expiration < uint(timenow) {
-			u.Infoln("expire")
+			u.Warningf("expire")
 			return false, nil
 		}
 		return true, nil
@@ -102,13 +102,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	opMsg := &OpMsg{}
 	err := json.NewDecoder(r.Body).Decode(opMsg)
 	if err != nil {
-		u.Errorf("err: %v", err)
+		u.Errorf("json Decode: %v", err)
 		u.Respond(w, u.Message(false, "Invalid request"), http.StatusBadRequest)
 		return
 	}
 	isok, expiration, err := checkIsUser(opMsg.Signer, opMsg.Op)
 	if err != nil {
-		u.Errorf("err: %v", err)
+		u.Errorf("checkIsUser: %v", err)
 		u.Respond(w, u.Message(false, "Invalid request"), http.StatusBadRequest)
 		return
 	}
@@ -118,7 +118,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 	err = saveTokenExp(opMsg.Op.AccountName, opMsg.Signer, uint(expiration))
 	if err != nil {
-		u.Errorf("err: %v", err)
+		u.Errorf("saveTokenExp: %v", err)
 		u.Respond(w, u.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
@@ -138,7 +138,7 @@ func findAsset() ([]*m.Asset, error) {
 func AllAsset(w http.ResponseWriter, r *http.Request) {
 	assets, err := findAsset()
 	if err != nil {
-		u.Errorf("err: %v", err)
+		u.Errorf("findAsset: %v", err)
 		u.Respond(w, u.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
@@ -178,13 +178,13 @@ func createCybexUserAddress(addrQ *m.Address) (*m.Address, error) {
 	resObj := &JPData{}
 	err = json.Unmarshal(_bodyBytes, resObj)
 	if err != nil {
-		u.Errorf("error %v", err)
+		u.Errorf("json.Unmarshal %v", err)
 		return nil, err
 	}
 	addrQ.Address = resObj.Data.Address
 	err = addrQ.Save()
 	if err != nil {
-		u.Errorf("error %v", err)
+		u.Errorf("Address Save %v", err)
 		return nil, err
 	}
 	return addrQ, nil
@@ -240,19 +240,19 @@ func DepositAddress(w http.ResponseWriter, r *http.Request) {
 	asset := vars["asset"]
 	app1, err := rep.App.FindAppOrCreate(user)
 	if err != nil {
-		u.Errorf("error %v", err)
+		u.Errorf("rep.App.FindAppOrCreate %v", err)
 		u.Respond(w, u.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
 	asset1, err := findAssetByName(asset)
 	if err != nil {
-		u.Errorf("error %v", err)
+		u.Errorf("findAssetByName %v", err)
 		u.Respond(w, u.Message(false, "asset not support!"), http.StatusBadRequest)
 		return
 	}
 	addr, err := findAddrOrCreate(app1, asset1)
 	if err != nil {
-		u.Errorf("error %v", err)
+		u.Errorf("findAddrOrCreate %v", err)
 		u.Respond(w, u.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
