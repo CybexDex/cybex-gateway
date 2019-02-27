@@ -1,4 +1,4 @@
-package usersrvc
+package usersrv
 
 import (
 	"encoding/json"

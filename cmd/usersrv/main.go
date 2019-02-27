@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"git.coding.net/bobxuyang/cy-gateway-BN/app"
-	"git.coding.net/bobxuyang/cy-gateway-BN/controllers/usersrvc"
+	"git.coding.net/bobxuyang/cy-gateway-BN/controllers/usersrv"
 	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/facebookgo/grace/gracehttp"
 	"github.com/gorilla/mux"
@@ -38,7 +38,7 @@ func authMiddleware(next http.Handler) http.Handler {
 
 		tokenPart := splitted[1]
 		// check is tokenpart in db
-		ok, err := usersrvc.IsTokenOK(tokenPart)
+		ok, err := usersrv.IsTokenOK(tokenPart)
 		if err != nil {
 			utils.Errorf("token err:%v", err)
 			utils.Respond(w, utils.Message(false, "Invalid/Malformed auth token err:2"), http.StatusForbidden)
@@ -71,9 +71,9 @@ func main() {
 		w.Write([]byte("ok"))
 	}).Methods("GET")
 
-	router.HandleFunc("/login", usersrvc.Login).Methods("POST")
-	authrouter.HandleFunc("/asset", usersrvc.AllAsset).Methods("GET")
-	authrouter.HandleFunc("/deposit_address/{user}/{asset}", usersrvc.DepositAddress).Methods("GET")
+	router.HandleFunc("/login", usersrv.Login).Methods("POST")
+	authrouter.HandleFunc("/asset", usersrv.AllAsset).Methods("GET")
+	authrouter.HandleFunc("/deposit_address/{user}/{asset}", usersrv.DepositAddress).Methods("GET")
 
 	listenAddr := viper.GetString("usersrv.listen_addr")
 	utils.Infof("%s", listenAddr)
