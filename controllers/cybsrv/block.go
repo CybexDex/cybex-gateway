@@ -74,7 +74,7 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 	blockInfo, err := api.GetBlock(uint64(cnum))
 	b, err := json.Marshal(blockInfo)
 	if err != nil {
-		utils.Infoln("error json block:", cnum)
+		utils.Infoln("json.Marshal(blockInfo):", cnum)
 		return orders
 	}
 	ts := gjson.GetBytes(b, "transactions")
@@ -94,7 +94,7 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 						CybID: asset,
 					})
 					if err != nil {
-						utils.Infoln("asset error", err)
+						utils.Errorln("rep.Asset.FetchWith", err)
 						continue
 					}
 					if len(assetObj) < 1 {
@@ -105,14 +105,14 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 					UserID := cybtypes.NewGrapheneID(fromid)
 					fromusers, err := api.GetAccounts(UserID)
 					if err != nil {
-						utils.Infoln("fromusers error", err)
+						utils.Errorln("GetAccounts ", err)
 						continue
 					}
 					userFrom := fromusers[0]
 					cybasset, err := api.GetAsset(asset)
 					app, err := rep.App.FindAppOrCreate(userFrom.Name)
 					realAmount := rep.Asset.RawAmountToReal(amount, cybasset.Precision)
-					utils.Infoln("aa", amount, cybasset.Precision, assetNow.CybName, realAmount)
+					utils.Debugln("cyborder", amount, cybasset.Precision, assetNow.CybName, realAmount)
 					f1, _ := realAmount.Float64()
 					f2, _ := assetNow.WithdrawFee.Float64()
 					amountNow := f1 - f2
@@ -193,7 +193,7 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 						CybID: asset,
 					})
 					if err != nil {
-						utils.Infoln("asset error", err)
+						utils.Infoln("rep.Asset.FetchWith", err)
 						continue
 					}
 					if len(assetObj) < 1 {
@@ -211,7 +211,7 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 					cybasset, err := api.GetAsset(asset)
 					app, err := rep.App.FindAppOrCreate(userTo.Name)
 					realAmount := rep.Asset.RawAmountToReal(amount, cybasset.Precision)
-					utils.Infoln("aa", amount, cybasset.Precision, assetNow.CybName, realAmount)
+					utils.Debugln("cyborder", amount, cybasset.Precision, assetNow.CybName, realAmount)
 					f1, _ := realAmount.Float64()
 					f2, _ := assetNow.WithdrawFee.Float64()
 					amountNow := f1 - f2
@@ -252,7 +252,7 @@ func handleBlock() {
 	// get lastBlock
 	lastBlockNum, easy, err := getlastBlock()
 	if err != nil {
-		utils.Infoln("err:", err)
+		utils.Errorln("getlastBlock:", err)
 		return
 	}
 	// get blockhead
@@ -291,7 +291,7 @@ func updateCYBOrder(order *m.CybOrder) error {
 		err := o.Save()
 		return err
 	}
-	utils.Infoln("updateerr,no order with this sig", order)
+	utils.Warningln("updateerr,no order with this sig", order)
 	return nil
 }
 func saveCYBOrder(order *m.CybOrder) error {
