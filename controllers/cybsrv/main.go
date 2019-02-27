@@ -96,7 +96,7 @@ func HandleWorker() {
 		})
 		rownum := re.RowsAffected
 		// fmt.Println("fails=>init", rownum, "waiting next...", 10)
-		utils.Debugln("fails=>init... %d", rownum)
+		utils.Debugf("fails=>init... %d", rownum)
 		time.Sleep(time.Second * 10)
 	}
 }
