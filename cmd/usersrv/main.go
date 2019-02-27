@@ -31,7 +31,7 @@ func authMiddleware(next http.Handler) http.Handler {
 
 		splitted := strings.Split(tokenHeader, " ") //The token normally comes in format `Bearer {token-body}`, we check if the retrieved token matched this requirement
 		if len(splitted) != 2 {
-			utils.Infoln("no token")
+			utils.Errorf("no token")
 			utils.Respond(w, utils.Message(false, "Invalid/Malformed auth token err:1"), http.StatusForbidden)
 			return
 		}
