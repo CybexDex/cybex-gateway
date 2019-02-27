@@ -24,9 +24,14 @@ cybsrv_pro:
   coldAccount: "yangyu2"
   gatewayPrefix: "withdraw:CybexGateway"
 cybsrv:
+  log_dir: ""
+  log_level: "DEBUG"
   node: "wss://hangzhou.51nebula.com/"
   blockBegin: 1848952
   gatewayAccount: "yangyutest1"
   gatewayPassword: "P5HuDhKrZsxeB3LPio8c8Kv3XNhh4cqnWj8dwnDTYordR"
   coldAccount: "yangyutest12"
   gatewayPrefix: "withdraw:CybexGatewayDev"
+ordersrv:
+  log_dir: ""
+  log_level: "DEBUG"
