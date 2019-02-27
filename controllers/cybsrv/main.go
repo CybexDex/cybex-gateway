@@ -84,7 +84,7 @@ func handleOrders(order1 *m.CybOrder) {
 // HandleWorker ...
 func HandleWorker() {
 	for {
-		utils.Infof("start...")
+		utils.Debugln("start...")
 		for {
 			ret := HandleOneTime()
 			if ret != 0 {
@@ -96,7 +96,7 @@ func HandleWorker() {
 		})
 		rownum := re.RowsAffected
 		// fmt.Println("fails=>init", rownum, "waiting next...", 10)
-		utils.Infof("fails=>init... %d", rownum)
+		utils.Debugln("fails=>init... %d", rownum)
 		time.Sleep(time.Second * 10)
 	}
 }

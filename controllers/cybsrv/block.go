@@ -26,7 +26,7 @@ func BlockRead() {
 	i := 0
 	for {
 		i = i + 1
-		utils.Infoln("read round:", i)
+		utils.Debugln("read round:", i)
 		handleBlock()
 		time.Sleep(time.Second * 3)
 	}
@@ -257,7 +257,7 @@ func handleBlock() {
 	}
 	// get blockhead
 	blockheadNum, err := getHeadNum()
-	utils.Infoln("last", lastBlockNum, "head", blockheadNum, err)
+	utils.Debugln("last", lastBlockNum, "head", blockheadNum, err)
 	if lastBlockNum >= blockheadNum {
 		return
 	}

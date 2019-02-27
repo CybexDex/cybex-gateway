@@ -76,7 +76,7 @@ func handleOrders(order1 *m.Order) {
 // HandleWorker ...
 func HandleWorker() {
 	for {
-		utils.Infoln("start...")
+		utils.Debugln("start...")
 		for {
 			ret := HandleOneTime()
 			if ret != 0 {
