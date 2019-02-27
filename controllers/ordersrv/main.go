@@ -54,7 +54,7 @@ func handleOrders(order1 *m.Order) {
 		return
 	}
 	if isblack {
-		utils.Errorln("handleOrders isblack", err)
+		utils.Warningln("handleOrders isblack", order1.ID)
 		order1.Status = m.OrderStatusTerminated
 		return
 	}
@@ -65,6 +65,7 @@ func handleOrders(order1 *m.Order) {
 		return
 	}
 	if isbig {
+		utils.Warningln("handleOrders isbig", order1.ID)
 		order1.Status = m.OrderStatusWaiting
 		return
 	}
