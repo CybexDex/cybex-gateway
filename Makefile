@@ -13,7 +13,7 @@ buildAllLinux: buildJPSrvLinux buildAdminSrvLinux buildCybSrvLinux buildOrderSrv
 
 scpAllDev: scpJPSrvDev scpAdminSrvDev scpCybSrvDev scpUserSrvDev scpOrderSrvDev
 #######################################jpSrv#########################################
-.PHONY: buildJPSrv buildJPSrvLinux startJPSrv scpJPSrvDev
+.PHONY: buildJPSrv buildJPSrvLinux startJPSrv scpJPSrvDev devRestart
 buildJPSrv:
 	@echo "build jpsrv......"
 	@(cd ${curDir}/cmd/jpsrv;\
@@ -52,7 +52,9 @@ startAdminSrv: buildAdminSrv
 scpAdminSrvDev: buildAdminSrvLinux
 	@echo "scp adminsrv......"
 	@(scp bin/adminsrv_linux_amd64 root@39.98.58.238:~/gateway/bin/adminsrv_)
-
+devRestart: 
+	@(ssh root@39.98.58.238  sh /root/gateway/startAll.sh)
+  
 #######################################cybSrv#########################################
 .PHONY: buildCybSrv startCybSrv buildCybSrvLinux scpCybSrvDev
 buildCybSrv:
