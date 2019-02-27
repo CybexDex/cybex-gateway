@@ -1,4 +1,4 @@
-package controllers
+package jpsrv
 
 import (
 	"bytes"

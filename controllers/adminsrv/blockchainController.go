@@ -1,4 +1,4 @@
-package controllers
+package adminsrv
 
 import (
 	"encoding/json"
@@ -9,34 +9,33 @@ import (
 	"github.com/jinzhu/gorm"
 
 	"git.coding.net/bobxuyang/cy-gateway-BN/models"
-	"git.coding.net/bobxuyang/cy-gateway-BN/repository/asset"
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/blockchain"
 	"github.com/gorilla/mux"
 
 	utils "git.coding.net/bobxuyang/cy-gateway-BN/utils"
 )
 
-//GetAllAsset ...
-func GetAllAsset(w http.ResponseWriter, r *http.Request) {
+//GetAllBlockchain ...
+func GetAllBlockchain(w http.ResponseWriter, r *http.Request) {
 	if !checkAccount(r) {
 		utils.Respond(w, utils.Message(false, "Unauthorized"), http.StatusUnauthorized)
 		return
 	}
 
-	assetRepo := asset.NewRepo(model.GetDB())
-	assets, err := assetRepo.FetchAll()
+	blockchainRepo := blockchain.NewRepo(model.GetDB())
+	blockchains, err := blockchainRepo.FetchAll()
 	if err != nil {
 		utils.Errorf("Update error: %v", err)
 		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
 
-	resp := utils.Message(true, "success", assets)
+	resp := utils.Message(true, "success", blockchains)
 	utils.Respond(w, resp)
 }
 
-//CreateAsset ...
-func CreateAsset(w http.ResponseWriter, r *http.Request) {
+//CreateBlockchain ...
+func CreateBlockchain(w http.ResponseWriter, r *http.Request) {
 	if !checkAccount(r) {
 		utils.Respond(w, utils.Message(false, "Unauthorized"), http.StatusUnauthorized)
 		return
@@ -50,33 +49,33 @@ func CreateAsset(w http.ResponseWriter, r *http.Request) {
 	}
 	utils.Debugf("request:\n %s", requestBody)
 
-	assetEntity := model.Asset{}
-	err = json.Unmarshal(requestBody, &assetEntity)
+	blockchainEntity := model.Blockchain{}
+	err = json.Unmarshal(requestBody, &blockchainEntity)
 	if err != nil {
 		utils.Errorf("json.Unmarshal error: %v", err)
 		utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
 		return
 	}
-	if len(assetEntity.Name) == 0 {
+	if len(blockchainEntity.Name) == 0 {
 		utils.Errorf("error: %v", err)
 		utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusBadRequest)
 		return
 	}
 
-	assetRepo := blockchain.NewRepo(model.GetDB())
-	asset, err := assetRepo.FetchWith(&model.Blockchain{Name: assetEntity.Name})
+	blockchainRepo := blockchain.NewRepo(model.GetDB())
+	blockchain, err := blockchainRepo.FetchWith(&model.Blockchain{Name: blockchainEntity.Name})
 	if err != nil && !gorm.IsRecordNotFoundError(err) {
 		utils.Errorf("Update error: %v", err)
 		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
-	if len(asset) != 0 {
+	if len(blockchain) != 0 {
 		utils.Respond(w, utils.Message(false, "find one"), http.StatusBadRequest)
 		return
 	}
-	err = assetEntity.Create()
+	err = blockchainEntity.Create()
 	if err != nil {
-		utils.Errorf("Update error: %v", err)
+		utils.Errorf("Create error: %v", err)
 		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
@@ -85,8 +84,8 @@ func CreateAsset(w http.ResponseWriter, r *http.Request) {
 	utils.Respond(w, resp)
 }
 
-//GetAsset ...
-func GetAsset(w http.ResponseWriter, r *http.Request) {
+//GetBlockchain ...
+func GetBlockchain(w http.ResponseWriter, r *http.Request) {
 	if !checkAccount(r) {
 		utils.Respond(w, utils.Message(false, "Unauthorized"), http.StatusUnauthorized)
 		return
@@ -100,20 +99,20 @@ func GetAsset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	assetRepo := asset.NewRepo(model.GetDB())
-	asset, err := assetRepo.GetByID(uint(id))
+	blockchainRepo := blockchain.NewRepo(model.GetDB())
+	blockchain, err := blockchainRepo.GetByID(uint(id))
 	if err != nil && !gorm.IsRecordNotFoundError(err) {
 		utils.Errorf("GetByID error: %v", err)
 		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
 
-	resp := utils.Message(true, "success", asset)
+	resp := utils.Message(true, "success", blockchain)
 	utils.Respond(w, resp)
 }
 
-//UpdateAsset ...
-func UpdateAsset(w http.ResponseWriter, r *http.Request) {
+//UpdateBlockchain ...
+func UpdateBlockchain(w http.ResponseWriter, r *http.Request) {
 	if !checkAccount(r) {
 		utils.Respond(w, utils.Message(false, "Unauthorized"), http.StatusUnauthorized)
 		return
@@ -135,7 +134,7 @@ func UpdateAsset(w http.ResponseWriter, r *http.Request) {
 	}
 	utils.Debugf("request: %s", requestBody)
 
-	updateEntity := model.Asset{}
+	updateEntity := model.Blockchain{}
 	err = json.Unmarshal(requestBody, &updateEntity)
 	if err != nil {
 		utils.Errorf("json.Unmarshal error: %v", err)
@@ -143,8 +142,8 @@ func UpdateAsset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	assetRepo := asset.NewRepo(model.GetDB())
-	assetEntity, err := assetRepo.GetByID(uint(id))
+	blockchainRepo := blockchain.NewRepo(model.GetDB())
+	blockchainEntity, err := blockchainRepo.GetByID(uint(id))
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			utils.Errorf("error: %v", err)
@@ -155,7 +154,8 @@ func UpdateAsset(w http.ResponseWriter, r *http.Request) {
 		utils.Respond(w, utils.Message(false, "Invalid request"), http.StatusInternalServerError)
 		return
 	}
-	err = assetEntity.UpdateColumns(&updateEntity)
+
+	err = blockchainEntity.UpdateColumns(&updateEntity)
 	if err != nil {
 		utils.Errorf("Update error: %v", err)
 		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
@@ -166,8 +166,8 @@ func UpdateAsset(w http.ResponseWriter, r *http.Request) {
 	utils.Respond(w, resp)
 }
 
-//DeleteAsset ...
-func DeleteAsset(w http.ResponseWriter, r *http.Request) {
+//DeleteBlockchain ...
+func DeleteBlockchain(w http.ResponseWriter, r *http.Request) {
 	if !checkAccount(r) {
 		utils.Respond(w, utils.Message(false, "Unauthorized"), http.StatusUnauthorized)
 		return
@@ -181,14 +181,31 @@ func DeleteAsset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	assetRepo := asset.NewRepo(model.GetDB())
-	err = assetRepo.DeleteByID(uint(id))
+	blockchainRepo := blockchain.NewRepo(model.GetDB())
+	err = blockchainRepo.DeleteByID(uint(id))
 	if err != nil {
-		utils.Errorf("Update error: %v", err)
+		utils.Errorf("error: %v", err)
 		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
 		return
 	}
 
 	resp := utils.Message(true, "success")
 	utils.Respond(w, resp)
+}
+
+func checkAccount(r *http.Request) bool {
+	/*id := r.Context().Value("UserID")
+	if id == nil {
+		return false
+	}
+	accountRepo := account.NewRepo(model.GetDB())
+	_, err := accountRepo.GetByID(id.(uint))
+	if err != nil {
+		utils.Errorf("Update error: %v", err)
+		return false
+	}*/
+
+	// todo: check account role
+
+	return true
 }

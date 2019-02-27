@@ -13,7 +13,7 @@ import (
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/jporder"
 
 	"git.coding.net/bobxuyang/cy-gateway-BN/app"
-	"git.coding.net/bobxuyang/cy-gateway-BN/controllers"
+	"git.coding.net/bobxuyang/cy-gateway-BN/controllers/jpsrv"
 	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/facebookgo/grace/gracehttp"
 	"github.com/gorilla/mux"
@@ -41,9 +41,9 @@ func main() {
 	router.HandleFunc("/api/test", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"status": true}`))
 	}).Methods("GET")
-	router.HandleFunc("/api/order/noti", controllers.NotiOrder).Methods("POST")
-	router.HandleFunc("/api/address/new", controllers.GetNewAddress).Methods("GET")
-	router.HandleFunc("/api/order/send", controllers.SendOrder).Methods("POST")
+	router.HandleFunc("/api/order/noti", jpsrv.NotiOrder).Methods("POST")
+	router.HandleFunc("/api/address/new", jpsrv.GetNewAddress).Methods("GET")
+	router.HandleFunc("/api/order/send", jpsrv.SendOrder).Methods("POST")
 	router.Use(app.NewLoggingMiddle(utils.GetLogger()))
 
 	listenAddr := viper.GetString("jpsrv.listen_addr")
@@ -85,7 +85,7 @@ func startHandleJPOrder() {
 			}
 
 			utils.Infof("sending jporder(%d)", jporder.ID)
-			data, err := controllers.DoSendOrder(jporder.ID)
+			data, err := jpsrv.DoSendOrder(jporder.ID)
 			if err != nil {
 				utils.Errorf("send jporder(%d) error: %v", jporder.ID, err)
 				err = jporder.UpdateColumns(&model.JPOrder{
@@ -104,7 +104,7 @@ func startHandleJPOrder() {
 				time.Sleep(time.Second * 1)
 				continue
 			}
-			result := controllers.OrderNotiResult{}
+			result := jpsrv.OrderNotiResult{}
 			err = json.Unmarshal(resultBytes, &result)
 			if err != nil {
 				utils.Errorf("error: %v", err)

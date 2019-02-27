@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"git.coding.net/bobxuyang/cy-gateway-BN/app"
-	"git.coding.net/bobxuyang/cy-gateway-BN/controllers"
+	"git.coding.net/bobxuyang/cy-gateway-BN/controllers/adminsrv"
 	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/facebookgo/grace/gracehttp"
 	"github.com/gorilla/handlers"
@@ -35,27 +35,27 @@ func main() {
 	router.HandleFunc("/api/test", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("ok"))
 	}).Methods("GET")
-	router.HandleFunc("/api/account/new", controllers.CreateAccount).Methods("POST")
-	router.HandleFunc("/api/account/login", controllers.Authenticate).Methods("POST")
-	router.HandleFunc("/api/debug/info", controllers.DebugInfo).Methods("GET")
+	router.HandleFunc("/api/account/new", adminsrv.CreateAccount).Methods("POST")
+	router.HandleFunc("/api/account/login", adminsrv.Authenticate).Methods("POST")
+	router.HandleFunc("/api/debug/info", adminsrv.DebugInfo).Methods("GET")
 
-	router.HandleFunc("/api/jadepool/new", controllers.CreateJadepool).Methods("POST")
-	router.HandleFunc("/api/jadepool/{id}", controllers.UpdateJadepool).Methods("PUT")
-	router.HandleFunc("/api/jadepool/{id}", controllers.GetJadepool).Methods("GET")
-	router.HandleFunc("/api/jadepool", controllers.GetAllJadepool).Methods("GET")
-	router.HandleFunc("/api/jadepool/{id}", controllers.DeleteJadepool).Methods("DELETE")
+	router.HandleFunc("/api/jadepool/new", adminsrv.CreateJadepool).Methods("POST")
+	router.HandleFunc("/api/jadepool/{id}", adminsrv.UpdateJadepool).Methods("PUT")
+	router.HandleFunc("/api/jadepool/{id}", adminsrv.GetJadepool).Methods("GET")
+	router.HandleFunc("/api/jadepool", adminsrv.GetAllJadepool).Methods("GET")
+	router.HandleFunc("/api/jadepool/{id}", adminsrv.DeleteJadepool).Methods("DELETE")
 
-	router.HandleFunc("/api/blockchain/new", controllers.CreateBlockchain).Methods("POST")
-	router.HandleFunc("/api/blockchain/{id}", controllers.UpdateBlockchain).Methods("PUT")
-	router.HandleFunc("/api/blockchain/{id}", controllers.GetBlockchain).Methods("GET")
-	router.HandleFunc("/api/blockchain", controllers.GetAllBlockchain).Methods("GET")
-	router.HandleFunc("/api/blockchain/{id}", controllers.DeleteBlockchain).Methods("DELETE")
+	router.HandleFunc("/api/blockchain/new", adminsrv.CreateBlockchain).Methods("POST")
+	router.HandleFunc("/api/blockchain/{id}", adminsrv.UpdateBlockchain).Methods("PUT")
+	router.HandleFunc("/api/blockchain/{id}", adminsrv.GetBlockchain).Methods("GET")
+	router.HandleFunc("/api/blockchain", adminsrv.GetAllBlockchain).Methods("GET")
+	router.HandleFunc("/api/blockchain/{id}", adminsrv.DeleteBlockchain).Methods("DELETE")
 
-	router.HandleFunc("/api/asset/new", controllers.CreateAsset).Methods("POST")
-	router.HandleFunc("/api/asset/{id}", controllers.UpdateAsset).Methods("PUT")
-	router.HandleFunc("/api/asset/{id}", controllers.GetAsset).Methods("GET")
-	router.HandleFunc("/api/asset", controllers.GetAllAsset).Methods("GET")
-	router.HandleFunc("/api/asset/{id}", controllers.DeleteAsset).Methods("DELETE")
+	router.HandleFunc("/api/asset/new", adminsrv.CreateAsset).Methods("POST")
+	router.HandleFunc("/api/asset/{id}", adminsrv.UpdateAsset).Methods("PUT")
+	router.HandleFunc("/api/asset/{id}", adminsrv.GetAsset).Methods("GET")
+	router.HandleFunc("/api/asset", adminsrv.GetAllAsset).Methods("GET")
+	router.HandleFunc("/api/asset/{id}", adminsrv.DeleteAsset).Methods("DELETE")
 
 	// init middleware
 	router.Use(app.NewLoggingMiddle(utils.GetLogger()))
