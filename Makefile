@@ -53,7 +53,7 @@ scpAdminSrvDev: buildAdminSrvLinux
 	@echo "scp adminsrv......"
 	@(scp bin/adminsrv_linux_amd64 root@39.98.58.238:~/gateway/bin/adminsrv_)
 devRestart: 
-	@(ssh root@39.98.58.238  sh /root/gateway/startAll.sh)
+	@(ssh root@39.98.58.238 "cd /root/gateway && sh /root/gateway/startAll.sh")
   
 #######################################cybSrv#########################################
 .PHONY: buildCybSrv startCybSrv buildCybSrvLinux scpCybSrvDev
