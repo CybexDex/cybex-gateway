@@ -2,7 +2,7 @@
 
 
 [[projects]]
-  digest = "1:e64cfff46ff24e170867e1ea47b02242dfdb9f70e4ae338372c726ddb1ca0fc0"
+  digest = "1:c71a68df0c0fc0c27e0f257da41f7dbecd5259df177c874130ab68705f99e158"
   name = "coding.net/yundkyy/cybexgolib"
   packages = [
     "api",
@@ -13,8 +13,8 @@
     "util",
   ]
   pruneopts = "UT"
-  revision = "6dd272d5208a244a3cc2ebb3655bc2ab17b798c4"
-  version = "v0.6.0"
+  revision = "add079a1c534b9febab3d3a46a44dcf39e7fa299"
+  version = "v0.7.0"
 
 [[projects]]
   branch = "master"
@@ -42,12 +42,12 @@
   revision = "4c204d6978034c001714728401fcd63060d568b4"
 
 [[projects]]
-  digest = "1:8cf9e7bbf5685bb8acdeec86512ad0bfa0ae8eb68dad6aaaa003862a3ae23c06"
+  digest = "1:97f9a887f24cbcbbed9b2f3158f9389849aebd41a857abc2196ea06644b006f5"
   name = "github.com/cockroachdb/apd"
   packages = ["."]
   pruneopts = "UT"
-  revision = "bced77f817b446cc6f6453d6cab5891e43f9ba17"
-  version = "v2.0.0"
+  revision = "5307578475ee7550e1c79eeecf2652216235ab30"
+  version = "v2.0.1"
 
 [[projects]]
   digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
@@ -391,7 +391,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:3f4c151273747e27c83a34c103891ddadd27a204693be1b0078cd6afd878c458"
+  digest = "1:d349f62d2f42cd39f216e367eafd2bcc2970f4afbc47925d4a2472b943ebb9c2"
   name = "golang.org/x/crypto"
   packages = [
     "bcrypt",
@@ -401,7 +401,7 @@
     "ssh/terminal",
   ]
   pruneopts = "UT"
-  revision = "a4c6cb3142f211c99e4bf4cd769535b29a9b616f"
+  revision = "7f87c0fbb88b590338857bcb720678c2583d4dea"
 
 [[projects]]
   branch = "master"
@@ -412,18 +412,18 @@
     "websocket",
   ]
   pruneopts = "UT"
-  revision = "3a22650c66bd7f4fb6d1e8072ffd7b75c8a27898"
+  revision = "fe579d43d83210096a79b46dcca0e3721058393a"
 
 [[projects]]
   branch = "master"
-  digest = "1:a3970d9d7cb61ebdb9db882d8950c20fad0e19bbad8f6e688334756f18aec597"
+  digest = "1:80200f57d482f61334a482a046ddedbad77c04dbec6ab81a4e1b3c6adbdfadef"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "UT"
-  revision = "ec7b60b042fd2c54ad5ceaac0c891bd88843f4a2"
+  revision = "cc5685c2db1239775905f3911f0067c0fa74762f"
 
 [[projects]]
   digest = "1:8029e9743749d4be5bc9f7d42ea1659471767860f0cdc34d37c3111bd308a295"
