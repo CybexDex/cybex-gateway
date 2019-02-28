@@ -2,6 +2,7 @@ package usersrv
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -189,6 +190,23 @@ func createCybexUserAddress(addrQ *m.Address) (*m.Address, error) {
 	}
 	return addrQ, nil
 }
+func verifyAssetAddress(asset string, address string) (bool, error) {
+	// TODO: to replace the real method
+	url := viper.GetString("usersrv.jpsrv_url") + "/api/address/new?type=" + asset + address
+	resp, err := http.Get(url)
+	if err != nil {
+		return false, err
+	}
+	_bodyBytes, err := ioutil.ReadAll(resp.Body)
+	// TODO: to replace the real struct
+	resObj := &JPData{}
+	err = json.Unmarshal(_bodyBytes, resObj)
+	if err != nil {
+		u.Errorf("json.Unmarshal %v", err)
+		return false, err
+	}
+	return true, err
+}
 
 // func findAppOrCreate(user string) (app1 *m.App, err error) {
 // 	appQ := &m.App{
@@ -210,6 +228,19 @@ func createCybexUserAddress(addrQ *m.Address) (*m.Address, error) {
 // }
 func findAssetByName(name string) (*m.Asset, error) {
 	return rep.Asset.GetByName(name)
+}
+
+func addrCreate(app *m.App, asset *m.Asset) (*m.Address, error) {
+	addrQ := &m.Address{
+		AppID:   app.ID,
+		AssetID: asset.ID,
+	}
+	var addr1 *m.Address
+	addr1, err := createCybexUserAddress(addrQ)
+	if err != nil {
+		return nil, err
+	}
+	return addr1, nil
 }
 func findAddrOrCreate(app *m.App, asset *m.Asset) (*m.Address, error) {
 	addrQ := &m.Address{
@@ -260,9 +291,99 @@ func DepositAddress(w http.ResponseWriter, r *http.Request) {
 		"code": 200, // 200:ok  400:fail
 		"data": map[string]interface{}{
 			"address":  addr.Address,
-			"asset":    asset1.Name, //TODO: cyb链的资产名
-			"type":     asset1.Name,
+			"cybName":  asset1.CybName, //TODO: cyb链的资产名
+			"asset":    asset1.Name,
 			"createAt": addr.CreatedAt,
+		},
+	}
+	u.Respond(w, msg, 200)
+}
+
+// NewDepositAddress ...
+func NewDepositAddress(w http.ResponseWriter, r *http.Request) {
+	// TODO: refactor with DepositAddress
+	vars := mux.Vars(r)
+	user := vars["user"]
+	asset := vars["asset"]
+	app1, err := rep.App.FindAppOrCreate(user)
+	if err != nil {
+		u.Errorf("rep.App.FindAppOrCreate %v", err)
+		u.Respond(w, u.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
+	asset1, err := findAssetByName(asset)
+	if err != nil {
+		u.Errorf("findAssetByName %v", err)
+		u.Respond(w, u.Message(false, "asset not support!"), http.StatusBadRequest)
+		return
+	}
+	addr, err := addrCreate(app1, asset1)
+	if err != nil {
+		u.Errorf("addrCreate %v", err)
+		u.Respond(w, u.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
+	msg := map[string]interface{}{
+		"code": 200, // 200:ok  400:fail
+		"data": map[string]interface{}{
+			"address":  addr.Address,
+			"cybName":  asset1.CybName, //TODO: cyb链的资产名
+			"asset":    asset1.Name,
+			"createAt": addr.CreatedAt,
+		},
+	}
+	u.Respond(w, msg, 200)
+}
+
+//VerifyAddress ...
+func VerifyAddress(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	asset := vars["asset"]
+	address := vars["address"]
+	valid, err := verifyAssetAddress(asset, address)
+	if err != nil {
+		u.Errorf("verifyAssetAddress %v", err)
+		u.Respond(w, u.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
+	msg := map[string]interface{}{
+		"code": 200, // 200:ok  400:fail
+		"data": map[string]interface{}{
+			"valid": valid,
+			"asset": asset,
+		},
+	}
+	u.Respond(w, msg, 200)
+}
+func getQuery(r *http.Request, names ...string) map[string]string {
+	q := r.URL.Query()
+	var s map[string]string
+	s = make(map[string]string)
+	for _, name := range names {
+		t, ok := q[name]
+		var t2 string
+		if ok && len(t) > 0 {
+			t2 = t[0]
+			s[name] = t2
+		}
+	}
+	return s
+}
+
+// Records ...
+func Records(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	user := vars["user"]
+	q := getQuery(r, "fundType", "offset", "size", "asset")
+
+	fmt.Println(q, user)
+	msg := map[string]interface{}{
+		"code": 200, // 200:ok  400:fail
+		"data": map[string]interface{}{
+			"total":   0,
+			"size":    0,
+			"offset":  0,
+			"records": q,
 		},
 	}
 	u.Respond(w, msg, 200)

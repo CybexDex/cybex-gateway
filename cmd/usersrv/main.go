@@ -72,9 +72,16 @@ func main() {
 	}).Methods("GET")
 
 	router.HandleFunc("/login", usersrv.Login).Methods("POST")
+	// the supported assets
 	authrouter.HandleFunc("/asset", usersrv.AllAsset).Methods("GET")
+	// get deposit address
 	authrouter.HandleFunc("/deposit_address/{user}/{asset}", usersrv.DepositAddress).Methods("GET")
-
+	// get new deposit address
+	authrouter.HandleFunc("/new_deposit_address/{user}/{asset}", usersrv.NewDepositAddress).Methods("GET")
+	// verify_address
+	authrouter.HandleFunc("/verify_address/{asset}/{address}", usersrv.VerifyAddress).Methods("GET")
+	// deposit record
+	authrouter.HandleFunc("/records/{user}", usersrv.Records).Methods("GET")
 	listenAddr := viper.GetString("usersrv.listen_addr")
 	utils.Infof("%s", listenAddr)
 	if len(listenAddr) == 0 {
