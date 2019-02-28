@@ -131,6 +131,7 @@ func startHandleJPOrder() {
 			jporder.JadepoolOrderID = uint(jadepoolOrderID)
 			jporder.From = result.From
 			jporder.Confirmations = result.Confirmations
+			jporder.Status = model.JPOrderStatusPending
 			err = jporder.Save()
 			if err != nil {
 				utils.Errorf("error: %v", err)
