@@ -1,0 +1,86 @@
+swagger: "2.0"
+info:
+  description: "jpsrv api"
+  version: "1.0.0"
+  title: "jpsrv api"
+host: "39.98.58.238:8081"
+basePath: "/api"
+tags:
+- name: "order"
+  description: "order"
+
+schemes:
+- "http"
+- "https"
+paths:
+  /order/noti:
+    post:
+      tags:
+      - "order"
+      summary: "noti a order"
+      description: ""
+      operationId: "notiOrder"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "object"
+        required: true
+        schema:
+          $ref: "#/definitions/JPComeData"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        400:
+          description: "Bad request"
+        405:
+          description: "Internal server error"
+
+components:
+  securitySchemes:
+    bearerAuth:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT   
+definitions:
+  JPComeData:
+    type: "object"
+    required:
+    - "code"
+    - "password"
+    properties:
+      code:
+        type: "integer"
+      message:
+        type: "string"
+      status:
+        type: "integer"
+      result:
+        type: "object"
+        example: {"id":"39","state":"done","bizType":"WITHDRAW","type":"ETH","coinType":"ETH","to":"0x56204b988844b20160035273fD98Dbb2A54C85F5","value":"0.005","confirmations":55,"create_at":1551171539979,"update_at":1551174860246,"from":"0x44CC0BFDeE6c8B918c86559FcBC4D9D84D7825bE","fee":"0.000021","data":{"timestampBegin":1551171558586,"timestampFinish":1551174870163,"nonce":11,"failedBlockNumber":null,"goodBlockNumber":10440853,"type":"Ethereum","hash":"0x95ce60104ebaa75458a92beea144d96a34ef707b9548e231f1e6f01f5cf81a4a","blockNumber":10440843,"blockHash":"0x0c6885a711f775647591e6a9df084c84e1de938685e586711de5b3cd3b7f8921","fee":0.000021,"confirmations":55,"from":[{"address":"0x44CC0BFDeE6c8B918c86559FcBC4D9D84D7825bE","value":"0.005021"}],"to":[{"address":"0x56204b988844b20160035273fD98Dbb2A54C85F5","value":"0.005"}],"ethereum":{"input":"0x","gasUsed":21000,"gasPrice":"1000000000","nonce":11}},"hash":"0x95ce60104ebaa75458a92beea144d96a34ef707b9548e231f1e6f01f5cf81a4a","extraData":"","memo":"","sendAgain":false}
+      crypto:
+        type: "string"
+      timestamp:
+        type: "integer"
+      sig:
+        type: "object"
+        example: {"r":"pKe2HW2v1n5n5hwfJkkFwuwB6bOTnC1M1/7c+vQHypc=","s":"El04QlVFiSPyE3ezkbJ4p9xRDOyUOAyvmO/oigpcaZE=","v":27}
+      jadepoolID:
+        type: "integer"
+  ApiResponse:
+    type: "object"
+    properties:
+      status:
+        type: "boolean"
+      message:
+        type: "string"
+      data:
+        type: "object"
+externalDocs:
+  description: "Find out more about Swagger"
+  url: "http://swagger.io"

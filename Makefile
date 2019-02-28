@@ -114,3 +114,8 @@ startUserSrv: buildUserSrv
 scpUserSrvDev: buildUserSrvLinux
 	@echo "scp usersrv......"
 	@(scp bin/usersrv_linux_amd64 root@39.98.58.238:~/gateway/bin/usersrv_)
+
+#######################################swagger#########################################
+scpSwagger:
+	@echo "scp swagger......"
+	@(rsync -avzc --delete doc/swagger/ root@39.98.58.238:~/swagger/static/swagger/)
