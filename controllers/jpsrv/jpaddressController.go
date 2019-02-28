@@ -171,7 +171,6 @@ func VerifyAddress(coinType, addr, appID, jadepoolAddr string, priKey string, pu
 
 	timestamp := time.Now().Unix() * 1000
 	requestAddress := JPAddressRequest{}
-	//requestAddress.Timestamp = timestamp
 	requestAddress.Type = coinType
 
 	sendData := &JPSendData{}
@@ -223,4 +222,71 @@ func VerifyAddress(coinType, addr, appID, jadepoolAddr string, priKey string, pu
 	}
 
 	return data.Result, nil
+}
+
+// GetCoinConfirmations ...
+func GetCoinConfirmations(coinType, appID, jadepoolAddr string, priKey string, pubKey string) (map[string]interface{}, error) {
+	if len(coinType) == 0 {
+		return nil, errors.New("coin type is empty")
+	}
+	coinType = strings.ToUpper(coinType)
+
+	result := make(map[string]interface{})
+	result["type"] = coinType
+	result["confirmations"] = 30
+	return result, nil
+
+	/*timestamp := time.Now().Unix() * 1000
+	requestAddress := JPAddressRequest{}
+	requestAddress.Type = coinType
+
+	sendData := &JPSendData{}
+	sendData.Crypto = "ecc"
+	sendData.Encode = "base64"
+	sendData.Timestamp = timestamp
+	sendData.Hash = "sha3"
+	sendData.AppID = appID
+	sendData.Data = &requestAddress
+
+	sig, err := utils.SignECCData(priKey, sendData.Data)
+	if err != nil {
+		return nil, fmt.Errorf("SignECCData error: %v", err)
+	}
+	sendData.Sig = sig
+
+	bs, _ := json.Marshal(sendData)
+	url := jadepoolAddr + "/api/v1/confirmations"
+
+	data := JPComeData{}
+	resp, err := http.Post(url, "application/json", bytes.NewReader(bs))
+	if err != nil {
+		return nil, fmt.Errorf("post error: %v", err)
+	}
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		return nil, fmt.Errorf("ReadAll error: %v", err)
+	}
+
+	err = json.Unmarshal(bodyBytes, &data)
+	if err != nil {
+		return nil, fmt.Errorf("Unmarshal error: %v, body: %s", err, string(bodyBytes))
+	}
+	if os.Getenv("env") != "dev" {
+		// verify sig
+		data.Result["timestamp"] = data.Timestamp
+		ok, err := utils.VerifyECCSign(data.Result, &data.Sig, pubKey)
+		if err != nil {
+			return nil, fmt.Errorf("verifySign error: %v, data: %#v", err, data)
+		}
+		if !ok {
+			return nil, fmt.Errorf("verify result: %v, data: %#v", ok, data)
+		}
+	}
+
+	if data.Code != 0 || data.Status != 0 || data.Result == nil {
+		return nil, fmt.Errorf("not found result, data: %#v", data)
+	}
+
+	return data.Result, nil*/
 }
