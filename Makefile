@@ -11,7 +11,7 @@ buildAll: buildJPSrv buildAdminSrv buildCybSrv buildOrderSrv buildUserSrv
 
 buildAllLinux: buildJPSrvLinux buildAdminSrvLinux buildCybSrvLinux buildOrderSrvLinux buildUserSrvLinux
 
-scpAllDev: scpJPSrvDev scpAdminSrvDev scpCybSrvDev scpUserSrvDev scpOrderSrvDev
+scpAllDev: scpJPSrvDev scpAdminSrvDev scpCybSrvDev scpUserSrvDev scpOrderSrvDev devRestart
 #######################################jpSrv#########################################
 .PHONY: buildJPSrv buildJPSrvLinux startJPSrv scpJPSrvDev devRestart
 buildJPSrv:
