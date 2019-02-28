@@ -207,25 +207,6 @@ func verifyAssetAddress(asset string, address string) (bool, error) {
 	}
 	return true, err
 }
-
-// func findAppOrCreate(user string) (app1 *m.App, err error) {
-// 	appQ := &m.App{
-// 		CybAccount: user,
-// 	}
-// 	apps, err := rep.App.FetchWith(appQ)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	if len(apps) == 0 {
-// 		app1, err = createCybexUserApp(user)
-// 		if err != nil {
-// 			return app1, err
-// 		}
-// 	} else {
-// 		app1 = apps[0]
-// 	}
-// 	return app1, nil
-// }
 func findAssetByName(name string) (*m.Asset, error) {
 	return rep.Asset.GetByName(name)
 }
@@ -375,8 +356,8 @@ func Records(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	user := vars["user"]
 	q := getQuery(r, "fundType", "offset", "size", "asset")
-
 	fmt.Println(q, user)
+	//
 	msg := map[string]interface{}{
 		"code": 200, // 200:ok  400:fail
 		"data": map[string]interface{}{
