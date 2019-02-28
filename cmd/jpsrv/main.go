@@ -43,6 +43,7 @@ func main() {
 	}).Methods("GET")
 	router.HandleFunc("/api/order/noti", jpsrv.NotiOrder).Methods("POST")
 	router.HandleFunc("/api/address/new", jpsrv.GetNewAddress).Methods("GET")
+	router.HandleFunc("/api/address/verify", jpsrv.VerifyBlockchainAddress).Methods("GET")
 	router.HandleFunc("/api/order/send", jpsrv.SendOrder).Methods("POST")
 	router.Use(app.NewLoggingMiddle(utils.GetLogger()))
 
