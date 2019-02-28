@@ -1,5 +1,5 @@
 # make file
-
+version := 0.1.0
 curDir := $(shell pwd)
 date := $(shell date +%Y%m%d-%H:%M:%S)
 githash := $(shell git log -1 --format="%h")
@@ -17,12 +17,12 @@ scpAllDev: scpJPSrvDev scpAdminSrvDev scpCybSrvDev scpUserSrvDev scpOrderSrvDev 
 buildJPSrv:
 	@echo "build jpsrv......"
 	@(cd ${curDir}/cmd/jpsrv;\
-	go build -v -ldflags "-X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/jpsrv)
+	go build -v -ldflags "-X main.version=$(version) -X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/jpsrv)
 
 buildJPSrvLinux:
 	@echo "build jpsrv linux......"
 	@(cd ${curDir}/cmd/jpsrv;\
-	GOOS=linux GOARCH=amd64 go build -v -ldflags "-X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/jpsrv_linux_amd64)
+	GOOS=linux GOARCH=amd64 go build -v -ldflags "-X main.version=$(version) -X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/jpsrv_linux_amd64)
 
 startJPSrv: buildJPSrv
 	@echo "start jpsrv......"
@@ -38,12 +38,12 @@ scpJPSrvDev: buildJPSrvLinux
 buildAdminSrv:
 	@echo "build adminsrv......"
 	@(cd ${curDir}/cmd/adminsrv;\
-	go build -v -ldflags "-X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/adminsrv)
+	go build -v -ldflags "-X main.version=$(version) -X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/adminsrv)
 
 buildAdminSrvLinux:
 	@echo "build adminsrv linux......"
 	@(cd ${curDir}/cmd/adminsrv;\
-	GOOS=linux GOARCH=amd64 go build -v -ldflags "-X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/adminsrv_linux_amd64)
+	GOOS=linux GOARCH=amd64 go build -v -ldflags "-X main.version=$(version) -X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/adminsrv_linux_amd64)
 
 startAdminSrv: buildAdminSrv
 	@echo "start adminsrv......"
@@ -60,12 +60,12 @@ devRestart:
 buildCybSrv:
 	@echo "build cybsrv......"
 	@(cd ${curDir}/cmd/cybsrv;\
-	go build -v -ldflags "-X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/cybsrv)
+	go build -v -ldflags "-X main.version=$(version) -X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/cybsrv)
 
 buildCybSrvLinux:
 	@echo "build cybsrv linux......"
 	@(cd ${curDir}/cmd/cybsrv;\
-	GOOS=linux GOARCH=amd64 go build -v -ldflags "-X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/cybsrv_linux_amd64)
+	GOOS=linux GOARCH=amd64 go build -v -ldflags "-X main.version=$(version) -X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/cybsrv_linux_amd64)
 
 startCybSrv: buildCybSrv
 	@echo "start cybsrv......"
@@ -80,12 +80,12 @@ scpCybSrvDev: buildCybSrvLinux
 buildOrderSrv:
 	@echo "build ordersrv......"
 	@(cd ${curDir}/cmd/ordersrv;\
-	go build -v -ldflags "-X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/ordersrv)
+	go build -v -ldflags "-X main.version=$(version) -X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/ordersrv)
 
 buildOrderSrvLinux:
 	@echo "build ordersrv linux......"
 	@(cd ${curDir}/cmd/ordersrv;\
-	GOOS=linux GOARCH=amd64 go build -v -ldflags "-X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/ordersrv_linux_amd64)
+	GOOS=linux GOARCH=amd64 go build -v -ldflags "-X main.version=$(version) -X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/ordersrv_linux_amd64)
 
 startOrderSrv: buildOrderSrv
 	@echo "start ordersrv......"
@@ -100,12 +100,12 @@ scpOrderSrvDev: buildOrderSrvLinux
 buildUserSrv:
 	@echo "build usersrv......"
 	@(cd ${curDir}/cmd/usersrv;\
-	go build -v -ldflags "-X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/usersrv)
+	go build -v -ldflags "-X main.version=$(version) -X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/usersrv)
 
 buildUserSrvLinux:
 	@echo "build usersrv linux......"
 	@(cd ${curDir}/cmd/usersrv;\
-	GOOS=linux GOARCH=amd64 go build -v -ldflags "-X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/usersrv_linux_amd64)
+	GOOS=linux GOARCH=amd64 go build -v -ldflags "-X main.version=$(version) -X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/usersrv_linux_amd64)
 
 startUserSrv: buildUserSrv
 	@echo "start usersrv......"

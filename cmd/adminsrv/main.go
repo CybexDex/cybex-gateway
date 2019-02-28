@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -16,19 +18,27 @@ import (
 )
 
 var (
+	version   string
 	githash   string
 	buildtime string
 	branch    string
 )
 
 func main() {
+	v := flag.Bool("v", false, "version")
+	flag.Parse()
+	if *v {
+		fmt.Printf("version: %s_%s_%s, build time: %s\n", version, branch, githash, buildtime)
+		return
+	}
+
 	// init config
 	utils.InitConfig()
 	logDir := viper.GetString("adminsrv.log_dir")
 	logLevel := viper.GetString("adminsrv.log_level")
 	// init logger
 	utils.InitLog(logDir, logLevel)
-	utils.Infof("build info: %s_%s_%s", buildtime, branch, githash)
+	utils.Infof("version: %s_%s_%s, build time: %s", version, branch, githash, buildtime)
 
 	// init route
 	router := mux.NewRouter()

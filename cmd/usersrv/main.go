@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -15,6 +17,7 @@ import (
 )
 
 var (
+	version   string
 	githash   string
 	buildtime string
 	branch    string
@@ -54,13 +57,20 @@ func authMiddleware(next http.Handler) http.Handler {
 	})
 }
 func main() {
+	v := flag.Bool("v", false, "version")
+	flag.Parse()
+	if *v {
+		fmt.Printf("version: %s_%s_%s, build time: %s\n", version, branch, githash, buildtime)
+		return
+	}
+
 	// 配置初始化日志
 	utils.InitConfig()
 	// init loggger
 	logDir := viper.GetString("usersrv.log_dir")
 	logLevel := viper.GetString("usersrv.log_level")
 	utils.InitLog(logDir, logLevel)
-	utils.Infof("build info: %s_%s_%s", buildtime, branch, githash)
+	utils.Infof("version: %s_%s_%s, build time: %s", version, branch, githash, buildtime)
 	// route
 	router := mux.NewRouter()
 	router.Use(app.NewLoggingMiddle(utils.GetLogger()))
