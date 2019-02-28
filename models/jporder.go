@@ -9,6 +9,8 @@ import (
 const (
 	// JPOrderStatusInit ...
 	JPOrderStatusInit = "INIT"
+	// JPOrderStatusHolding ...
+	JPOrderStatusHolding = "HOLDING"
 	// JPOrderStatusPending ...
 	JPOrderStatusPending = "PENDING"
 	// JPOrderStatusDone ...
@@ -40,7 +42,7 @@ type JPOrder struct {
 	Fee           *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"fee"`         // fee in Asset
 	Confirmations int          `json:"confirmations"`                                   //
 	Resend        bool         `gorm:"not null;default:false" json:"resend"`            //
-	Status        string       `gorm:"type:varchar(32);not null" json:"status"`         // INIT, PENDING, DONE, FAILED
+	Status        string       `gorm:"type:varchar(32);not null" json:"status"`         // INIT, HOLDING, PENDING, DONE, FAILED
 	Type          string       `gorm:"type:varchar(32);not null" json:"type"`           // DEPOSIT, WITHDRAW
 
 	Settled   bool `gorm:"not null;default:false" json:"settled"`   // if count amount to balance, then Settled = true
@@ -140,7 +142,7 @@ func (a *JPOrder) CreateOrder(tx *gorm.DB) error {
 	order.JPOrderID = a.ID
 	order.JPHash = a.Hash
 	order.JPUUHash = a.UUHash
-	order.Status = OrderStatusInit
+	order.Status = OrderStatusPreInit
 	order.Type = OrderTypeDeposit
 	order.Settled = false
 	order.Finalized = false
@@ -200,11 +202,32 @@ func (a *JPOrder) AfterSaveHook(tx *gorm.DB) (err error) {
 			}
 			u.Debugln("set order settled to true", a.ID)
 
+			// create order
+			err = a.CreateOrder(tx)
+			if err != nil {
+				u.Errorf("save order error,", err, a.ID)
+				return err
+			}
+
 			if a.Status == JPOrderStatusDone { // case 1
 				// DEPOSIT JPOrder NOT settled before
 				// status: -> DONE
 				// balance: InLock += jporder.TotalAmount, balance += 0, InLockedFee += jporder.Fee, same as case 3
-				// create ORDER, order.TotalAmount = jporder.TotalAmount, order.Fee = jporder.Fee, order.Amount = jporder.Amount
+				// order.TotalAmount = jporder.TotalAmount, order.Fee = jporder.Fee, order.Amount = jporder.Amount
+
+				// update order status to init
+				order := Order{}
+				err = tx.Model(&Order{}).Where(&Order{JPOrderID: a.ID}).First(&order).Error
+				if err != nil {
+					u.Errorf("get order error,", err, a.ID)
+					return err
+				}
+				order.Status = OrderStatusInit
+				err = tx.Save(order).Error
+				if err != nil {
+					u.Errorf("save order error,", err, a.ID)
+					return err
+				}
 
 				// update balance record
 				err = a.computeInLocked(tx, "ADD")
@@ -212,18 +235,23 @@ func (a *JPOrder) AfterSaveHook(tx *gorm.DB) (err error) {
 					u.Errorf("compute balance error,", err, a.ID)
 					return err
 				}
+			} else if a.Status == JPOrderStatusFailed { // case 2
+				// DEPOSIT JPOrder NOT settled before
+				// status: -> FAILED
+				// update order status to failed
 
-				// create order
-				err = a.CreateOrder(tx)
+				order := Order{}
+				err = tx.Model(&Order{}).Where(&Order{JPOrderID: a.ID}).First(&order).Error
+				if err != nil {
+					u.Errorf("get order error,", err, a.ID)
+					return err
+				}
+				order.Status = OrderStatusFailed
+				err = tx.Save(order).Error
 				if err != nil {
 					u.Errorf("save order error,", err, a.ID)
 					return err
 				}
-			} else if a.Status == JPOrderStatusFailed { // case 2
-				// DEPOSIT JPOrder NOT settled before
-				// status: -> FAILED
-				// do NOTHING
-
 			} else if a.Status == JPOrderStatusPending { // case 3
 				// DEPOSIT JPOrder NOT settled before
 				// status: -> PENDING
@@ -239,10 +267,17 @@ func (a *JPOrder) AfterSaveHook(tx *gorm.DB) (err error) {
 			if a.Status == JPOrderStatusDone { // case 4
 				// DEPOSIT JPOrder settled before
 				// status: PENDING -> DONE
-				// create ORDER, same as case 1
+				// same as case 1
 
-				// create order
-				err = a.CreateOrder(tx)
+				// update order status to init
+				order := Order{}
+				err = tx.Model(&Order{}).Where(&Order{JPOrderID: a.ID}).First(&order).Error
+				if err != nil {
+					u.Errorf("get order error,", err, a.ID)
+					return err
+				}
+				order.Status = OrderStatusInit
+				err = tx.Save(order).Error
 				if err != nil {
 					u.Errorf("save order error,", err, a.ID)
 					return err
@@ -251,6 +286,20 @@ func (a *JPOrder) AfterSaveHook(tx *gorm.DB) (err error) {
 				// DEPOSIT JPOrder settled before
 				// status: PENDING -> FAILED
 				// balance: InLock -= jporder.TotalAmount, balance += 0, InLockedFee -= jporder.Fee
+
+				// update order status to failed
+				order := Order{}
+				err = tx.Model(&Order{}).Where(&Order{JPOrderID: a.ID}).First(&order).Error
+				if err != nil {
+					u.Errorf("get order error,", err, a.ID)
+					return err
+				}
+				order.Status = OrderStatusFailed
+				err = tx.Save(order).Error
+				if err != nil {
+					u.Errorf("save order error,", err, a.ID)
+					return err
+				}
 
 				err = a.computeInLocked(tx, "SUB")
 				if err != nil {

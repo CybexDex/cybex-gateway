@@ -166,7 +166,7 @@ func (a *CybOrder) CreateOrder(tx *gorm.DB) error {
 	order.CybOrderID = a.ID
 	order.CybHash = a.Hash
 	order.CybUUHash = a.UUHash
-	order.Status = OrderStatusInit
+	order.Status = OrderStatusPreInit
 	order.Type = OrderTypeWithdraw
 	order.Settled = false
 	order.Finalized = false
@@ -221,11 +221,32 @@ func (a CybOrder) AfterSaveHook(tx *gorm.DB) (err error) {
 			}
 			u.Debugln("set order settled to true", a.ID)
 
+			// create order
+			err = a.CreateOrder(tx)
+			if err != nil {
+				u.Errorf("save order error,", err, a.ID)
+				return err
+			}
+
 			if a.Status == CybOrderStatusDone { // case 1
 				// DEPOSIT CybOrder NOT settled before
 				// status: -> DONE
 				// balance: OutLock += cyborder.TotalAmount, OutLockedFee +=cyborder.Fee, balance -= cyborder.TotalAmount, same as case 3
-				// create ORDER
+				// update ORDER
+
+				// update order status to init
+				order := Order{}
+				err = tx.Model(&Order{}).Where(&Order{CybOrderID: a.ID}).First(&order).Error
+				if err != nil {
+					u.Errorf("get order error,", err, a.ID)
+					return err
+				}
+				order.Status = OrderStatusInit
+				err = tx.Save(order).Error
+				if err != nil {
+					u.Errorf("save order error,", err, a.ID)
+					return err
+				}
 
 				// update balance record
 				err = a.computeOutLocked(tx, "ADD")
@@ -234,16 +255,23 @@ func (a CybOrder) AfterSaveHook(tx *gorm.DB) (err error) {
 					return err
 				}
 
-				// create order
-				err = a.CreateOrder(tx)
+			} else if a.Status == CybOrderStatusFailed { // case 2
+				// DEPOSIT CybOrder NOT settled before
+				// status: -> FAILED
+
+				// update order status to failed
+				order := Order{}
+				err = tx.Model(&Order{}).Where(&Order{CybOrderID: a.ID}).First(&order).Error
+				if err != nil {
+					u.Errorf("get order error,", err, a.ID)
+					return err
+				}
+				order.Status = OrderStatusFailed
+				err = tx.Save(order).Error
 				if err != nil {
 					u.Errorf("save order error,", err, a.ID)
 					return err
 				}
-			} else if a.Status == CybOrderStatusFailed { // case 2
-				// DEPOSIT CybOrder NOT settled before
-				// status: -> FAILED
-				// do NOTHING
 
 			} else if a.Status == CybOrderStatusPending || a.Status == CybOrderStatusInit || a.Status == CybOrderStatusHolding { // case 3
 				// DEPOSIT CybOrder NOT settled before
@@ -260,10 +288,17 @@ func (a CybOrder) AfterSaveHook(tx *gorm.DB) (err error) {
 			if a.Status == CybOrderStatusDone { // case 4
 				// DEPOSIT CybOrder settled before
 				// status: PENDING -> DONE
-				// create ORDER, same as case 1
+				// same as case 1
 
-				// create order
-				err = a.CreateOrder(tx)
+				// update order status to init
+				order := Order{}
+				err = tx.Model(&Order{}).Where(&Order{CybOrderID: a.ID}).First(&order).Error
+				if err != nil {
+					u.Errorf("get order error,", err, a.ID)
+					return err
+				}
+				order.Status = OrderStatusInit
+				err = tx.Save(order).Error
 				if err != nil {
 					u.Errorf("save order error,", err, a.ID)
 					return err
@@ -272,6 +307,20 @@ func (a CybOrder) AfterSaveHook(tx *gorm.DB) (err error) {
 				// DEPOSIT CybOrder settled before
 				// status: PENDING -> FAILED
 				// balance: OutLock -= cyborder.TotalAmount, OutLockedFee -=cyborder.Fee, balance += cyborder.TotalAmount
+
+				// update order status to failed
+				order := Order{}
+				err = tx.Model(&Order{}).Where(&Order{CybOrderID: a.ID}).First(&order).Error
+				if err != nil {
+					u.Errorf("get order error,", err, a.ID)
+					return err
+				}
+				order.Status = OrderStatusFailed
+				err = tx.Save(order).Error
+				if err != nil {
+					u.Errorf("save order error,", err, a.ID)
+					return err
+				}
 
 				err = a.computeOutLocked(tx, "SUB")
 				if err != nil {
