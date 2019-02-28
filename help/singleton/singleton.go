@@ -2,7 +2,7 @@ package singleton
 
 import (
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
-	blockchain "git.coding.net/bobxuyang/cy-gateway-BN/repository/Blockchain"
+	blockchain "git.coding.net/bobxuyang/cy-gateway-BN/repository/blockchain"
 	address "git.coding.net/bobxuyang/cy-gateway-BN/repository/address"
 	app "git.coding.net/bobxuyang/cy-gateway-BN/repository/app"
 	asset "git.coding.net/bobxuyang/cy-gateway-BN/repository/asset"
