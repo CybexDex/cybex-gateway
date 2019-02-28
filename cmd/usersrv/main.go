@@ -46,8 +46,8 @@ func authMiddleware(next http.Handler) http.Handler {
 		}
 		if !ok {
 			// TODO uncomment this
-			// utils.Respond(w, utils.Message(false, "Invalid/Malformed auth token err:3"), http.StatusForbidden)
-			// return
+			utils.Respond(w, utils.Message(false, "Invalid/Malformed auth token err:3"), http.StatusForbidden)
+			return
 		}
 		// Call the next handler, which can be another middleware in the chain, or the final handler.
 		next.ServeHTTP(w, r)
@@ -65,7 +65,7 @@ func main() {
 	router := mux.NewRouter()
 	router.Use(app.NewLoggingMiddle(utils.GetLogger()))
 	authrouter := router.PathPrefix("/").Subrouter()
-	authrouter.Use(authMiddleware)
+	// authrouter.Use(authMiddleware)
 
 	router.HandleFunc("/api/test", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("ok"))
