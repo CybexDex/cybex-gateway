@@ -166,7 +166,7 @@ func (a *CybOrder) CreateOrder(tx *gorm.DB) error {
 	order.CybOrderID = a.ID
 	order.CybHash = a.Hash
 	order.CybUUHash = a.UUHash
-	order.Status = OrderStatusPreInit
+	order.Status = OrderStatusInit
 	order.Type = OrderTypeWithdraw
 	order.Settled = false
 	order.Finalized = false
