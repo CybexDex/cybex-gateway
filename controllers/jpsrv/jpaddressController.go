@@ -26,8 +26,8 @@ type JPAddressRequest struct {
 	Callback  string `json:"callback,omitempty"`
 }
 
-// GetNewAddress ...
-func GetNewAddress(w http.ResponseWriter, r *http.Request) {
+// RequestNewAddress ...
+func RequestNewAddress(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	coinType := query.Get("type")
 	strJadepoolID := query.Get("jadepoolID")
@@ -88,6 +88,41 @@ func VerifyBlockchainAddress(w http.ResponseWriter, r *http.Request) {
 	priKey := viper.GetString("jpsrv.pri_key")
 	jadepoolAppID := viper.GetString("jpsrv.jadepool_appid")
 	result, err := VerifyAddress(coinType, addr, jadepoolAppID, jadepoolAddr, priKey, pubKey)
+	if err != nil {
+		utils.Errorf("err: %v", err)
+		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
+
+	resp := utils.Message(true, "success", result)
+	utils.Respond(w, resp)
+}
+
+// RequestConfirmations ...
+func RequestConfirmations(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query()
+	coinType := query.Get("type")
+	strJadepoolID := query.Get("jadepoolID")
+	if len(strJadepoolID) == 0 {
+		strJadepoolID = "1"
+	}
+	jadepoolID, err := strconv.Atoi(strJadepoolID)
+	if err != nil {
+		utils.Respond(w, utils.Message(false, "bad request"), http.StatusBadRequest)
+		return
+	}
+	jadepoolRepo := jadepool.NewRepo(model.GetDB())
+	jadepool, err := jadepoolRepo.GetByID(uint(jadepoolID))
+	if err != nil {
+		utils.Respond(w, utils.Message(false, "bad request"), http.StatusBadRequest)
+		return
+	}
+
+	jadepoolAddr := fmt.Sprintf("http://%s:%d", jadepool.Host, jadepool.Port)
+	pubKey := jadepool.EccPubKey
+	priKey := viper.GetString("jpsrv.pri_key")
+	jadepoolAppID := viper.GetString("jpsrv.jadepool_appid")
+	result, err := GetCoinConfirmations(coinType, jadepoolAppID, jadepoolAddr, priKey, pubKey)
 	if err != nil {
 		utils.Errorf("err: %v", err)
 		utils.Respond(w, utils.Message(false, "Internal server error"), http.StatusInternalServerError)

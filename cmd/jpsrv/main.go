@@ -51,8 +51,9 @@ func main() {
 		w.Write([]byte(`{"status": true}`))
 	}).Methods("GET")
 	router.HandleFunc("/api/order/noti", jpsrv.NotiOrder).Methods("POST")
-	router.HandleFunc("/api/address/new", jpsrv.GetNewAddress).Methods("GET")
+	router.HandleFunc("/api/address/new", jpsrv.RequestNewAddress).Methods("GET")
 	router.HandleFunc("/api/address/verify", jpsrv.VerifyBlockchainAddress).Methods("GET")
+	router.HandleFunc("/api/confirmations", jpsrv.RequestConfirmations).Methods("GET")
 	router.HandleFunc("/api/order/send", jpsrv.SendOrder).Methods("POST")
 	router.Use(app.NewLoggingMiddle(utils.GetLogger()))
 
