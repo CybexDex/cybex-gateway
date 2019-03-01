@@ -41,21 +41,21 @@ type RecordsQuery struct {
 type Order struct {
 	gorm.Model
 
-	JPOrderID  uint     `json:"jpOrderID"`
-	JPOrder    JPOrder  `json:"jpOrder"`
-	CybOrderID uint     `json:"cybOrderID"`
-	CybOrder   CybOrder `json:"cybOrder"`
+	JPOrderID  uint      `json:"-"`
+	JPOrder    *JPOrder  `json:"jpOrder"`
+	CybOrderID uint      `json:"-"`
+	CybOrder   *CybOrder `json:"cybOrder"`
 
-	AssetID uint `gorm:"not null" json:"assetID"` // 1 to n
-	AppID   uint `gorm:"not null" json:"appID"`   // 1 to n
+	AssetID uint `gorm:"not null" json:"-"` // 1 to n
+	AppID   uint `gorm:"not null" json:"-"` // 1 to n
 
-	FailedJPOrders  pq.Int64Array `gorm:"type:integer[]" json:"failedJPOrders"`
-	FailedCybOrders pq.Int64Array `gorm:"type:integer[]" json:"failedCybOrders"`
+	FailedJPOrders  pq.Int64Array `gorm:"type:integer[]" json:"-"`
+	FailedCybOrders pq.Int64Array `gorm:"type:integer[]" json:"-"`
 
-	JPHash    string `gorm:"index;type:varchar(128)" json:"jpHash"`    //
-	JPUUHash  string `gorm:"index;type:varchar(256)" json:"jpUUHash"`  // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
-	CybHash   string `gorm:"index;type:varchar(128)" json:"cybHash"`   //
-	CybUUHash string `gorm:"index;type:varchar(256)" json:"cybUUHash"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
+	JPHash    string `gorm:"index;type:varchar(128)" json:"-"` //
+	JPUUHash  string `gorm:"index;type:varchar(256)" json:"-"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
+	CybHash   string `gorm:"index;type:varchar(128)" json:"-"` //
+	CybUUHash string `gorm:"index;type:varchar(256)" json:"-"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
 
 	TotalAmount *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"totalAmount"` // totalAmount = amount + fee
 	Amount      *apd.Decimal `gorm:"type:numeric(30,10);not null" json:"amount"`      //
