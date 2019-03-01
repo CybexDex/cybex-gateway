@@ -2,6 +2,7 @@ package model
 
 import (
 	u "coding.net/bobxuyang/cy-gateway-BN/utils"
+	utype "coding.net/bobxuyang/cy-gateway-BN/utils/types"
 	"github.com/cockroachdb/apd"
 	"github.com/jinzhu/gorm"
 	"github.com/lib/pq"
@@ -37,17 +38,26 @@ type RecordsQuery struct {
 	AppID    uint
 }
 
+// RecordsOut ...
+type RecordsOut struct {
+	*Order
+	JPOrderID  utype.Omit `json:"jPOrderID,omitempty"`
+	CybOrderID utype.Omit `json:"cybOrderID,omitempty"`
+	Asset      string     `json:"asset"`
+}
+
 //Order ...
 type Order struct {
 	gorm.Model
 
-	JPOrderID  uint      `json:"-"`
+	JPOrderID  uint      `json:"jPOrderID"`
 	JPOrder    *JPOrder  `json:"jpOrder"`
-	CybOrderID uint      `json:"-"`
+	CybOrderID uint      `json:"cybOrderID"`
 	CybOrder   *CybOrder `json:"cybOrder"`
 
-	AssetID uint `gorm:"not null" json:"-"` // 1 to n
-	AppID   uint `gorm:"not null" json:"-"` // 1 to n
+	AssetID uint   `gorm:"not null" json:"-"` // 1 to n
+	Asset   *Asset `json:"asset"`
+	AppID   uint   `gorm:"not null" json:"-"` // 1 to n
 
 	FailedJPOrders  pq.Int64Array `gorm:"type:integer[]" json:"-"`
 	FailedCybOrders pq.Int64Array `gorm:"type:integer[]" json:"-"`
