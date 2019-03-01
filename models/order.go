@@ -73,10 +73,6 @@ type Order struct {
 
 	Status string `gorm:"type:varchar(32);not null" json:"status"` // INIT, PROCESSING, DONE, TERMINATED
 	Type   string `gorm:"type:varchar(32);not null" json:"type"`   // DEPOSIT, WITHDRAW
-
-	Settled   bool `gorm:"not null;default:false" json:"settled"`   // if the third phase's order is created
-	Finalized bool `gorm:"not null;default:false" json:"finalized"` // if order was done or terminated before
-	EnterHook bool `gorm:"not null;default:false" json:"enterHook"` // set it to true if biz-logic need go-through after-save hook
 }
 
 //UpdateColumns ...
@@ -193,11 +189,6 @@ func (a *Order) CreateNext(tx *gorm.DB) (err error) {
 
 //AfterSaveHook ... should be called manually
 func (a *Order) AfterSaveHook(tx *gorm.DB) (err error) {
-	if a.Finalized || !a.EnterHook {
-		return nil
-	}
-
-	a.EnterHook = false
 	err = tx.Save(a).Error
 	if err != nil {
 		u.Errorf("save order error,", err, a.ID)
@@ -239,7 +230,6 @@ func (a *Order) AfterSaveHook(tx *gorm.DB) (err error) {
 	}
 
 	if a.Status == OrderStatusDone || a.Status == OrderStatusTerminated {
-		a.Finalized = true
 		err := tx.Save(a).Error
 		if err != nil {
 			u.Errorf("set order's Finalized to true error,", err, a.ID)

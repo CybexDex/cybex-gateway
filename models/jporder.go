@@ -144,8 +144,6 @@ func (a *JPOrder) CreateOrder(tx *gorm.DB) error {
 	order.JPUUHash = a.UUHash
 	order.Status = OrderStatusPreInit
 	order.Type = OrderTypeDeposit
-	order.Settled = false
-	order.Finalized = false
 
 	return tx.Save(order).Error
 }

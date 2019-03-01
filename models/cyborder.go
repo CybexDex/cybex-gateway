@@ -168,8 +168,6 @@ func (a *CybOrder) CreateOrder(tx *gorm.DB) error {
 	order.CybUUHash = a.UUHash
 	order.Status = OrderStatusInit
 	order.Type = OrderTypeWithdraw
-	order.Settled = false
-	order.Finalized = false
 
 	return tx.Save(order).Error
 }

@@ -365,21 +365,13 @@ func Records(w http.ResponseWriter, r *http.Request) {
 	}
 	recordQuery.AppID = app1.ID
 	res, err := rep.Order.QueryRecord(recordQuery)
-	resnew := []*m.RecordsOut{}
-	// map
-	for _, res1 := range res {
-		resnew = append(resnew, &m.RecordsOut{
-			Order: res1,
-			Asset: res1.Asset.Name,
-		})
-	}
 	msg := map[string]interface{}{
 		"code": 200, // 200:ok  400:fail
 		"data": map[string]interface{}{
 			"total":   0,
 			"size":    recordQuery.Size,
 			"offset":  recordQuery.Offset,
-			"records": resnew,
+			"records": res,
 		},
 	}
 	u.Respond(w, msg, 200)

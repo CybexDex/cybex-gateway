@@ -20,7 +20,7 @@ type Repository interface {
 	MDB() *gorm.DB
 	UpdateAll(where *m.Order, update *m.Order) *gorm.DB
 	HoldingOne() *m.Order
-	QueryRecord(a *m.RecordsQuery) (out []*m.Order, err error)
+	QueryRecord(a *m.RecordsQuery) (out []*m.RecordsOut, err error)
 }
 
 //Repo ...
@@ -128,7 +128,8 @@ func (repo *Repo) Create(a *m.Order) (err error) {
 }
 
 // QueryRecord ...
-func (repo *Repo) QueryRecord(a *m.RecordsQuery) (res []*m.Order, err error) {
+func (repo *Repo) QueryRecord(a *m.RecordsQuery) (resnew []*m.RecordsOut, err error) {
+	res := []*m.Order{}
 	err = repo.DB.Where(&m.Order{
 		AppID: a.AppID,
 		Type:  a.FundType,
@@ -136,6 +137,12 @@ func (repo *Repo) QueryRecord(a *m.RecordsQuery) (res []*m.Order, err error) {
 	if err != nil {
 		return nil, err
 	}
-
-	return res, err
+	// map
+	for _, res1 := range res {
+		resnew = append(resnew, &m.RecordsOut{
+			Order: res1,
+			Asset: res1.Asset.Name,
+		})
+	}
+	return resnew, err
 }
