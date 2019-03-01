@@ -56,7 +56,7 @@ func ToBlack() {
 }
 func ToBigAsset() {
 	var db = m.GetDB()
-	amount, _, _ := apd.NewFromString("0.01")
+	amount, _, _ := apd.NewFromString("10")
 	app := m.BigAsset{
 		AssetID:   1,
 		BigAmount: amount,
