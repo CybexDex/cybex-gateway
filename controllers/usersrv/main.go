@@ -365,6 +365,11 @@ func Records(w http.ResponseWriter, r *http.Request) {
 	}
 	recordQuery.AppID = app1.ID
 	res, err := rep.Order.QueryRecord(recordQuery)
+	if err != nil {
+		u.Errorf("rep.App.QueryRecord %v", err)
+		u.Respond(w, u.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
 	msg := map[string]interface{}{
 		"code": 200, // 200:ok  400:fail
 		"data": map[string]interface{}{
