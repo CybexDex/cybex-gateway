@@ -45,6 +45,9 @@ func main() {
 	router.HandleFunc("/api/test", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("ok"))
 	}).Methods("GET")
+
+	router.HandleFunc("/api/balance/{account}", adminsrv.GetBalance).Methods("GET")
+
 	router.HandleFunc("/api/account/new", adminsrv.CreateAccount).Methods("POST")
 	router.HandleFunc("/api/account/login", adminsrv.Authenticate).Methods("POST")
 	router.HandleFunc("/api/debug/info", adminsrv.DebugInfo).Methods("GET")
