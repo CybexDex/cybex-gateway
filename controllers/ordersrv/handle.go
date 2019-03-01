@@ -2,6 +2,7 @@ package ordersrv
 
 import (
 	"errors"
+	"fmt"
 
 	rep "coding.net/bobxuyang/cy-gateway-BN/help/singleton"
 	m "coding.net/bobxuyang/cy-gateway-BN/models"
@@ -25,36 +26,36 @@ func IsOpen(order1 *m.Order) (bool, error) {
 func IsBlack(order1 *m.Order) (bool, error) {
 	asset, err := rep.Asset.GetByID(order1.AssetID)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("Asset GetByID %v", err)
 	}
 	blockchain, err := rep.Blockchain.GetByID(asset.BlockchainID)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("blockchain GetByID %v", err)
 	}
 	var addressBlockChain string
 	if order1.Type == m.OrderTypeDeposit {
 		jporder, err := rep.JPOrder.GetByID(order1.JPOrderID)
 		if err != nil {
-			return false, err
+			return false, fmt.Errorf("JPOrder.GetByID %v", err)
 		}
 		addressBlockChain = jporder.From
 	} else if order1.Type == m.OrderTypeWithdraw {
 		cyborder, err := rep.CybOrder.GetByID(order1.CybOrderID)
 		if err != nil {
-			return false, err
+			return false, fmt.Errorf("JCybOrder.GetByID %v", err)
 		}
 		addressBlockChain = cyborder.WithdrawAddr
 	}
 	app, err := rep.App.GetByID(order1.AppID)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("App.GetByID %v", err)
 	}
 	blacks, err := rep.Black.FetchWith(&m.Black{
 		Blockchain: blockchain.Name,
 		Address:    addressBlockChain,
 	})
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("Black.FetchWith addressBlockChain %v", err)
 	}
 	if len(blacks) > 0 {
 		return true, nil
@@ -64,7 +65,7 @@ func IsBlack(order1 *m.Order) (bool, error) {
 		Address:    app.CybAccount,
 	})
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("Black.FetchWith CybAccount %v", err)
 	}
 	if len(blacks) > 0 {
 		return true, nil

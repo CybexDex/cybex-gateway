@@ -83,15 +83,17 @@ func handleOrders(order1 *m.CybOrder) {
 		order1.From = gatewayAccount.Name
 	}
 	tx, err := api.Send(order1.From, order1.To, amount, asset.CybID, "", gatewayPassword)
-	fmt.Println(1, tx)
-	signed := tx.Signatures[0].String()
 	if err != nil {
 		if strings.Contains(err.Error(), "skip_transaction_dupe_check") {
 			order1.UpdateColumns(&m.CybOrder{
 				Status: m.CybOrderStatusFailed,
 			})
+		} else {
+			utils.Errorln("api.Send", err)
 		}
 	} else {
+		utils.Infoln("tx is ", tx)
+		signed := tx.Signatures[0].String()
 		order1.UpdateColumns(&m.CybOrder{
 			Status: m.CybOrderStatusPending,
 			UUHash: signed,

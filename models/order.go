@@ -55,9 +55,9 @@ type Order struct {
 	CybOrderID uint      `json:"cybOrderID"`
 	CybOrder   *CybOrder `json:"cybOrder"`
 
-	AssetID uint   `gorm:"not null" json:"-"` // 1 to n
+	AssetID uint   `gorm:"not null" json:"assetID"` // 1 to n
 	Asset   *Asset `json:"asset"`
-	AppID   uint   `gorm:"not null" json:"-"` // 1 to n
+	AppID   uint   `gorm:"not null" json:"appID"` // 1 to n
 
 	FailedJPOrders  pq.Int64Array `gorm:"type:integer[]" json:"-"`
 	FailedCybOrders pq.Int64Array `gorm:"type:integer[]" json:"-"`
