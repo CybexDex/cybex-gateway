@@ -4,8 +4,8 @@ import (
 	"flag"
 	"fmt"
 
-	"git.coding.net/bobxuyang/cy-gateway-BN/controllers/cybsrv"
-	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
+	"coding.net/bobxuyang/cy-gateway-BN/controllers/cybsrv"
+	"coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/spf13/viper"
 )
 

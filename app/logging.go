@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	model "git.coding.net/bobxuyang/cy-gateway-BN/models"
-	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
+	model "coding.net/bobxuyang/cy-gateway-BN/models"
+	"coding.net/bobxuyang/cy-gateway-BN/utils"
 	humanize "github.com/dustin/go-humanize"
 	"github.com/tomasen/realip"
 )

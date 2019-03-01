@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"math"
 
-	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
-	r "git.coding.net/bobxuyang/cy-gateway-BN/repository"
+	m "coding.net/bobxuyang/cy-gateway-BN/models"
+	r "coding.net/bobxuyang/cy-gateway-BN/repository"
 	"github.com/cockroachdb/apd"
 	"github.com/jinzhu/gorm"
 )

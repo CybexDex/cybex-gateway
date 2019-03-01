@@ -10,9 +10,9 @@ import (
 
 	apim "coding.net/yundkyy/cybexgolib/api"
 	"coding.net/yundkyy/cybexgolib/types"
-	rep "git.coding.net/bobxuyang/cy-gateway-BN/help/singleton"
-	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
-	u "git.coding.net/bobxuyang/cy-gateway-BN/utils"
+	rep "coding.net/bobxuyang/cy-gateway-BN/help/singleton"
+	m "coding.net/bobxuyang/cy-gateway-BN/models"
+	u "coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/gorilla/mux"
 	"github.com/juju/errors"
 	"github.com/spf13/viper"

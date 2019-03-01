@@ -5,8 +5,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"testing"
 
-	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
-	p "git.coding.net/bobxuyang/cy-gateway-BN/repository"
+	m "coding.net/bobxuyang/cy-gateway-BN/models"
+	p "coding.net/bobxuyang/cy-gateway-BN/repository"
 )
 
 func TestOne(t *testing.T) {

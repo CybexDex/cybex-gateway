@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 
-	"git.coding.net/bobxuyang/cy-gateway-BN/cmd/dbimport/cyborder"
-	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
-	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
+	"coding.net/bobxuyang/cy-gateway-BN/cmd/dbimport/cyborder"
+	m "coding.net/bobxuyang/cy-gateway-BN/models"
+	"coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/cockroachdb/apd"
 	"github.com/joho/godotenv"
 	"github.com/lib/pq"

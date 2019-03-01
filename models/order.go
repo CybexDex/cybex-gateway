@@ -1,7 +1,7 @@
 package model
 
 import (
-	u "git.coding.net/bobxuyang/cy-gateway-BN/utils"
+	u "coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/cockroachdb/apd"
 	"github.com/jinzhu/gorm"
 	"github.com/lib/pq"

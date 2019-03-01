@@ -9,9 +9,9 @@ import (
 	"time"
 
 	cybtypes "coding.net/yundkyy/cybexgolib/types"
-	rep "git.coding.net/bobxuyang/cy-gateway-BN/help/singleton"
-	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
-	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
+	rep "coding.net/bobxuyang/cy-gateway-BN/help/singleton"
+	m "coding.net/bobxuyang/cy-gateway-BN/models"
+	"coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/cockroachdb/apd"
 	"github.com/spf13/viper"
 	"github.com/tidwall/gjson"

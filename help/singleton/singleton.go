@@ -1,18 +1,18 @@
 package singleton
 
 import (
-	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
-	address "git.coding.net/bobxuyang/cy-gateway-BN/repository/address"
-	app "git.coding.net/bobxuyang/cy-gateway-BN/repository/app"
-	asset "git.coding.net/bobxuyang/cy-gateway-BN/repository/asset"
-	"git.coding.net/bobxuyang/cy-gateway-BN/repository/bigasset"
-	black "git.coding.net/bobxuyang/cy-gateway-BN/repository/black"
-	blockchain "git.coding.net/bobxuyang/cy-gateway-BN/repository/blockchain"
-	cyborder "git.coding.net/bobxuyang/cy-gateway-BN/repository/cyborder"
-	"git.coding.net/bobxuyang/cy-gateway-BN/repository/cybtoken"
-	"git.coding.net/bobxuyang/cy-gateway-BN/repository/easy"
-	jporder "git.coding.net/bobxuyang/cy-gateway-BN/repository/jporder"
-	"git.coding.net/bobxuyang/cy-gateway-BN/repository/order"
+	m "coding.net/bobxuyang/cy-gateway-BN/models"
+	address "coding.net/bobxuyang/cy-gateway-BN/repository/address"
+	app "coding.net/bobxuyang/cy-gateway-BN/repository/app"
+	asset "coding.net/bobxuyang/cy-gateway-BN/repository/asset"
+	"coding.net/bobxuyang/cy-gateway-BN/repository/bigasset"
+	black "coding.net/bobxuyang/cy-gateway-BN/repository/black"
+	blockchain "coding.net/bobxuyang/cy-gateway-BN/repository/blockchain"
+	cyborder "coding.net/bobxuyang/cy-gateway-BN/repository/cyborder"
+	"coding.net/bobxuyang/cy-gateway-BN/repository/cybtoken"
+	"coding.net/bobxuyang/cy-gateway-BN/repository/easy"
+	jporder "coding.net/bobxuyang/cy-gateway-BN/repository/jporder"
+	"coding.net/bobxuyang/cy-gateway-BN/repository/order"
 )
 
 // App ...

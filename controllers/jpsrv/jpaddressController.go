@@ -12,10 +12,10 @@ import (
 	"strings"
 	"time"
 
-	"git.coding.net/bobxuyang/cy-gateway-BN/models"
-	"git.coding.net/bobxuyang/cy-gateway-BN/repository/jadepool"
+	"coding.net/bobxuyang/cy-gateway-BN/models"
+	"coding.net/bobxuyang/cy-gateway-BN/repository/jadepool"
 
-	utils "git.coding.net/bobxuyang/cy-gateway-BN/utils"
+	utils "coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/spf13/viper"
 )
 

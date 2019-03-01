@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
-	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
+	m "coding.net/bobxuyang/cy-gateway-BN/models"
+	"coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/jinzhu/gorm"
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"

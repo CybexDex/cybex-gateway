@@ -4,10 +4,10 @@ import (
 	"flag"
 	"fmt"
 
-	"git.coding.net/bobxuyang/cy-gateway-BN/controllers/ordersrv"
-	rep "git.coding.net/bobxuyang/cy-gateway-BN/help/singleton"
-	model "git.coding.net/bobxuyang/cy-gateway-BN/models"
-	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
+	"coding.net/bobxuyang/cy-gateway-BN/controllers/ordersrv"
+	rep "coding.net/bobxuyang/cy-gateway-BN/help/singleton"
+	model "coding.net/bobxuyang/cy-gateway-BN/models"
+	"coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )

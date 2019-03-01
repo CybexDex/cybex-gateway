@@ -3,7 +3,7 @@ package model
 import (
 	"reflect"
 
-	u "git.coding.net/bobxuyang/cy-gateway-BN/utils"
+	u "coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/cockroachdb/apd"
 	"github.com/jinzhu/gorm"
 )

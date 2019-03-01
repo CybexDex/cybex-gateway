@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 
-	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
+	m "coding.net/bobxuyang/cy-gateway-BN/models"
 	"github.com/cockroachdb/apd"
 	"github.com/lib/pq"
 )

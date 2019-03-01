@@ -9,10 +9,10 @@ import (
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
 
-	app "git.coding.net/bobxuyang/cy-gateway-BN/app"
-	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
-	accRepo "git.coding.net/bobxuyang/cy-gateway-BN/repository/account"
-	u "git.coding.net/bobxuyang/cy-gateway-BN/utils"
+	app "coding.net/bobxuyang/cy-gateway-BN/app"
+	m "coding.net/bobxuyang/cy-gateway-BN/models"
+	accRepo "coding.net/bobxuyang/cy-gateway-BN/repository/account"
+	u "coding.net/bobxuyang/cy-gateway-BN/utils"
 )
 
 //CreateAccount ...

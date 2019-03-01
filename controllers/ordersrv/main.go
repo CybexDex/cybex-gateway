@@ -5,9 +5,9 @@ import (
 	"time"
 
 	apim "coding.net/yundkyy/cybexgolib/api"
-	rep "git.coding.net/bobxuyang/cy-gateway-BN/help/singleton"
-	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
-	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
+	rep "coding.net/bobxuyang/cy-gateway-BN/help/singleton"
+	m "coding.net/bobxuyang/cy-gateway-BN/models"
+	"coding.net/bobxuyang/cy-gateway-BN/utils"
 )
 
 var api apim.BitsharesAPI

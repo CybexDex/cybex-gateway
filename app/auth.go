@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	u "git.coding.net/bobxuyang/cy-gateway-BN/utils"
+	u "coding.net/bobxuyang/cy-gateway-BN/utils"
 	jwt "github.com/dgrijalva/jwt-go"
 )
 

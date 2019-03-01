@@ -3,12 +3,12 @@ package adminsrv
 import (
 	"net/http"
 
-	"git.coding.net/bobxuyang/cy-gateway-BN/models"
-	"git.coding.net/bobxuyang/cy-gateway-BN/repository/app"
-	"git.coding.net/bobxuyang/cy-gateway-BN/repository/balance"
+	"coding.net/bobxuyang/cy-gateway-BN/models"
+	"coding.net/bobxuyang/cy-gateway-BN/repository/app"
+	"coding.net/bobxuyang/cy-gateway-BN/repository/balance"
 	"github.com/gorilla/mux"
 
-	utils "git.coding.net/bobxuyang/cy-gateway-BN/utils"
+	utils "coding.net/bobxuyang/cy-gateway-BN/utils"
 )
 
 //GetBalance ...

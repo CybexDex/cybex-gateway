@@ -3,8 +3,8 @@ package ordersrv
 import (
 	"errors"
 
-	rep "git.coding.net/bobxuyang/cy-gateway-BN/help/singleton"
-	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
+	rep "coding.net/bobxuyang/cy-gateway-BN/help/singleton"
+	m "coding.net/bobxuyang/cy-gateway-BN/models"
 )
 
 // IsOpen ...

@@ -8,11 +8,11 @@ import (
 
 	"github.com/jinzhu/gorm"
 
-	"git.coding.net/bobxuyang/cy-gateway-BN/models"
-	"git.coding.net/bobxuyang/cy-gateway-BN/repository/jadepool"
+	"coding.net/bobxuyang/cy-gateway-BN/models"
+	"coding.net/bobxuyang/cy-gateway-BN/repository/jadepool"
 	"github.com/gorilla/mux"
 
-	utils "git.coding.net/bobxuyang/cy-gateway-BN/utils"
+	utils "coding.net/bobxuyang/cy-gateway-BN/utils"
 )
 
 //GetAllJadepool ...

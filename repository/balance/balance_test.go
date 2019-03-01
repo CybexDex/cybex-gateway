@@ -3,7 +3,7 @@ package balance
 import (
 	"fmt"
 
-	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
+	m "coding.net/bobxuyang/cy-gateway-BN/models"
 
 	"testing"
 

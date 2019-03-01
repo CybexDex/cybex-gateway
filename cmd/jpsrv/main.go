@@ -12,12 +12,12 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/joho/godotenv"
 
-	"git.coding.net/bobxuyang/cy-gateway-BN/models"
-	"git.coding.net/bobxuyang/cy-gateway-BN/repository/jporder"
+	"coding.net/bobxuyang/cy-gateway-BN/models"
+	"coding.net/bobxuyang/cy-gateway-BN/repository/jporder"
 
-	"git.coding.net/bobxuyang/cy-gateway-BN/app"
-	"git.coding.net/bobxuyang/cy-gateway-BN/controllers/jpsrv"
-	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
+	"coding.net/bobxuyang/cy-gateway-BN/app"
+	"coding.net/bobxuyang/cy-gateway-BN/controllers/jpsrv"
+	"coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/facebookgo/grace/gracehttp"
 	"github.com/gorilla/mux"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
