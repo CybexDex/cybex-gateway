@@ -23,9 +23,6 @@ func main() {
 		fmt.Printf("version: %s_%s_%s, build time: %s\n", version, branch, githash, buildtime)
 		return
 	}
-
-	// init config
-	utils.InitConfig()
 	logDir := viper.GetString("cybsrv.log_dir")
 	logLevel := viper.GetString("cybsrv.log_level")
 	// init logger

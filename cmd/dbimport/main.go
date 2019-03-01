@@ -5,11 +5,30 @@ import (
 
 	"git.coding.net/bobxuyang/cy-gateway-BN/cmd/dbimport/cyborder"
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
+	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/cockroachdb/apd"
+	"github.com/joho/godotenv"
 	"github.com/lib/pq"
+	"github.com/spf13/viper"
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		panic(err)
+	}
+
+	// init config
+	utils.InitConfig()
+
+	// init db
+	dbHost := viper.GetString("database.host")
+	dbPort := viper.GetString("database.port")
+	dbUser := viper.GetString("database.user")
+	dbPassword := viper.GetString("database.pass")
+	dbName := viper.GetString("database.name")
+	m.InitDB(dbHost, dbPort, dbUser, dbPassword, dbName)
+
 	tBlockchain()
 	tAsset()
 	tJadepool()

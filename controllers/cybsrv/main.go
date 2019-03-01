@@ -1,6 +1,7 @@
 package cybsrv
 
 import (
+	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -11,6 +12,7 @@ import (
 	rep "git.coding.net/bobxuyang/cy-gateway-BN/help/singleton"
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
+	"github.com/joho/godotenv"
 	"github.com/juju/errors"
 	"github.com/spf13/viper"
 )
@@ -24,7 +26,23 @@ var gatewayMemoPri types.PrivateKeys
 var gatewayPrefix string
 
 func init() {
+	err := godotenv.Load()
+	if err != nil {
+		panic(err)
+	}
+
 	utils.InitConfig()
+	// init db
+	dbHost := viper.GetString("database.host")
+	dbPort := viper.GetString("database.port")
+	dbUser := viper.GetString("database.user")
+	dbPassword := viper.GetString("database.pass")
+	dbName := viper.GetString("database.name")
+	m.InitDB(dbHost, dbPort, dbUser, dbPassword, dbName)
+	rep.Init()
+
+	fmt.Println("after m.InitDB")
+
 	node := viper.GetString("cybsrv.node")
 	api = apim.New(node, "")
 	if err := api.Connect(); err != nil {
@@ -32,7 +50,6 @@ func init() {
 	}
 	gatewayPassword = viper.GetString("cybsrv.gatewayPassword")
 	gatewayAccountStr := viper.GetString("cybsrv.gatewayAccount")
-	var err error
 	gatewayAccount, err = api.GetAccountByName(gatewayAccountStr)
 	if err != nil {
 		panic(err)

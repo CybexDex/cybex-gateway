@@ -2,35 +2,18 @@ package model
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/jinzhu/gorm"
 
-	"github.com/joho/godotenv"
 	// init postgres module
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
 var db *gorm.DB
 
-func init() {
-
-	e := godotenv.Load()
-	if e != nil {
-		fmt.Print(e)
-	}
-
-	username := os.Getenv("db_user")
-	password := os.Getenv("db_pass")
-	dbName := os.Getenv("db_name")
-	dbHost := os.Getenv("db_host")
-
-	// username := "alexxu"
-	// password := "postgres"
-	// dbName := "xuyang"
-	// dbHost := "localhost"
-
-	dbURI := fmt.Sprintf("host=%s user=%s dbname=%s sslmode=disable password=%s", dbHost, username, dbName, password)
+// InitDB ...
+func InitDB(host, port, username, password, dbname string) {
+	dbURI := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s", host, port, username, dbname, password)
 	fmt.Println(dbURI)
 
 	conn, err := gorm.Open("postgres", dbURI)
@@ -45,10 +28,7 @@ func init() {
 	// FOR TEST USE ONLY !!!
 	// FOR TEST USE ONLY !!!
 	// FOR TEST USE ONLY !!!
-	// nodrop := os.Getenv("nodrop")
-	// if nodrop != "1" {
 	// db.DropTableIfExists(&Blockchain{}, &Asset{}, &Company{}, &Account{}, &App{}, &Jadepool{}, &Order{}, &CybOrder{}, &JPOrder{}, &Event{}, &ExEvent{}, &Balance{}, &Accounting{}, &GeoAddress{}, &Address{}, &CybToken{}, &BigAsset{}, &Black{}, &Easy{})
-	// }
 	db.AutoMigrate(&Blockchain{}, &Asset{}, &Company{}, &Account{}, &App{}, &Jadepool{}, &Order{}, &CybOrder{}, &JPOrder{}, &Event{}, &ExEvent{}, &Balance{}, &Accounting{}, &GeoAddress{}, &Address{}, &CybToken{}, &BigAsset{}, &Black{}, &Easy{})
 }
 

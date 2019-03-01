@@ -4,16 +4,17 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 
 	"git.coding.net/bobxuyang/cy-gateway-BN/app"
 	"git.coding.net/bobxuyang/cy-gateway-BN/controllers/adminsrv"
+	model "git.coding.net/bobxuyang/cy-gateway-BN/models"
 	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/facebookgo/grace/gracehttp"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
 
@@ -32,6 +33,11 @@ func main() {
 		return
 	}
 
+	err := godotenv.Load()
+	if err != nil {
+		panic(err)
+	}
+
 	// init config
 	utils.InitConfig()
 	logDir := viper.GetString("adminsrv.log_dir")
@@ -39,6 +45,14 @@ func main() {
 	// init logger
 	utils.InitLog(logDir, logLevel)
 	utils.Infof("version: %s_%s_%s, build time: %s", version, branch, githash, buildtime)
+
+	// init db
+	dbHost := viper.GetString("database.host")
+	dbPort := viper.GetString("database.port")
+	dbUser := viper.GetString("database.user")
+	dbPassword := viper.GetString("database.pass")
+	dbName := viper.GetString("database.name")
+	model.InitDB(dbHost, dbPort, dbUser, dbPassword, dbName)
 
 	// init route
 	router := mux.NewRouter()
@@ -78,7 +92,7 @@ func main() {
 	corsOrigins := handlers.AllowedOrigins([]string{"*"})
 	handler := handlers.CORS(corsHeaders, corsMethods, corsOrigins)(router)
 
-	listenAddr := os.Getenv("adminsrv.listen_addr")
+	listenAddr := viper.GetString("adminsrv.listen_addr")
 	if len(listenAddr) == 0 {
 		listenAddr = ":8082"
 	}

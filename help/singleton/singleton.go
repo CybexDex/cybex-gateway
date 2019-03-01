@@ -2,12 +2,12 @@ package singleton
 
 import (
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
-	blockchain "git.coding.net/bobxuyang/cy-gateway-BN/repository/blockchain"
 	address "git.coding.net/bobxuyang/cy-gateway-BN/repository/address"
 	app "git.coding.net/bobxuyang/cy-gateway-BN/repository/app"
 	asset "git.coding.net/bobxuyang/cy-gateway-BN/repository/asset"
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/bigasset"
 	black "git.coding.net/bobxuyang/cy-gateway-BN/repository/black"
+	blockchain "git.coding.net/bobxuyang/cy-gateway-BN/repository/blockchain"
 	cyborder "git.coding.net/bobxuyang/cy-gateway-BN/repository/cyborder"
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/cybtoken"
 	"git.coding.net/bobxuyang/cy-gateway-BN/repository/easy"
@@ -48,7 +48,7 @@ var CybToken cybtoken.Repository
 // Easy ...
 var Easy easy.Repository
 
-func init() {
+func Init() {
 	App = app.NewRepo(m.GetDB())
 	Address = address.NewRepo(m.GetDB())
 	Asset = asset.NewRepo(m.GetDB())

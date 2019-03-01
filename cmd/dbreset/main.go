@@ -2,24 +2,30 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	m "git.coding.net/bobxuyang/cy-gateway-BN/models"
+	"git.coding.net/bobxuyang/cy-gateway-BN/utils"
 	"github.com/jinzhu/gorm"
+	"github.com/joho/godotenv"
+	"github.com/spf13/viper"
 
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
 func main() {
-	username := os.Getenv("db_user")
-	password := os.Getenv("db_pass")
-	dbName := os.Getenv("db_name")
-	dbHost := os.Getenv("db_host")
+	err := godotenv.Load()
+	if err != nil {
+		panic(err)
+	}
 
-	// username := "alexxu"
-	// password := "postgres"
-	// dbName := "xuyang"
-	// dbHost := "localhost"
+	// init config
+	utils.InitConfig()
+
+	// init db
+	dbHost := viper.GetString("database.host")
+	username := viper.GetString("database.user")
+	password := viper.GetString("database.pass")
+	dbName := viper.GetString("database.name")
 
 	dbURI := fmt.Sprintf("host=%s user=%s dbname=%s sslmode=disable password=%s", dbHost, username, dbName, password)
 	fmt.Println(dbURI)
