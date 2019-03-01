@@ -6,12 +6,12 @@ import (
 	"strings"
 	"time"
 
-	apim "coding.net/yundkyy/cybexgolib/api"
-	"coding.net/yundkyy/cybexgolib/crypto"
-	"coding.net/yundkyy/cybexgolib/types"
 	rep "coding.net/bobxuyang/cy-gateway-BN/help/singleton"
 	m "coding.net/bobxuyang/cy-gateway-BN/models"
 	"coding.net/bobxuyang/cy-gateway-BN/utils"
+	apim "coding.net/yundkyy/cybexgolib/api"
+	"coding.net/yundkyy/cybexgolib/crypto"
+	"coding.net/yundkyy/cybexgolib/types"
 	"github.com/joho/godotenv"
 	"github.com/juju/errors"
 	"github.com/spf13/viper"
@@ -83,6 +83,7 @@ func handleOrders(order1 *m.CybOrder) {
 		order1.From = gatewayAccount.Name
 	}
 	tx, err := api.Send(order1.From, order1.To, amount, asset.CybID, "", gatewayPassword)
+	fmt.Println(1, tx)
 	signed := tx.Signatures[0].String()
 	if err != nil {
 		if strings.Contains(err.Error(), "skip_transaction_dupe_check") {

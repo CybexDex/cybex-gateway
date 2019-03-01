@@ -28,6 +28,15 @@ const (
 	OrderTypeWithdraw = "WITHDRAW"
 )
 
+// RecordsQuery ...
+type RecordsQuery struct {
+	FundType string `schema:"fundType"`
+	Offset   string `schema:"offset"`
+	Size     string `schema:"size"`
+	Asset    string `schema:"asset"`
+	AppID    uint
+}
+
 //Order ...
 type Order struct {
 	gorm.Model

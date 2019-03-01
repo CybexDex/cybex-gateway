@@ -8,12 +8,13 @@ import (
 	"net/http"
 	"time"
 
-	apim "coding.net/yundkyy/cybexgolib/api"
-	"coding.net/yundkyy/cybexgolib/types"
 	rep "coding.net/bobxuyang/cy-gateway-BN/help/singleton"
 	m "coding.net/bobxuyang/cy-gateway-BN/models"
 	u "coding.net/bobxuyang/cy-gateway-BN/utils"
+	apim "coding.net/yundkyy/cybexgolib/api"
+	"coding.net/yundkyy/cybexgolib/types"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/schema"
 	"github.com/juju/errors"
 	"github.com/spf13/viper"
 )
@@ -336,35 +337,43 @@ func VerifyAddress(w http.ResponseWriter, r *http.Request) {
 	}
 	u.Respond(w, msg, 200)
 }
-func getQuery(r *http.Request, names ...string) map[string]string {
-	q := r.URL.Query()
-	var s map[string]string
-	s = make(map[string]string)
-	for _, name := range names {
-		t, ok := q[name]
-		var t2 string
-		if ok && len(t) > 0 {
-			t2 = t[0]
-			s[name] = t2
-		}
-	}
-	return s
-}
 
 // Records ...
 func Records(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	user := vars["user"]
-	q := getQuery(r, "fundType", "offset", "size", "asset")
-	fmt.Println(q, user)
+	r.ParseForm()
+	decoder := schema.NewDecoder()
+	recordQuery := &m.RecordsQuery{}
+	err := decoder.Decode(recordQuery, r.Form)
+	if err != nil {
+		u.Errorf("decoder.Decode recordQuery %v", err)
+		u.Respond(w, u.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
+	if recordQuery.Size == "" {
+		recordQuery.Size = "20"
+	}
+	if recordQuery.Offset == "" {
+		recordQuery.Offset = "0"
+	}
+	fmt.Println(user, recordQuery.FundType, err)
 	//
+	app1, err := rep.App.FindAppOrCreate(user)
+	if err != nil {
+		u.Errorf("rep.App.FindAppOrCreate %v", err)
+		u.Respond(w, u.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
+	recordQuery.AppID = app1.ID
+	res, err := rep.Order.QueryRecord(recordQuery)
 	msg := map[string]interface{}{
 		"code": 200, // 200:ok  400:fail
 		"data": map[string]interface{}{
 			"total":   0,
-			"size":    0,
-			"offset":  0,
-			"records": q,
+			"size":    recordQuery.Size,
+			"offset":  recordQuery.Offset,
+			"records": res,
 		},
 	}
 	u.Respond(w, msg, 200)

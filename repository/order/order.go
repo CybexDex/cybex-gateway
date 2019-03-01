@@ -20,6 +20,7 @@ type Repository interface {
 	MDB() *gorm.DB
 	UpdateAll(where *m.Order, update *m.Order) *gorm.DB
 	HoldingOne() *m.Order
+	QueryRecord(a *m.RecordsQuery) (out []*m.Order, err error)
 }
 
 //Repo ...
@@ -124,4 +125,17 @@ func (repo *Repo) Create(a *m.Order) (err error) {
 	}
 
 	return nil
+}
+
+// QueryRecord ...
+func (repo *Repo) QueryRecord(a *m.RecordsQuery) (res []*m.Order, err error) {
+	err = repo.DB.Where(&m.Order{
+		AppID: a.AppID,
+		Type:  a.FundType,
+	}).Offset(a.Offset).Limit(a.Size).Find(&res).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return res, err
 }

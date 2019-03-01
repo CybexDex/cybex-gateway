@@ -1,9 +1,9 @@
 database:
   host: 47.100.239.204
   port: 5432
-  name: zhangdaizong
-  user: zhangdaizong
-  pass: zhangdaizong123
+  name: yangyu
+  user: yangyu
+  pass: yangyu123
   type: postgres
 
 jpsrv:
