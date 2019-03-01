@@ -48,11 +48,11 @@ func GetBalance(w http.ResponseWriter, r *http.Request) {
 	}
 
 	m := make(map[string]interface{})
-	m["balance"] = balances[0].Balance
-	m["inLocked"] = balances[0].InLocked
-	m["outLocked"] = balances[0].OutLocked
-	m["inLockedFee"] = balances[0].InLockedFee
-	m["outLockedFee"] = balances[0].OutLockedFee
+	m["balance"] = balances[0].Balance.Text('f')
+	m["inLocked"] = balances[0].InLocked.Text('f')
+	m["outLocked"] = balances[0].OutLocked.Text('f')
+	m["inLockedFee"] = balances[0].InLockedFee.Text('f')
+	m["outLockedFee"] = balances[0].OutLockedFee.Text('f')
 
 	resp := utils.Message(true, "success", m)
 	utils.Respond(w, resp)
