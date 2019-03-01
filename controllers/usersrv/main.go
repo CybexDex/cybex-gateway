@@ -2,7 +2,6 @@ package usersrv
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -357,7 +356,6 @@ func Records(w http.ResponseWriter, r *http.Request) {
 	if recordQuery.Offset == "" {
 		recordQuery.Offset = "0"
 	}
-	fmt.Println(user, recordQuery.FundType, err)
 	//
 	app1, err := rep.App.FindAppOrCreate(user)
 	if err != nil {
