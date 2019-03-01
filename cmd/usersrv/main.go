@@ -15,7 +15,6 @@ import (
 	"github.com/facebookgo/grace/gracehttp"
 	"github.com/gorilla/mux"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
 
@@ -65,11 +64,6 @@ func main() {
 	if *v {
 		fmt.Printf("version: %s_%s_%s, build time: %s\n", version, branch, githash, buildtime)
 		return
-	}
-
-	err := godotenv.Load()
-	if err != nil {
-		panic(err)
 	}
 
 	// 配置初始化日志
