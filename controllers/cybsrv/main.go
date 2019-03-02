@@ -92,11 +92,11 @@ func handleOrders(order1 *m.CybOrder) {
 			utils.Errorln("api.Send", err)
 		}
 	} else {
-		utils.Infoln("tx is ", tx)
+		utils.Infoln("sendorder tx is ", *tx)
 		signed := tx.Signatures[0].String()
 		order1.UpdateColumns(&m.CybOrder{
 			Status: m.CybOrderStatusPending,
-			UUHash: signed,
+			Sig:    signed,
 		})
 	}
 }
@@ -104,7 +104,7 @@ func handleOrders(order1 *m.CybOrder) {
 // HandleWorker ...
 func HandleWorker() {
 	for {
-		utils.Debugln("start...")
+		// utils.Debugln("start...")
 		for {
 			ret := HandleOneTime()
 			if ret != 0 {

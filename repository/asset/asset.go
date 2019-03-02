@@ -2,7 +2,6 @@ package asset
 
 import (
 	"fmt"
-	"math"
 
 	m "coding.net/bobxuyang/cy-gateway-BN/models"
 	r "coding.net/bobxuyang/cy-gateway-BN/repository"
@@ -94,8 +93,13 @@ func (repo *Repo) DeleteByID(id uint) error {
 // RawAmountToReal ...
 func (repo *Repo) RawAmountToReal(amount int64, precision int) *apd.Decimal {
 	// precics
-	real := float64(amount) / math.Pow(10, float64(precision))
-	s := fmt.Sprintf("%f", real)
-	re, _, _ := apd.NewFromString(s)
-	return re
+	amountStr, _, _ := apd.NewFromString(fmt.Sprintf("%d", uint64(amount)))
+	p, _, _ := apd.NewFromString(fmt.Sprintf("%d", precision))
+	p1, _, _ := apd.NewFromString("10")
+	out, _, _ := apd.NewFromString("0")
+	c := apd.BaseContext
+	c.Precision = 10
+	c.Pow(p, p1, p)
+	c.Quo(out, amountStr, p)
+	return out
 }

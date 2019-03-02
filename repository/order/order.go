@@ -133,30 +133,51 @@ func (repo *Repo) QueryRecord(a *m.RecordsQuery) (resnew []*m.RecordsOut, err er
 	err = repo.DB.Where(&m.Order{
 		AppID: a.AppID,
 		Type:  a.FundType,
-	}).Preload("JPOrder").Preload("CybOrder").Preload("Asset").Preload("App").Offset(a.Offset).Limit(a.Size).Find(&res).Error
+	}).Preload("JPOrder").Preload("CybOrder").Preload("Asset").Preload("App").Order("id desc").Offset(a.Offset).Limit(a.Size).Find(&res).Error
 	if err != nil {
 		return nil, err
 	}
 	// map
 	for _, res1 := range res {
 		var addr string
+		status := "PENDING"
 		if res1.Type == m.OrderTypeDeposit {
-			addr = res1.JPOrder.From
+			if res1.JPOrder != nil {
+				addr = res1.JPOrder.From
+			}
+			if res1.CybOrder != nil {
+				status = res1.CybOrder.Status
+			}
 		}
 		if res1.Type == m.OrderTypeWithdraw {
-			addr = res1.CybOrder.WithdrawAddr
+			if res1.CybOrder != nil {
+				addr = res1.CybOrder.WithdrawAddr
+			}
+			if res1.JPOrder != nil {
+				status = res1.JPOrder.Status
+			}
 		}
-		resnew = append(resnew, &m.RecordsOut{
+		reout := &m.RecordsOut{
 			Order:       res1,
-			Asset:       res1.Asset.Name,
-			CybexName:   res1.App.CybAccount,
 			OutAddr:     addr,
-			OutHash:     res1.JPOrder.Hash,
-			CybHash:     res1.CybOrder.Hash,
 			TotalAmount: res1.TotalAmount.Text('f'),
 			Amount:      res1.Amount.Text('f'),
 			Fee:         res1.Fee.Text('f'),
-		})
+			Status:      status,
+		}
+		if res1.Asset != nil {
+			reout.Asset = res1.Asset.Name
+		}
+		if res1.App != nil {
+			reout.CybexName = res1.App.CybAccount
+		}
+		if res1.JPOrder != nil {
+			reout.OutHash = res1.JPOrder.Hash
+		}
+		if res1.CybOrder != nil {
+			reout.CybHash = res1.CybOrder.Hash
+		}
+		resnew = append(resnew, reout)
 	}
 	return resnew, err
 }

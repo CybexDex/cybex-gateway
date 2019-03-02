@@ -8,17 +8,17 @@ import (
 	"strings"
 	"time"
 
-	cybtypes "coding.net/yundkyy/cybexgolib/types"
 	rep "coding.net/bobxuyang/cy-gateway-BN/help/singleton"
 	m "coding.net/bobxuyang/cy-gateway-BN/models"
 	"coding.net/bobxuyang/cy-gateway-BN/utils"
+	cybtypes "coding.net/yundkyy/cybexgolib/types"
 	"github.com/cockroachdb/apd"
 	"github.com/spf13/viper"
 	"github.com/tidwall/gjson"
 )
 
 func Test() {
-	readBlock(10311203)
+	handleBlockNum(1918680)
 }
 
 // BlockRead ...
@@ -69,6 +69,8 @@ func getHeadNum() (int, error) {
 	return int(s.LastIrreversibleBlockNum), nil
 }
 func readBlock(cnum int) (orders []*m.CybOrder) {
+	c := apd.BaseContext
+	c.Precision = 10
 	// utils.Infoln("block", cnum)
 	// do read transfers
 	blockInfo, err := api.GetBlock(uint64(cnum))
@@ -112,12 +114,8 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 					cybasset, err := api.GetAsset(asset)
 					app, err := rep.App.FindAppOrCreate(userFrom.Name)
 					realAmount := rep.Asset.RawAmountToReal(amount, cybasset.Precision)
-					utils.Debugln("cyborder", amount, cybasset.Precision, assetNow.CybName, realAmount)
-					f1, _ := realAmount.Float64()
-					f2, _ := assetNow.WithdrawFee.Float64()
-					amountNow := f1 - f2
-					amountStr := fmt.Sprintf("%f", amountNow)
-					amountA, _, _ := apd.NewFromString(amountStr)
+					amountA, _, _ := apd.NewFromString("0")
+					c.Sub(amountA, realAmount, assetNow.WithdrawFee)
 					hash := fmt.Sprintf("%d:%d", cnum, index)
 					signature := t.Get("signatures").Array()[0]
 					sig := signature.String()
@@ -157,6 +155,7 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 								memoout = s
 							}
 						}
+						amountNow, _ := amountA.Float64()
 						if amountNow < 0 {
 							utils.Infoln("UR", rawop)
 							order.Type = m.CybOrderTypeUR
@@ -165,7 +164,7 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 						}
 						// is a withdraw
 						if !strings.HasPrefix(memoout, gatewayPrefix) {
-							utils.Infoln("UR:1 ", cnum, index, fromid, asset, amount, "memo:", memoout)
+							utils.Infoln("UR:1 ", cnum, index, fromid, asset, amountA, "memo:", memoout)
 							order.Type = m.CybOrderTypeUR
 							orders = append(orders, order)
 							continue
@@ -173,13 +172,13 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 						s := strings.TrimPrefix(memoout, gatewayPrefix)
 						s2 := strings.Split(s, ":")
 						if len(s2) < 3 {
-							utils.Infoln("UR:2 ", cnum, index, fromid, asset, amount, "memo:", memoout, s)
+							utils.Infoln("UR:2 ", cnum, index, fromid, asset, amountA, "memo:", memoout, s)
 							order.Type = m.CybOrderTypeUR
 							orders = append(orders, order)
 							continue
 						}
 						addr := strings.Join(s2[2:], ":")
-						utils.Infoln("withdraw:", cnum, index, fromid, asset, amount, "memo:", memoout, "add:", addr)
+						utils.Infoln("withdraw:", cnum, index, fromid, asset, amountA, "memo:", memoout, "add:", addr)
 						order.Type = m.CybOrderTypeWithdraw
 						order.Memo = memoout
 						order.WithdrawAddr = addr
@@ -211,28 +210,21 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 					cybasset, err := api.GetAsset(asset)
 					app, err := rep.App.FindAppOrCreate(userTo.Name)
 					realAmount := rep.Asset.RawAmountToReal(amount, cybasset.Precision)
-					utils.Debugln("cyborder", amount, cybasset.Precision, assetNow.CybName, realAmount)
-					f1, _ := realAmount.Float64()
-					f2, _ := assetNow.WithdrawFee.Float64()
-					amountNow := f1 - f2
-					amountStr := fmt.Sprintf("%f", amountNow)
-					amountA, _, _ := apd.NewFromString(amountStr)
 					hash := fmt.Sprintf("%d:%d", cnum, index)
 					signature := t.Get("signatures").Array()[0]
 					sig := signature.String()
 					order := &m.CybOrder{
-						AppID:       app.ID,
-						AssetID:     assetNow.ID,
-						From:        gatewayAccount.Name,
-						To:          userTo.Name,
-						TotalAmount: realAmount,
-						Amount:      amountA,
-						Fee:         assetNow.WithdrawFee,
-						Hash:        hash,
-						Sig:         sig,
-						Type:        m.CybOrderTypeDeposit,
-						Status:      m.CybOrderStatusDone,
+						AppID:   app.ID,
+						AssetID: assetNow.ID,
+						From:    gatewayAccount.Name,
+						To:      userTo.Name,
+						Amount:  realAmount,
+						Hash:    hash,
+						Sig:     sig,
+						Type:    m.CybOrderTypeDeposit,
+						Status:  m.CybOrderStatusDone,
 					}
+					utils.Infoln("scan deposit order:", order.From, order.To, order.Hash, order.Type, order.Amount, order.AssetID, order.Sig)
 					orders = append(orders, order)
 					continue
 				}
@@ -263,20 +255,23 @@ func handleBlock() {
 	}
 	// for
 	for cnum := lastBlockNum; cnum <= blockheadNum; cnum = cnum + 1 {
-		cyborders := readBlock(cnum)
-		// utils.Infoln(cyborders)
-		// save cyborders
-		for _, order := range cyborders {
-			if order.Type != m.CybOrderTypeDeposit {
-				saveCYBOrder(order)
-			} else {
-				updateCYBOrder(order)
-			}
-		}
+		handleBlockNum(cnum)
 		// updateLastBlock
 		updateLastBlock(cnum, easy)
 	}
 	//
+}
+func handleBlockNum(cnum int) {
+	cyborders := readBlock(cnum)
+	// utils.Infoln(cyborders)
+	// save cyborders
+	for _, order := range cyborders {
+		if order.Type != m.CybOrderTypeDeposit {
+			saveCYBOrder(order)
+		} else {
+			updateCYBOrder(order)
+		}
+	}
 }
 func updateCYBOrder(order *m.CybOrder) error {
 	os, err := rep.CybOrder.FetchWith(&m.CybOrder{
@@ -285,13 +280,14 @@ func updateCYBOrder(order *m.CybOrder) error {
 	if err != nil {
 		return err
 	}
+	fmt.Println(os)
 	if len(os) > 0 {
 		o := os[0]
 		o.Status = m.CybOrderStatusDone
 		err := o.Save()
 		return err
 	}
-	utils.Warningln("updateerr,no order with this sig", order)
+	utils.Warningln("updateerr,no order with this sig", order.Sig, order.Hash)
 	return nil
 }
 func saveCYBOrder(order *m.CybOrder) error {

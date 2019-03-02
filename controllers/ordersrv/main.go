@@ -4,10 +4,10 @@ import (
 	"runtime/debug"
 	"time"
 
-	apim "coding.net/yundkyy/cybexgolib/api"
 	rep "coding.net/bobxuyang/cy-gateway-BN/help/singleton"
 	m "coding.net/bobxuyang/cy-gateway-BN/models"
 	"coding.net/bobxuyang/cy-gateway-BN/utils"
+	apim "coding.net/yundkyy/cybexgolib/api"
 )
 
 var api apim.BitsharesAPI
@@ -76,7 +76,7 @@ func handleOrders(order1 *m.Order) {
 // HandleWorker ...
 func HandleWorker() {
 	for {
-		utils.Debugln("start...")
+		// utils.Debugln("start...")
 		for {
 			ret := HandleOneTime()
 			if ret != 0 {

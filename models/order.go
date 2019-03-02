@@ -40,8 +40,8 @@ type RecordsQuery struct {
 
 // GORMMOVE
 type GORMMove struct {
-	ID        utype.Omit `json:"ID,omitempty"`
-	CreatedAt utype.Omit `json:"CreatedAt,omitempty"`
+	ID utype.Omit `json:"ID,omitempty"`
+	// CreatedAt utype.Omit `json:"CreatedAt,omitempty"`
 	UpdatedAt utype.Omit `json:"UpdatedAt,omitempty"`
 	DeletedAt utype.Omit `json:"DeletedAt,omitempty"`
 }
@@ -66,6 +66,7 @@ type RecordsOut struct {
 	TotalAmount string     `json:"totalAmount"` // totalAmount = amount + fee
 	Amount      string     `json:"amount"`      //
 	Fee         string     `json:"fee"`
+	Status      string     `json:"status"`
 }
 
 //Order ...
