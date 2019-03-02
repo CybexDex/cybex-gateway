@@ -6,3 +6,6 @@ vendor
 bin
 *.log
 node_modules
+cmd/devsrv/main.go
+config/local.yaml
+controllers/mock/main.go
