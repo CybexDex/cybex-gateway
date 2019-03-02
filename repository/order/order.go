@@ -146,7 +146,9 @@ func (repo *Repo) QueryRecord(a *m.RecordsQuery) (resnew []*m.RecordsOut, err er
 				addr = res1.JPOrder.From
 			}
 			if res1.CybOrder != nil {
-				status = res1.CybOrder.Status
+				if res1.CybOrder.Status == m.CybOrderStatusDone {
+					status = res1.CybOrder.Status
+				}
 			}
 		}
 		if res1.Type == m.OrderTypeWithdraw {
@@ -154,7 +156,9 @@ func (repo *Repo) QueryRecord(a *m.RecordsQuery) (resnew []*m.RecordsOut, err er
 				addr = res1.CybOrder.WithdrawAddr
 			}
 			if res1.JPOrder != nil {
-				status = res1.JPOrder.Status
+				if res1.JPOrder.Status == m.JPOrderStatusDone {
+					status = res1.JPOrder.Status
+				}
 			}
 		}
 		reout := &m.RecordsOut{
