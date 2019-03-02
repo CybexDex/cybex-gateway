@@ -38,12 +38,31 @@ type RecordsQuery struct {
 	AppID    uint
 }
 
+// GORMMOVE
+type GORMMove struct {
+	ID        utype.Omit `json:"ID,omitempty"`
+	CreatedAt utype.Omit `json:"CreatedAt,omitempty"`
+	UpdatedAt utype.Omit `json:"UpdatedAt,omitempty"`
+	DeletedAt utype.Omit `json:"DeletedAt,omitempty"`
+}
+
 // RecordsOut ...
 type RecordsOut struct {
 	*Order
+	*GORMMove
+	CybexName  string     `json:"cybexName"`
+	OutAddr    string     `json:"outAddr"`
+	Confirms   string     `json:"confirms"`
 	JPOrderID  utype.Omit `json:"jPOrderID,omitempty"`
 	CybOrderID utype.Omit `json:"cybOrderID,omitempty"`
+	AssetID    utype.Omit `json:"assetID,omitempty"`
+	AppID      utype.Omit `json:"appID,omitempty"`
 	Asset      string     `json:"asset"`
+	JPOrder    utype.Omit `json:"jpOrder,omitempty"`
+	CybOrder   utype.Omit `json:"cybOrder,omitempty"`
+	App        utype.Omit `json:"app,omitempty"`
+	OutHash    string     `json:"outHash"`
+	CybHash    string     `json:"cybHash"`
 }
 
 //Order ...
@@ -55,10 +74,10 @@ type Order struct {
 	CybOrderID uint      `json:"cybOrderID"`
 	CybOrder   *CybOrder `json:"cybOrder"`
 
-	AssetID uint   `gorm:"not null" json:"assetID"` // 1 to n
-	Asset   *Asset `json:"asset"`
-	AppID   uint   `gorm:"not null" json:"appID"` // 1 to n
-
+	AssetID         uint          `gorm:"not null" json:"assetID"` // 1 to n
+	Asset           *Asset        `json:"asset"`
+	AppID           uint          `gorm:"not null" json:"appID"` // 1 to n
+	App             *App          `json:"app"`
 	FailedJPOrders  pq.Int64Array `gorm:"type:integer[]" json:"-"`
 	FailedCybOrders pq.Int64Array `gorm:"type:integer[]" json:"-"`
 

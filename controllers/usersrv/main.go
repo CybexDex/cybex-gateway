@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	rep "coding.net/bobxuyang/cy-gateway-BN/help/singleton"
@@ -356,6 +357,7 @@ func Records(w http.ResponseWriter, r *http.Request) {
 	if recordQuery.Offset == "" {
 		recordQuery.Offset = "0"
 	}
+	recordQuery.FundType = strings.ToUpper(recordQuery.FundType)
 	//
 	app1, err := rep.App.FindAppOrCreate(user)
 	if err != nil {

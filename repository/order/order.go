@@ -133,15 +133,26 @@ func (repo *Repo) QueryRecord(a *m.RecordsQuery) (resnew []*m.RecordsOut, err er
 	err = repo.DB.Where(&m.Order{
 		AppID: a.AppID,
 		Type:  a.FundType,
-	}).Preload("JPOrder").Preload("CybOrder").Preload("Asset").Offset(a.Offset).Limit(a.Size).Find(&res).Error
+	}).Preload("JPOrder").Preload("CybOrder").Preload("Asset").Preload("App").Offset(a.Offset).Limit(a.Size).Find(&res).Error
 	if err != nil {
 		return nil, err
 	}
 	// map
 	for _, res1 := range res {
+		var addr string
+		if res1.Type == m.OrderTypeDeposit {
+			addr = res1.JPOrder.From
+		}
+		if res1.Type == m.OrderTypeWithdraw {
+			addr = res1.CybOrder.WithdrawAddr
+		}
 		resnew = append(resnew, &m.RecordsOut{
-			Order: res1,
-			Asset: res1.Asset.Name,
+			Order:     res1,
+			Asset:     res1.Asset.Name,
+			CybexName: res1.App.CybAccount,
+			OutAddr:   addr,
+			OutHash:   res1.JPOrder.Hash,
+			CybHash:   res1.CybOrder.Hash,
 		})
 	}
 	return resnew, err
