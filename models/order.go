@@ -50,19 +50,22 @@ type GORMMove struct {
 type RecordsOut struct {
 	*Order
 	*GORMMove
-	CybexName  string     `json:"cybexName"`
-	OutAddr    string     `json:"outAddr"`
-	Confirms   string     `json:"confirms"`
-	JPOrderID  utype.Omit `json:"jPOrderID,omitempty"`
-	CybOrderID utype.Omit `json:"cybOrderID,omitempty"`
-	AssetID    utype.Omit `json:"assetID,omitempty"`
-	AppID      utype.Omit `json:"appID,omitempty"`
-	Asset      string     `json:"asset"`
-	JPOrder    utype.Omit `json:"jpOrder,omitempty"`
-	CybOrder   utype.Omit `json:"cybOrder,omitempty"`
-	App        utype.Omit `json:"app,omitempty"`
-	OutHash    string     `json:"outHash"`
-	CybHash    string     `json:"cybHash"`
+	CybexName   string     `json:"cybexName"`
+	OutAddr     string     `json:"outAddr"`
+	Confirms    string     `json:"confirms"`
+	JPOrderID   utype.Omit `json:"jPOrderID,omitempty"`
+	CybOrderID  utype.Omit `json:"cybOrderID,omitempty"`
+	AssetID     utype.Omit `json:"assetID,omitempty"`
+	AppID       utype.Omit `json:"appID,omitempty"`
+	Asset       string     `json:"asset"`
+	JPOrder     utype.Omit `json:"jpOrder,omitempty"`
+	CybOrder    utype.Omit `json:"cybOrder,omitempty"`
+	App         utype.Omit `json:"app,omitempty"`
+	OutHash     string     `json:"outHash"`
+	CybHash     string     `json:"cybHash"`
+	TotalAmount string     `json:"totalAmount"` // totalAmount = amount + fee
+	Amount      string     `json:"amount"`      //
+	Fee         string     `json:"fee"`
 }
 
 //Order ...

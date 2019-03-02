@@ -147,12 +147,15 @@ func (repo *Repo) QueryRecord(a *m.RecordsQuery) (resnew []*m.RecordsOut, err er
 			addr = res1.CybOrder.WithdrawAddr
 		}
 		resnew = append(resnew, &m.RecordsOut{
-			Order:     res1,
-			Asset:     res1.Asset.Name,
-			CybexName: res1.App.CybAccount,
-			OutAddr:   addr,
-			OutHash:   res1.JPOrder.Hash,
-			CybHash:   res1.CybOrder.Hash,
+			Order:       res1,
+			Asset:       res1.Asset.Name,
+			CybexName:   res1.App.CybAccount,
+			OutAddr:     addr,
+			OutHash:     res1.JPOrder.Hash,
+			CybHash:     res1.CybOrder.Hash,
+			TotalAmount: res1.TotalAmount.Text('f'),
+			Amount:      res1.Amount.Text('f'),
+			Fee:         res1.Fee.Text('f'),
 		})
 	}
 	return resnew, err
