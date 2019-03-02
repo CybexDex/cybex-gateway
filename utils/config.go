@@ -14,7 +14,7 @@ func InitConfig() {
 	if inited {
 		return
 	}
-	env := os.Getenv("GATEWAY_ENV")
+	env := os.Getenv("env")
 	if len(env) == 0 {
 		env = "dev"
 	}
