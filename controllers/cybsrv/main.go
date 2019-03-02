@@ -78,7 +78,7 @@ func handleOrders(order1 *m.CybOrder) {
 		})
 		return
 	}
-	amount, _ := order1.Amount.Float64()
+	amount := order1.Amount.Text('f')
 	if order1.From == "" {
 		order1.From = gatewayAccount.Name
 	}
