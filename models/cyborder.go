@@ -156,6 +156,9 @@ func (a *CybOrder) computeOutLocked(tx *gorm.DB, oper string) error {
 // CreateOrder ...
 // create ORDER, order.TotalAmount = cyborder.TotalAmount, order.Fee = cyborder.Fee, order.Amount = cyborder.Amount, case 1 & 4
 func (a *CybOrder) CreateOrder(tx *gorm.DB) error {
+	if a.Type != CybOrderTypeWithdraw {
+		return nil
+	}
 	// save order
 	order := new(Order)
 	order.TotalAmount = a.TotalAmount

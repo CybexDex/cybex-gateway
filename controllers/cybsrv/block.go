@@ -145,10 +145,17 @@ func readBlock(cnum int) (orders []*m.CybOrder) {
 						orders = append(orders, order)
 						continue
 					}
+					extensions := rawop.Get("extensions").Array()
+					if len(extensions) > 0 {
+						utils.Infoln("UR extensions", rawop)
+						order.Type = m.CybOrderTypeUR
+						orders = append(orders, order)
+						continue
+					}
 					memostr := rawop.Get("memo").String()
 					if memostr == "" {
 						// UR
-						utils.Infoln("UR", rawop)
+						utils.Infoln("UR memo nil", rawop)
 						order.Type = m.CybOrderTypeUR
 						orders = append(orders, order)
 						continue
