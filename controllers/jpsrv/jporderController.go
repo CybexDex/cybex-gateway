@@ -276,6 +276,9 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 
 		updateEntity.Confirmations = result.Confirmations
 		updateEntity.Resend = result.SendAgain
+		if jporderEntity.Hash == "" {
+			jporderEntity.Hash = result.Hash
+		}
 		jporderEntity.Status = result.State
 		err = jporderRepo.UpdateColumns(jporderEntity.ID, updateEntity)
 		if err != nil {
