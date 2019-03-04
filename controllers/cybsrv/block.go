@@ -282,8 +282,10 @@ func handleBlockNum(cnum int) {
 	for _, order := range cyborders {
 		if order.Type != m.CybOrderTypeDeposit {
 			saveCYBOrder(order)
+			utils.Infoln("save cyborder", order.ID, *order)
 		} else {
 			updateCYBOrder(order)
+			utils.Infoln("update cyborder", order.ID, *order)
 		}
 	}
 }
@@ -298,6 +300,9 @@ func updateCYBOrder(order *m.CybOrder) error {
 	if len(os) > 0 {
 		o := os[0]
 		o.Status = m.CybOrderStatusDone
+		if o.Hash == "" {
+			o.Hash = order.Hash
+		}
 		err := o.Save()
 		return err
 	}
