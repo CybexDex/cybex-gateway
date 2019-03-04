@@ -383,3 +383,41 @@ func Records(w http.ResponseWriter, r *http.Request) {
 	}
 	u.Respond(w, msg, 200)
 }
+
+// AccountAssets ...
+func AccountAssets(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	user := vars["user"]
+	r.ParseForm()
+	decoder := schema.NewDecoder()
+	recordQuery := &m.RecordsQuery{}
+	err := decoder.Decode(recordQuery, r.Form)
+	if err != nil {
+		u.Errorf("decoder.Decode recordQuery %v", err)
+		u.Respond(w, u.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
+	recordQuery.FundType = strings.ToUpper(recordQuery.FundType)
+	//
+	app1, err := rep.App.FindAppOrCreate(user)
+	if err != nil {
+		u.Errorf("rep.App.FindAppOrCreate %v", err)
+		u.Respond(w, u.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
+	recordQuery.AppID = app1.ID
+	res, err := rep.Order.QueryRecordAssets(recordQuery)
+	if err != nil {
+		u.Errorf("rep.App.QueryRecord %v", err)
+		u.Respond(w, u.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
+	msg := map[string]interface{}{
+		"code": 200, // 200:ok  400:fail
+		"data": map[string]interface{}{
+			"total":   len(res),
+			"records": res,
+		},
+	}
+	u.Respond(w, msg, 200)
+}

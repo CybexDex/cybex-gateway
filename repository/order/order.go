@@ -2,6 +2,7 @@ package order
 
 import (
 	"database/sql"
+	"fmt"
 
 	m "coding.net/bobxuyang/cy-gateway-BN/models"
 	r "coding.net/bobxuyang/cy-gateway-BN/repository"
@@ -21,6 +22,7 @@ type Repository interface {
 	UpdateAll(where *m.Order, update *m.Order) *gorm.DB
 	HoldingOne() *m.Order
 	QueryRecord(a *m.RecordsQuery) (out []*m.RecordsOut, err error)
+	QueryRecordAssets(a *m.RecordsQuery) (out []*RecordAssets, err error)
 }
 
 //Repo ...
@@ -184,4 +186,17 @@ func (repo *Repo) QueryRecord(a *m.RecordsQuery) (resnew []*m.RecordsOut, err er
 		resnew = append(resnew, reout)
 	}
 	return resnew, err
+}
+
+// RecordAssets ...
+type RecordAssets struct {
+	Name  string `json:"asset"`
+	Total int64  `json:"total"`
+}
+
+// QueryRecordAssets ...
+func (repo *Repo) QueryRecordAssets(a *m.RecordsQuery) (out []*RecordAssets, err error) {
+	s := fmt.Sprintf(`select assets.name,sum(1) as total from orders,assets where orders.asset_id = assets.id and  orders.app_id =%d group by assets.name;`, a.AppID)
+	err = repo.DB.Raw(s).Scan(&out).Error
+	return out, err
 }

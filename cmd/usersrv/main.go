@@ -104,6 +104,8 @@ func main() {
 	authrouter.HandleFunc("/verify_address/{asset}/{address}", usersrv.VerifyAddress).Methods("GET")
 	// deposit record
 	authrouter.HandleFunc("/records/{user}", usersrv.Records).Methods("GET")
+	// asset record
+	authrouter.HandleFunc("/account_assets/{user}", usersrv.AccountAssets).Methods("GET")
 	listenAddr := viper.GetString("usersrv.listen_addr")
 	utils.Infof("%s", listenAddr)
 	if len(listenAddr) == 0 {
