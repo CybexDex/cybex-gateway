@@ -2,6 +2,7 @@ package usersrv
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -165,6 +166,10 @@ type JPData struct {
 		Type    string `json:"type"`
 	} `json:"data"`
 }
+type JPData2 struct {
+	Status bool `json:"status"`
+	Data   interface{}
+}
 
 func createCybexUserAddress(addrQ *m.Address) (*m.Address, error) {
 	asset, err := rep.Asset.GetByID(addrQ.AssetID)
@@ -191,22 +196,22 @@ func createCybexUserAddress(addrQ *m.Address) (*m.Address, error) {
 	}
 	return addrQ, nil
 }
-func verifyAssetAddress(asset string, address string) (bool, error) {
+func verifyAssetAddress(asset string, address string) (*JPData2, error) {
 	// TODO: to replace the real method
-	url := viper.GetString("usersrv.jpsrv_url") + "/api/address/new?type=" + asset + address
+	url := fmt.Sprintf("%s/api/address/verify?type=%s&addr=%s", viper.GetString("usersrv.jpsrv_url"), asset, address)
 	resp, err := http.Get(url)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 	_bodyBytes, err := ioutil.ReadAll(resp.Body)
 	// TODO: to replace the real struct
-	resObj := &JPData{}
+	resObj := &JPData2{}
 	err = json.Unmarshal(_bodyBytes, resObj)
 	if err != nil {
 		u.Errorf("json.Unmarshal %v", err)
-		return false, err
+		return nil, err
 	}
-	return true, err
+	return resObj, err
 }
 func findAssetByName(name string) (*m.Asset, error) {
 	return rep.Asset.GetByName(name)
@@ -330,10 +335,7 @@ func VerifyAddress(w http.ResponseWriter, r *http.Request) {
 	}
 	msg := map[string]interface{}{
 		"code": 200, // 200:ok  400:fail
-		"data": map[string]interface{}{
-			"valid": valid,
-			"asset": asset,
-		},
+		"data": valid.Data,
 	}
 	u.Respond(w, msg, 200)
 }
