@@ -49,6 +49,13 @@ func getlastBlock() (int, *m.Easy, error) {
 	}
 	// create it
 	blockBegin := viper.GetInt("cybsrv.blockBegin")
+	if blockBegin == -1 {
+		head, err := getHeadNum()
+		if err != nil {
+			return 0, nil, err
+		}
+		blockBegin = head
+	}
 	bstr := strconv.Itoa(blockBegin)
 	newLast := &m.Easy{
 		Key:   "cybLastBlockNum",

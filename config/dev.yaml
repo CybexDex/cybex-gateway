@@ -26,7 +26,7 @@ cybsrv:
   log_dir: ""
   log_level: "DEBUG"
   node: "wss://hangzhou.51nebula.com/"
-  blockBegin: 1848952
+  blockBegin: 1848952  # begin block ,if it is -1 ,will use head block
   gatewayAccount: "yangyutest1"
   passwordType: "config"
   gatewayPassword: "P5HuDhKrZsxeB3LPio8c8Kv3XNhh4cqnWj8dwnDTYordR"
