@@ -282,10 +282,8 @@ func handleBlockNum(cnum int) {
 	for _, order := range cyborders {
 		if order.Type != m.CybOrderTypeDeposit {
 			saveCYBOrder(order)
-			utils.Infoln("save cyborder", order.ID, *order)
 		} else {
 			updateCYBOrder(order)
-			utils.Infoln("update cyborder", order.ID, *order)
 		}
 	}
 }
@@ -296,14 +294,19 @@ func updateCYBOrder(order *m.CybOrder) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(os)
 	if len(os) > 0 {
 		o := os[0]
-		o.Status = m.CybOrderStatusDone
+		updateO := &m.CybOrder{}
+		updateO.Status = m.CybOrderStatusDone
 		if o.Hash == "" {
-			o.Hash = order.Hash
+			updateO.Hash = order.Hash
 		}
-		err := o.Save()
+		err := o.UpdateColumns(updateO)
+		if err != nil {
+			utils.Errorln("o.Save", err)
+			return err
+		}
+		utils.Infoln("update cyborder", o.ID, o.Hash, *o)
 		return err
 	}
 	utils.Warningln("updateerr,no order with this sig", order.Sig, order.Hash)
@@ -319,6 +322,7 @@ func saveCYBOrder(order *m.CybOrder) error {
 		}
 	}()
 	tx.Save(order)
+	utils.Infoln("save cyborder", order.ID, *order)
 	err := order.CreateOrder(tx)
 	return err
 }
