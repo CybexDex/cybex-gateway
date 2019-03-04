@@ -30,6 +30,7 @@ func handleOrders(order1 *m.Order) {
 	tx := m.GetDB().Begin()
 	defer func() {
 		tx.Save(order1)
+		utils.Infoln("handle order", order1.ID, *order1)
 		tx.Commit()
 		if r := recover(); r != nil {
 			utils.Errorf("%v, stack: %s", r, debug.Stack())
