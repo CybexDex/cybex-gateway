@@ -36,7 +36,7 @@ func main() {
 	logDir := viper.GetString("ordersrv.log_dir")
 	logLevel := viper.GetString("ordersrv.log_level")
 	// init logger
-	utils.InitLog(logDir, logLevel)
+	utils.InitLog(logDir, logLevel, "[ordersrv]")
 	utils.Infof("version: %s_%s_%s, build time: %s", version, branch, githash, buildtime)
 
 	// init db

@@ -48,7 +48,7 @@ func main() {
 	// init loggger
 	logDir := viper.GetString("jpsrv.log_dir")
 	logLevel := viper.GetString("jpsrv.log_level")
-	utils.InitLog(logDir, logLevel)
+	utils.InitLog(logDir, logLevel, "[jpsrv]")
 	utils.Infof("version: %s_%s_%s, build time: %s", version, branch, githash, buildtime)
 
 	// init db

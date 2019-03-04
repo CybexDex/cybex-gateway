@@ -31,12 +31,12 @@ func init() {
 }
 
 // InitLog init logger with log dir and log level
-func InitLog(logDir, logLevel string) {
+func InitLog(logDir, logLevel string, prefix string) {
 	if len(logLevel) == 0 {
 		logLevel = "DEBUG"
 	}
 	if len(logDir) == 0 {
-		logger = NewLogger(os.Stderr, "", log.LstdFlags|log.Lshortfile, logLevel)
+		logger = NewLogger(os.Stderr, prefix, log.LstdFlags|log.Lshortfile, logLevel)
 		logger.SetCallDepth(callDepth)
 		return
 	}

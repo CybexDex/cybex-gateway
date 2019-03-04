@@ -71,7 +71,7 @@ func main() {
 	// init loggger
 	logDir := viper.GetString("usersrv.log_dir")
 	logLevel := viper.GetString("usersrv.log_level")
-	utils.InitLog(logDir, logLevel)
+	utils.InitLog(logDir, logLevel, "[usersrv]")
 	utils.Infof("version: %s_%s_%s, build time: %s", version, branch, githash, buildtime)
 
 	// init db

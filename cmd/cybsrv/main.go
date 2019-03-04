@@ -26,7 +26,7 @@ func main() {
 	logDir := viper.GetString("cybsrv.log_dir")
 	logLevel := viper.GetString("cybsrv.log_level")
 	// init logger
-	utils.InitLog(logDir, logLevel)
+	utils.InitLog(logDir, logLevel, "[cybsrv]")
 	utils.Infof("version: %s_%s_%s, build time: %s", version, branch, githash, buildtime)
 	// cybsrv.Test()
 	go cybsrv.BlockRead()
