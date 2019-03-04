@@ -11,7 +11,6 @@ import (
 )
 
 var api apim.BitsharesAPI
-var gatewayPassword string
 
 func init() {
 

@@ -22,21 +22,16 @@ adminsrv:
   listen_addr: ":8082"
   log_dir: ""
   log_level: "DEBUG"
-
-cybsrv_pro:
-  node: "wss://shanghai.51nebula.com/"
-  blockBegin: 10308726
-  gatewayAccount: "yangyu123"
-  gatewayPassword: "P5KNfAPu82LyAuJeD7NwgggWJvqZ9UREUpXQCwCNdGp8z"
-  coldAccount: "yangyu2"
-  gatewayPrefix: "withdraw:CybexGateway"
 cybsrv:
   log_dir: ""
   log_level: "DEBUG"
   node: "wss://hangzhou.51nebula.com/"
   blockBegin: 1848952
   gatewayAccount: "yangyutest1"
+  passwordType: "config"
   gatewayPassword: "P5HuDhKrZsxeB3LPio8c8Kv3XNhh4cqnWj8dwnDTYordR"
+  seedServer: "http://127.0.0.1:8899"
+  seedCMDKEY: "0efee2b9b23f5337fd4b39621e55e0c12f6d7430bde05026db6d19d4b6853de0"
   coldAccount: "yangyutest12"
   gatewayPrefix: "withdraw:CybexGatewayDev"
 ordersrv:

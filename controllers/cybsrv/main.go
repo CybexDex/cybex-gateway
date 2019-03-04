@@ -48,7 +48,15 @@ func init() {
 	if err := api.Connect(); err != nil {
 		log.Fatal(errors.Annotate(err, "OnConnect"))
 	}
-	gatewayPassword = viper.GetString("cybsrv.gatewayPassword")
+	passwordType := viper.GetString("cybsrv.passwordType")
+	if passwordType == "seed" {
+		gatewayPassword = utils.GetSeedData("gatewayPassword")
+	} else {
+		gatewayPassword = viper.GetString("cybsrv.gatewayPassword")
+	}
+	if gatewayPassword == "" {
+		log.Fatal("gatewaypassword is None")
+	}
 	gatewayAccountStr := viper.GetString("cybsrv.gatewayAccount")
 	gatewayAccount, err = api.GetAccountByName(gatewayAccountStr)
 	if err != nil {
