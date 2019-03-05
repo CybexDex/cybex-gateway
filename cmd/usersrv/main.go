@@ -94,6 +94,8 @@ func main() {
 	}).Methods("GET")
 
 	router.HandleFunc("/login", usersrv.Login).Methods("POST")
+	router.HandleFunc("/api/orders", usersrv.FetchOrders).Methods("POST")
+	router.HandleFunc("/api/cyb_orders", usersrv.FetchCYBOrders).Methods("POST")
 	// the supported assets
 	authrouter.HandleFunc("/asset", usersrv.AllAsset).Methods("GET")
 	// get deposit address

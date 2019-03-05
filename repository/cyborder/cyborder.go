@@ -1,6 +1,8 @@
 package cyborder
 
 import (
+	"fmt"
+
 	m "coding.net/bobxuyang/cy-gateway-BN/models"
 	r "coding.net/bobxuyang/cy-gateway-BN/repository"
 	"github.com/jinzhu/gorm"
@@ -17,6 +19,7 @@ type Repository interface {
 	MDB() *gorm.DB
 	HoldingOne() *m.CybOrder
 	UpdateAll(where *m.CybOrder, update *m.CybOrder) *gorm.DB
+	FetchOrders(status string, fromnow string, offset int, limit int) (out []*m.CybOrder, err error)
 }
 
 //Repo ...
@@ -114,4 +117,16 @@ func (repo *Repo) Create(a *m.CybOrder) (err error) {
 	}
 
 	return nil
+}
+
+//FetchOrders ...
+func (repo *Repo) FetchOrders(status string, fromnow string, offset int, limit int) (out []*m.CybOrder, err error) {
+	var s string
+	if fromnow == "" {
+		s = fmt.Sprintf(`select * from cyb_orders where status = '%s'  order by id desc offset %d limit %d;`, status, offset, limit)
+	} else {
+		s = fmt.Sprintf(`select * from cyb_orders where status = '%s' and updated_at + interval '%s' < now()  order by id desc offset %d limit %d;`, status, fromnow, offset, limit)
+	}
+	err = repo.DB.Raw(s).Scan(&out).Error
+	return out, err
 }

@@ -423,3 +423,68 @@ func AccountAssets(w http.ResponseWriter, r *http.Request) {
 	}
 	u.Respond(w, msg, 200)
 }
+
+type fetchOrdersQuery struct {
+	Status     string `json:"status"`
+	FromUpdate string `json:"fromUpdate"`
+	Offset     int    `json:"offset"`
+	Limit      int    `json:"limit"`
+}
+type fetchOrdersDefault struct {
+	Offset int
+	Limit  int
+}
+
+// FetchOrders ...
+func FetchOrders(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	orderQuery := &fetchOrdersQuery{}
+	err := json.NewDecoder(r.Body).Decode(orderQuery)
+	orderQuery.Status = strings.ToUpper(orderQuery.Status)
+	if orderQuery.Limit == 0 {
+		orderQuery.Limit = 20
+	}
+	if err != nil {
+		u.Errorf("decoder.Decode FetchOrders %v", err)
+		u.Respond(w, u.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
+	fmt.Println(orderQuery)
+	fmt.Println(orderQuery.Status, orderQuery.FromUpdate, orderQuery.Offset, orderQuery.Limit)
+	res, err := rep.Order.FetchOrders(orderQuery.Status, orderQuery.FromUpdate, orderQuery.Offset, orderQuery.Limit)
+	msg := map[string]interface{}{
+		"code": 200, // 200:ok  400:fail
+		"data": map[string]interface{}{
+			"total":   len(res),
+			"records": res,
+		},
+	}
+	u.Respond(w, msg, 200)
+}
+
+// FetchCYBOrders ...
+func FetchCYBOrders(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	orderQuery := &fetchOrdersQuery{}
+	err := json.NewDecoder(r.Body).Decode(orderQuery)
+	orderQuery.Status = strings.ToUpper(orderQuery.Status)
+	if orderQuery.Limit == 0 {
+		orderQuery.Limit = 20
+	}
+	if err != nil {
+		u.Errorf("decoder.Decode FetchOrders %v", err)
+		u.Respond(w, u.Message(false, "Internal server error"), http.StatusInternalServerError)
+		return
+	}
+	fmt.Println(orderQuery)
+	fmt.Println(orderQuery.Status, orderQuery.FromUpdate, orderQuery.Offset, orderQuery.Limit)
+	res, err := rep.CybOrder.FetchOrders(orderQuery.Status, orderQuery.FromUpdate, orderQuery.Offset, orderQuery.Limit)
+	msg := map[string]interface{}{
+		"code": 200, // 200:ok  400:fail
+		"data": map[string]interface{}{
+			"total":   len(res),
+			"records": res,
+		},
+	}
+	u.Respond(w, msg, 200)
+}

@@ -23,6 +23,7 @@ type Repository interface {
 	HoldingOne() *m.Order
 	QueryRecord(a *m.RecordsQuery) (out []*m.RecordsOut, err error)
 	QueryRecordAssets(a *m.RecordsQuery) (out []*RecordAssets, err error)
+	FetchOrders(status string, fromnow string, offset int, limit int) (out []*m.Order, err error)
 }
 
 //Repo ...
@@ -88,6 +89,18 @@ func (repo *Repo) FetchWith(o *m.Order) (res []*m.Order, err error) {
 	}
 
 	return res, err
+}
+
+//FetchOrders ...
+func (repo *Repo) FetchOrders(status string, fromnow string, offset int, limit int) (out []*m.Order, err error) {
+	var s string
+	if fromnow == "" {
+		s = fmt.Sprintf(`select * from orders where status = '%s'  order by id desc offset %d limit %d;`, status, offset, limit)
+	} else {
+		s = fmt.Sprintf(`select * from orders where status = '%s' and updated_at + interval '%s' < now()  order by id desc offset %d limit %d;`, status, fromnow, offset, limit)
+	}
+	err = repo.DB.Raw(s).Scan(&out).Error
+	return out, err
 }
 
 //GetByID ...

@@ -35,9 +35,9 @@ const (
 type CybOrder struct {
 	gorm.Model
 
-	AssetID uint  `gorm:"not null" json:"assetID"` // 1 to n
-	AppID   uint  `gorm:"not null" json:"appID"`   // 1 to n
-	Asset   Asset `gorm:"ForeignKey:AssetId" json:"asset"`
+	AssetID uint   `gorm:"not null" json:"assetID"` // 1 to n
+	AppID   uint   `gorm:"not null" json:"appID"`   // 1 to n
+	Asset   *Asset `gorm:"ForeignKey:AssetId" json:"asset"`
 	// Accounting      Accounting `gorm:"foreignkey:AccountingRefer" json:"accounting"` // 1 to 1
 	// AccountingRefer uint       `json:"accountingRefer"`
 
