@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"git.coding.net/bobxuyang/jadepool-seed/utils"
 	"github.com/spf13/viper"
 )
 
@@ -30,7 +29,7 @@ func GetSeedData(name string) string {
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	bodyString := string(body)
-	result := utils.KeyDecrypt(utils.CommKey, bodyString)
+	result := KeyDecrypt(cmdkey, bodyString)
 	return result
 }
 
