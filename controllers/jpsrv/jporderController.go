@@ -211,6 +211,9 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 		jporderEntity.Index = n
 		jporderEntity.JadepoolOrderID = uint(jpOrderID)
 		jporderEntity.Status = result.State
+		if jporderEntity.Status != model.JPOrderStatusDone && jporderEntity.Status != model.JPOrderStatusFailed {
+			jporderEntity.Status = model.JPOrderStatusPending
+		}
 		jporderEntity.Type = result.BizType
 		jporderEntity.AssetID = asset.ID
 		jporderEntity.AppID = appID
@@ -273,13 +276,16 @@ func NotiOrder(w http.ResponseWriter, r *http.Request) {
 		if result.State != model.JPOrderStatusInit {
 			updateEntity.Status = result.State
 		}
+		if updateEntity.Status != model.JPOrderStatusDone && updateEntity.Status != model.JPOrderStatusFailed {
+			updateEntity.Status = model.JPOrderStatusPending
+		}
 
 		updateEntity.Confirmations = result.Confirmations
 		updateEntity.Resend = result.SendAgain
 		if jporderEntity.Hash == "" {
 			jporderEntity.Hash = result.Hash
 		}
-		jporderEntity.Status = result.State
+		jporderEntity.Status = updateEntity.Status
 		err = jporderRepo.UpdateColumns(jporderEntity.ID, updateEntity)
 		if err != nil {
 			tx.Rollback()
