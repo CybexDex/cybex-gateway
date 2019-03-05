@@ -94,12 +94,24 @@ func (repo *Repo) FetchWith(o *m.Order) (res []*m.Order, err error) {
 //FetchOrders ...
 func (repo *Repo) FetchOrders(status string, fromnow string, offset int, limit int) (out []*m.Order, err error) {
 	var s string
+	if status != m.OrderStatusDone &&
+		status != m.OrderStatusFailed &&
+		status != m.OrderStatusInit &&
+		status != m.OrderStatusPreInit &&
+		status != m.OrderStatusProcessing &&
+		status != m.OrderStatusTerminated &&
+		status != m.OrderStatusWaiting {
+		return nil, fmt.Errorf("status is invalid")
+	}
+	if len(fromnow) > 5 {
+		return nil, fmt.Errorf("fromnow is invalid")
+	}
 	if fromnow == "" {
 		s = fmt.Sprintf(`select * from orders where status = '%s'  order by id desc offset %d limit %d;`, status, offset, limit)
 	} else {
 		s = fmt.Sprintf(`select * from orders where status = '%s' and updated_at + interval '%s' < now()  order by id desc offset %d limit %d;`, status, fromnow, offset, limit)
 	}
-	err = repo.DB.Raw(s).Scan(&out).Error
+	err = repo.DB.Debug().Raw(s).Scan(&out).Error
 	return out, err
 }
 
