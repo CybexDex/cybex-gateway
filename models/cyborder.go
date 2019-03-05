@@ -67,6 +67,17 @@ func (a *CybOrder) UpdateColumns(b *CybOrder) error {
 	return GetDB().Model(CybOrder{}).Where("ID=?", a.ID).UpdateColumns(b).Error
 }
 
+//SendFail ...
+func (a *CybOrder) SendFail(resend bool, tx *gorm.DB) (err error) {
+	err = tx.Model(CybOrder{}).Where("ID=?", a.ID).UpdateColumns(&CybOrder{
+		Status: CybOrderStatusFailed,
+	}).Error
+	if err != nil {
+		return err
+	}
+	return err
+}
+
 //Create ...
 func (a *CybOrder) Create() (err error) {
 	return GetDB().Create(&a).Error

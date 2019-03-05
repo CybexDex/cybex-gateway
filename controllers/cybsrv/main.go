@@ -3,6 +3,7 @@ package cybsrv
 import (
 	"fmt"
 	"log"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -78,9 +79,18 @@ func findOrders() (*m.CybOrder, error) {
 	return rep.CybOrder.HoldingOne(), nil
 }
 func handleOrders(order1 *m.CybOrder) {
+	tx := m.GetDB().Begin()
+	defer func() {
+		tx.Commit()
+		if r := recover(); r != nil {
+			utils.Errorf("%v, stack: %s", r, debug.Stack())
+			tx.Rollback()
+		}
+	}()
 	var err error
 	asset, err := rep.Asset.GetByID(order1.AssetID)
 	if err != nil {
+		utils.Errorln("handleOrders rep.Asset.GetByID CYBOrder", order1.ID, err)
 		order1.UpdateColumns(&m.CybOrder{
 			Status: m.CybOrderStatusFailed,
 		})
@@ -90,18 +100,16 @@ func handleOrders(order1 *m.CybOrder) {
 	if order1.From == "" {
 		order1.From = gatewayAccount.Name
 	}
-	tx, err := api.Send(order1.From, order1.To, amount, asset.CybID, "", gatewayPassword)
+	stx, err := api.Send(order1.From, order1.To, amount, asset.CybID, "", gatewayPassword)
 	if err != nil {
 		if strings.Contains(err.Error(), "skip_transaction_dupe_check") {
-			order1.UpdateColumns(&m.CybOrder{
-				Status: m.CybOrderStatusFailed,
-			})
+			order1.SendFail(true, tx)
 		} else {
-			utils.Errorln("api.Send", err)
+			utils.Errorln("handleOrders api.Send CYBOrder", order1.ID, err)
 		}
 	} else {
-		utils.Infoln("sendorder tx is ", *tx)
-		signed := tx.Signatures[0].String()
+		utils.Infoln("sendorder tx is ", *stx)
+		signed := stx.Signatures[0].String()
 		order1.UpdateColumns(&m.CybOrder{
 			Status: m.CybOrderStatusPending,
 			Sig:    signed,
