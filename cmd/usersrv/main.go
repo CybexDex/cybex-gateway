@@ -86,7 +86,7 @@ func main() {
 	// route
 	router := mux.NewRouter()
 	router.Use(app.NewLoggingMiddle(utils.GetLogger()))
-	authrouter := router.PathPrefix("/").Subrouter()
+	authrouter := router.PathPrefix("/v1").Subrouter()
 	// authrouter.Use(authMiddleware)
 
 	router.HandleFunc("/api/test", func(w http.ResponseWriter, r *http.Request) {
@@ -97,17 +97,17 @@ func main() {
 	router.HandleFunc("/api/orders", usersrv.FetchOrders).Methods("POST")
 	router.HandleFunc("/api/cyb_orders", usersrv.FetchCYBOrders).Methods("POST")
 	// the supported assets
-	authrouter.HandleFunc("/asset", usersrv.AllAsset).Methods("GET")
+	authrouter.HandleFunc("/assets", usersrv.AllAsset).Methods("GET")
 	// get deposit address
-	authrouter.HandleFunc("/deposit_address/{user}/{asset}", usersrv.DepositAddress).Methods("GET")
+	authrouter.HandleFunc("/users/{user}/assets/{asset}/address", usersrv.DepositAddress).Methods("GET")
 	// get new deposit address
-	authrouter.HandleFunc("/new_deposit_address/{user}/{asset}", usersrv.NewDepositAddress).Methods("GET")
+	authrouter.HandleFunc("/users/{user}/assets/{asset}/address/new", usersrv.NewDepositAddress).Methods("GET")
 	// verify_address
-	authrouter.HandleFunc("/verify_address/{asset}/{address}", usersrv.VerifyAddress).Methods("GET")
+	authrouter.HandleFunc("/assets/{asset}/address/{address}/verify", usersrv.VerifyAddress).Methods("GET")
 	// deposit record
-	authrouter.HandleFunc("/records/{user}", usersrv.Records).Methods("GET")
+	authrouter.HandleFunc("/users/{user}/records", usersrv.Records).Methods("GET")
 	// asset record
-	authrouter.HandleFunc("/account_assets/{user}", usersrv.AccountAssets).Methods("GET")
+	authrouter.HandleFunc("/users/{user}/assets", usersrv.AccountAssets).Methods("GET")
 	listenAddr := viper.GetString("usersrv.listen_addr")
 	utils.Infof("%s", listenAddr)
 	if len(listenAddr) == 0 {
