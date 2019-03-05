@@ -111,7 +111,7 @@ func (repo *Repo) FetchOrders(status string, fromnow string, offset int, limit i
 	} else {
 		s = fmt.Sprintf(`select * from orders where status = '%s' and updated_at + interval '%s' < now()  order by id desc offset %d limit %d;`, status, fromnow, offset, limit)
 	}
-	err = repo.DB.Debug().Raw(s).Scan(&out).Error
+	err = repo.DB.Raw(s).Scan(&out).Error
 	return out, err
 }
 
