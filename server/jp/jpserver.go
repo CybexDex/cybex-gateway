@@ -3,11 +3,11 @@ package jp
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 
 	"bitbucket.org/woyoutlz/bbb-gateway/controller/jp"
 	"bitbucket.org/woyoutlz/bbb-gateway/types"
 	"bitbucket.org/woyoutlz/bbb-gateway/utils/eventlog"
+	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
@@ -26,7 +26,7 @@ func StartServer() {
 		reqBody := new(types.JPEvent)
 		err := json.Unmarshal([]byte(str), reqBody)
 		if err != nil {
-			fmt.Println("Error", err)
+			log.Errorln("Error", err)
 			c.JSON(400, gin.H{
 				"message": "Unmarshal error",
 			})
@@ -35,7 +35,7 @@ func StartServer() {
 			// 提现订单
 			err = jp.HandleWithdraw(reqBody.Result)
 			if err != nil {
-				fmt.Println("Error", err)
+				log.Errorln("Error", err)
 				c.JSON(400, gin.H{
 					"message": "HandleWithdraw Error",
 				})
@@ -45,7 +45,7 @@ func StartServer() {
 			// 充值订单
 			err = jp.HandleDeposit(reqBody.Result)
 			if err != nil {
-				fmt.Println("Error", err)
+				log.Errorln("Error", err)
 				c.JSON(400, gin.H{
 					"message": "HandleDeposit Error",
 				})
@@ -57,9 +57,9 @@ func StartServer() {
 		})
 	})
 	port := viper.GetString("jpserver.port")
-	fmt.Println("jpserver start at", port)
+	log.Infoln("jpserver start at", port)
 	err := r.Run(port) // listen and serve on 0.0.0.0:8080
 	if err != nil {
-		fmt.Println(err)
+		log.Errorln(err)
 	}
 }

@@ -1,8 +1,7 @@
 package user
 
 import (
-	"fmt"
-
+	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
@@ -17,6 +16,6 @@ func StartServer() {
 		})
 	})
 	port := viper.GetString("userserver.port")
-	fmt.Println("userserver start at", port)
+	log.Infoln("userserver start at", port)
 	r.Run(port) // listen and serve on 0.0.0.0:8080
 }

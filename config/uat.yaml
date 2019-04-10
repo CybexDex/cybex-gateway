@@ -4,3 +4,6 @@ jpserver:
   bnhost: "" 
 userserver:
   port: ":8181"
+log:
+  log_dir: ""
+  log_level: "DEBUG"
