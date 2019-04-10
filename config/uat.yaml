@@ -1,0 +1,6 @@
+jpserver:
+  port: ":8081"
+  ecc: false
+  bnhost: "" 
+userserver:
+  port: ":8181"
