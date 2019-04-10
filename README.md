@@ -68,4 +68,8 @@ config:
 请求日志格式
 BN请求记录
 ecc
+jp_withdraw_eos
+jp_deposit_eos
+jp_deposit_eth
+
 

@@ -1,8 +1,8 @@
 package eventlog
 
-import "fmt"
+import "bitbucket.org/woyoutlz/bbb-gateway/utils/log"
 
-//Log ...
+//Log ... TODO save to db
 func Log(name string, event string) {
-	fmt.Println(name, event)
+	log.Infoln(name, event)
 }
