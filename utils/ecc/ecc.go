@@ -62,6 +62,16 @@ func SignECCData(prikey string, data interface{}) (*ECCSig, error) {
 	}
 	return _sig, nil
 }
+func TestECCSign() {
+	pubkey := "04ace32532c90652e1bae916248e427a7ab10aeeea1067949669a3f4da10965ef90d7297f538f23006a31f94fdcfaed9e8dd38c85ba7e285f727430332925aefe5"
+	pubKeyBytes, err := hex.DecodeString(pubkey)
+	if err != nil {
+
+	}
+	fmt.Println(42, pubkey)
+	pubKey, err := btcec.ParsePubKey(pubKeyBytes, btcec.S256())
+	fmt.Println(1, pubKey, err)
+}
 
 // VerifyECCSign ...
 func VerifyECCSign(data interface{}, sign *ECCSig, pubkey string) (bool, error) {
@@ -76,7 +86,6 @@ func VerifyECCSign(data interface{}, sign *ECCSig, pubkey string) (bool, error) 
 	if err != nil {
 		return false, err
 	}
-
 	pubKeyBytes, err := hex.DecodeString(pubkey)
 	if err != nil {
 		return false, err
@@ -85,7 +94,6 @@ func VerifyECCSign(data interface{}, sign *ECCSig, pubkey string) (bool, error) 
 	if err != nil {
 		return false, err
 	}
-
 	msgStr := BuildMsg(obj)
 	sha3Hash := sha3.NewLegacyKeccak256()
 	_, err = sha3Hash.Write([]byte(msgStr))

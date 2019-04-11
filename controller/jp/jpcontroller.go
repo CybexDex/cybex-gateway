@@ -6,10 +6,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 
+	"github.com/shopspring/decimal"
 	"github.com/spf13/viper"
 
+	"bitbucket.org/woyoutlz/bbb-gateway/model"
 	"bitbucket.org/woyoutlz/bbb-gateway/types"
 	"bitbucket.org/woyoutlz/bbb-gateway/utils"
 	"bitbucket.org/woyoutlz/bbb-gateway/utils/ecc"
@@ -32,21 +35,73 @@ func HandleWithdraw(result types.JPOrderResult) error {
 // HandleDeposit ...
 func HandleDeposit(result types.JPOrderResult) error {
 	// 事务
-	// 新建充值订单
-	// 充值地址
-	// jporder := &m.JPOrder{
-	// 	Asset:      result.Type,
-	// 	BlockChain: result.SubType,
-	// }
-	// jporder.create
-	// 或者更新充值订单
-	// jporder.update
+	// 是否存在订单
+	res, err := model.JPOrderFind(&model.JPOrder{
+		BNOrderID: result.ID,
+	})
+	if err != nil {
+		return err
+	}
+	if len(res) > 0 {
+		order := res[0]
+		order.Update(&model.JPOrder{
+			Confirmations: result.Confirmations,
+			Status:        result.State,
+		})
+	} else {
+		// 创建订单,充值用户
+		err = createJPOrderWithDeposit(result)
+		if err != nil {
+			return err
+		}
+	}
+	// 如果是done或者fail,记录一条唯一日志
+
 	// 告知record
 	// record.afterJPDeposit
 	// 记录Done事件
 	// 或者抛出错误
-	fmt.Println("deposit", result)
+	fmt.Println("deposit ok", result)
 	return nil
+}
+func createJPOrderWithDeposit(result types.JPOrderResult) error {
+	as, err := model.AddressFetch(&model.Address{
+		Address: result.To,
+	})
+	if err != nil {
+		return err
+	}
+	if len(as) == 0 {
+		return fmt.Errorf("no_addrss_to_handle")
+	}
+	user := as[0].User
+	total, err := decimal.NewFromString(result.Value)
+	if err != nil {
+		return err
+	}
+	jporder := &model.JPOrder{
+		Asset:      result.SubType,
+		BlockChain: result.Type,
+		BNOrderID:  result.ID,
+		User:       user,
+
+		From: result.From,
+		To:   result.To,
+		Memo: result.Memo,
+
+		Confirmations: result.Confirmations,
+		Resend:        result.SendAgain,
+
+		Index:       result.N,
+		Hash:        result.Txid,
+		UUHash:      fmt.Sprintf("%s_%s_%d", result.Type, result.Txid, result.N),
+		TotalAmount: total,
+		Type:        result.BizType,
+		Status:      strings.ToUpper(result.State),
+	}
+	// jporder.create
+	err = model.JPOrderCreate(jporder)
+	return err
 }
 
 // DepositAddress ...

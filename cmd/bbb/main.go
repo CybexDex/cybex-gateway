@@ -6,8 +6,8 @@ import (
 	"github.com/spf13/viper"
 
 	"bitbucket.org/woyoutlz/bbb-gateway/config"
+	"bitbucket.org/woyoutlz/bbb-gateway/model"
 	"bitbucket.org/woyoutlz/bbb-gateway/server/jp"
-	"bitbucket.org/woyoutlz/bbb-gateway/server/user"
 	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
 )
 
@@ -17,11 +17,12 @@ func main() {
 		env = "dev"
 	}
 	config.LoadConfig(env)
+	model.INITFromViper()
 	logDir := viper.GetString("log.log_dir")
 	logLevel := viper.GetString("log.log_level")
 	log.InitLog(logDir, logLevel, "[bbb]")
-	go jp.StartServer()
-	go user.StartServer()
+	jp.StartServer()
+	// user.StartServer()
 	for {
 
 	}

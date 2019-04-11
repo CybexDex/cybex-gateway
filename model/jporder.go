@@ -12,7 +12,7 @@ type JPOrder struct {
 	Asset      string `json:"asset"` // n to 1
 	BlockChain string `json:"blockChain"`
 	User       string `json:"user"`
-	BNOrderID  uint   `json:"bnOrderID"` // n to 1
+	BNOrderID  string `gorm:"index;" json:"bnOrderID"` // n to 1
 
 	Index         int             `json:"index"`                                 //
 	Hash          string          `gorm:"index;type:varchar(128)" json:"hash"`   //
@@ -27,4 +27,24 @@ type JPOrder struct {
 	Resend        bool            `gorm:"not null;default:false" json:"resend"`    //
 	Status        string          `gorm:"type:varchar(32);not null" json:"status"` // INIT, HOLDING, PENDING, DONE, FAILED
 	Type          string          `gorm:"type:varchar(32);not null" json:"type"`   // DEPOSIT, WITHDRAW
+}
+
+// JPOrderFind ...
+func JPOrderFind(j *JPOrder) (res []*JPOrder, err error) {
+	err = db.Where(j).Find(&res).Error
+	return res, err
+}
+
+// Update ...
+func (j *JPOrder) Update(i *JPOrder) error {
+	return db.Model(JPOrder{}).Where("ID=?", j.ID).UpdateColumns(i).Error
+}
+
+// JPOrderCreate ...
+func JPOrderCreate(j *JPOrder) error {
+	err := db.Create(j).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }

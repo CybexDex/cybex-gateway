@@ -32,6 +32,12 @@ func AddressLast(user string, asset string) (address *Address, err error) {
 	return address, nil
 }
 
+// AddressFetch ...
+func AddressFetch(a *Address) (as []*Address, err error) {
+	err = db.Where(a).Find(&as).Error
+	return as, err
+}
+
 //AddrssCreate ...
 func AddrssCreate(a *Address) error {
 	err := db.Create(a).Error

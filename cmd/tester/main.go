@@ -20,9 +20,12 @@ func main2() {
 	s := ecc.PriToPub("bf12996feeaa2977b6ca0d33a0e8bd2ccfc4844c6f8a7e6d15c099f8da4a255d")
 	fmt.Println(s)
 }
-func main() {
+func main3() {
 	config.LoadConfig("uat")
 	model.INITFromViper()
 	s, err := user.GetAddress("yangyu4", "ETH1")
 	fmt.Println(s, err)
+}
+func main() {
+	ecc.TestECCSign()
 }

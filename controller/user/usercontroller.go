@@ -1,8 +1,6 @@
 package user
 
 import (
-	"fmt"
-
 	"bitbucket.org/woyoutlz/bbb-gateway/controller/jp"
 	model "bitbucket.org/woyoutlz/bbb-gateway/model"
 	"bitbucket.org/woyoutlz/bbb-gateway/types"
@@ -15,7 +13,7 @@ func GetAddress(user string, asset string) (address *types.UserResultAddress, er
 	address1, err := model.AddressLast(user, asset)
 	if err != nil {
 		if err.Error() != "record not found" {
-			return address, fmt.Errorf("record_no_found")
+			return address, err
 		}
 		//没有找到，获取，创建，返回
 		newaddr, err := jp.DepositAddress(asset)

@@ -1,6 +1,10 @@
 package user
 
 import (
+	"fmt"
+
+	"bitbucket.org/woyoutlz/bbb-gateway/utils/ecc"
+
 	userc "bitbucket.org/woyoutlz/bbb-gateway/controller/user"
 	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
 	"github.com/gin-gonic/gin"
@@ -11,15 +15,21 @@ import (
 func StartServer() {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
-	r.GET("/users/:user/assets/:asset/address", func(c *gin.Context) {
+	r.GET("/t", func(c *gin.Context) {
+		ecc.TestECCSign()
+		c.JSON(200, gin.H{})
+	})
+	r.GET("/v1/users/:user/assets/:asset/address", func(c *gin.Context) {
 		user := c.Param("user")
 		asset := c.Param("asset")
+		fmt.Println(user, asset)
 		address, err := userc.GetAddress(user, asset)
 		if err != nil {
-			log.Errorln("Error", err)
+			log.Errorln("user address", err)
 			c.JSON(400, gin.H{
-				"message": err,
+				"message": err.Error(),
 			})
+			return
 		}
 		c.JSON(200, address)
 	})
