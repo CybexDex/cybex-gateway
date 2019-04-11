@@ -33,6 +33,11 @@ func HandleWithdraw(result types.JPOrderResult) error {
 func HandleDeposit(result types.JPOrderResult) error {
 	// 事务
 	// 新建充值订单
+	// 充值地址
+	// jporder := &m.JPOrder{
+	// 	Asset:      result.Type,
+	// 	BlockChain: result.SubType,
+	// }
 	// jporder.create
 	// 或者更新充值订单
 	// jporder.update
@@ -40,6 +45,7 @@ func HandleDeposit(result types.JPOrderResult) error {
 	// record.afterJPDeposit
 	// 记录Done事件
 	// 或者抛出错误
+	fmt.Println("deposit", result)
 	return nil
 }
 
@@ -59,17 +65,26 @@ func DepositAddress(coin string) (address *types.JPAddressResult, err error) {
 	if err != nil {
 		return nil, err
 	}
-	err = checkComing(&data)
+	err = CheckComing(&data)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
 	}
 	result := types.JPAddressResult{}
-	utils.ResultToStruct(data.Result, &result)
+	err = utils.ResultToStruct(data.Result, &result)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
 	return &result, err
 }
-func checkComing(data *types.JPEvent) (err error) {
+
+//CheckComing ...
+func CheckComing(data *types.JPEvent) (err error) {
 	// checkEcc
+	if data.Code != 0 || data.Status != 0 || data.Result == nil {
+		return fmt.Errorf("BN request failed, data: %#v", data)
+	}
 	if viper.GetBool("jpserver.ecc") == true {
 		// verify sig
 		data.Result["timestamp"] = data.Timestamp
@@ -81,10 +96,6 @@ func checkComing(data *types.JPEvent) (err error) {
 		if !ok {
 			return fmt.Errorf("verify result: %v, data: %#v", ok, data)
 		}
-	}
-
-	if data.Code != 0 || data.Status != 0 || data.Result == nil {
-		return fmt.Errorf("not found address, data: %#v", data)
 	}
 	return nil
 }

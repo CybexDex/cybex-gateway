@@ -11,6 +11,7 @@ type JPOrderResult struct {
 	State         string      `json:"state"`
 	BizType       string      `json:"bizType"`
 	Type          string      `json:"type"`
+	SubType       string      `json:"subType"`
 	CoinType      string      `json:"coinType"`
 	To            string      `json:"to"`
 	Value         string      `json:"value"`

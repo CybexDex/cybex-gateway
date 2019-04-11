@@ -1,3 +1,10 @@
+database:
+  host: localhost
+  port: 5432
+  name: bbb
+  user: bbb
+  pass: bbb
+  type: postgres
 jpserver:
   port: ":8081"
   ecc: true

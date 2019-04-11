@@ -32,6 +32,13 @@ func StartServer() {
 				"message": "Unmarshal error",
 			})
 		}
+		err = jp.CheckComing(reqBody)
+		if err != nil {
+			log.Errorln("Error", err)
+			c.JSON(400, gin.H{
+				"message": err,
+			})
+		}
 		result := types.JPOrderResult{}
 		err = utils.ResultToStruct(reqBody.Result, &result)
 		if err != nil {
