@@ -1,5 +1,7 @@
 package types
 
+import ecc "bitbucket.org/woyoutlz/bbb-gateway/utils/ecc"
+
 // JPOrderResult ...
 type JPOrderResult struct {
 	ID            string      `json:"id"`
@@ -27,15 +29,35 @@ type JPOrderResult struct {
 
 // JPEvent ...
 type JPEvent struct {
-	Code      int    `json:"code"`
-	Status    int    `json:"status"`
-	Message   string `json:"message"`
-	Crypto    string `json:"crypto"`
-	Timestamp int64  `json:"timestamp"`
-	Sig       struct {
-		R string `json:"r"`
-		S string `json:"s"`
-		V int    `json:"v"`
-	} `json:"sig"`
-	Result JPOrderResult `json:"result"`
+	Code      int                    `json:"code"`
+	Status    int                    `json:"status"`
+	Message   string                 `json:"message"`
+	Crypto    string                 `json:"crypto"`
+	Timestamp int64                  `json:"timestamp"`
+	Sig       *ecc.ECCSig            `json:"sig"`
+	Result    map[string]interface{} `json:"result"`
+}
+
+// JPAddressResult ...
+type JPAddressResult struct {
+	Address string `json:"address"`
+	Type    string `json:"type"`
+}
+
+// JPAddressRequest ...
+type JPAddressRequest struct {
+	Type      string `json:"type"`
+	Timestamp int64  `json:"timestamp,omitempty"`
+	Callback  string `json:"callback,omitempty"`
+}
+
+// JPSendData ...
+type JPSendData struct {
+	Crypto    string      `json:"crypto"`
+	Hash      string      `json:"hash"`
+	Encode    string      `json:"encode"`
+	AppID     string      `json:"appid"`
+	Timestamp int64       `json:"timestamp"`
+	Sig       *ecc.ECCSig `json:"sig"`
+	Data      interface{} `json:"data"`
 }

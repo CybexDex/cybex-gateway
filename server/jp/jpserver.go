@@ -6,6 +6,7 @@ import (
 
 	"bitbucket.org/woyoutlz/bbb-gateway/controller/jp"
 	"bitbucket.org/woyoutlz/bbb-gateway/types"
+	"bitbucket.org/woyoutlz/bbb-gateway/utils"
 	"bitbucket.org/woyoutlz/bbb-gateway/utils/eventlog"
 	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
 	"github.com/gin-gonic/gin"
@@ -31,25 +32,36 @@ func StartServer() {
 				"message": "Unmarshal error",
 			})
 		}
-		if reqBody.Result.BizType == "WITHDRAW" {
+		result := types.JPOrderResult{}
+		err = utils.ResultToStruct(reqBody.Result, &result)
+		if err != nil {
+			log.Errorln("Error", err)
+			c.JSON(400, gin.H{
+				"message": "Unmarshal error",
+			})
+		}
+		if result.BizType == "WITHDRAW" {
 			// 提现订单
-			err = jp.HandleWithdraw(reqBody.Result)
+			err = jp.HandleWithdraw(result)
 			if err != nil {
 				log.Errorln("Error", err)
 				c.JSON(400, gin.H{
 					"message": "HandleWithdraw Error",
 				})
 			}
-		}
-		if reqBody.Result.BizType == "DEPOSIT" {
+		} else if result.BizType == "DEPOSIT" {
 			// 充值订单
-			err = jp.HandleDeposit(reqBody.Result)
+			err = jp.HandleDeposit(result)
 			if err != nil {
 				log.Errorln("Error", err)
 				c.JSON(400, gin.H{
 					"message": "HandleDeposit Error",
 				})
 			}
+		} else {
+			c.JSON(400, gin.H{
+				"message": "BizType Error",
+			})
 		}
 		// 返回
 		c.JSON(200, gin.H{

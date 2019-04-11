@@ -50,6 +50,8 @@ config:
   commandkey
 检查:用户名密码正确。
 
+检查ecc
+  base64 hex
 worker
 config:
   worker时间
@@ -66,10 +68,12 @@ config:
 
 日志格式
 请求日志格式
+  请求返回记录
 BN请求记录
 ecc
 jp_withdraw_eos
 jp_deposit_eos
 jp_deposit_eth
+
 
 
