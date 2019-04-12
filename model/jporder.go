@@ -32,7 +32,7 @@ type JPOrder struct {
 	gorm.Model
 	Asset      string `json:"asset"` // n to 1
 	BlockChain string `json:"blockChain"`
-	User       string `json:"user"`
+	CybUser    string `json:"user"`
 	BNOrderID  string `gorm:"index;" json:"bnOrderID"` // n to 1
 
 	Index         int             `json:"index"`                                 //

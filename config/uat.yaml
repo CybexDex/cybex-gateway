@@ -15,7 +15,7 @@ jpserver:
 userserver:
   port: ":8181"
 cybserver:
-  node: "ws://47.100.98.113:38090/"
+  node:   "wss://hangzhou.51nebula.com/" #"ws://47.100.98.113:38090/"
 log:
   log_dir: ""
   log_level: "DEBUG"
@@ -23,13 +23,13 @@ assets:
   eth:
     handle_action: "BBB"
     deposit:
-      gateway: yangyutest1
-      gatewaypass: seed__yangyutest1
+      gateway: yangyutest2
+      gatewaypass: yangyutest2dddddd
       sendto: ["CYB","JADE.ETH:yangu1mm"]
       switch: true
     withdraw:
       gateway: yangyu3
       coin: "CYB"
       wait: "JADE.ETH"
-      send: "yangyutest1"
+      send: "yangyutest2"
       

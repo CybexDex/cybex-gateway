@@ -91,7 +91,7 @@ func createJPOrderWithDeposit(result types.JPOrderResult) (*model.JPOrder, error
 		Asset:      asset,
 		BlockChain: result.Type,
 		BNOrderID:  result.ID,
-		User:       user,
+		CybUser:    user,
 
 		From: result.From,
 		To:   result.To,

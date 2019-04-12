@@ -89,7 +89,7 @@ func handleOrders(order *model.JPOrder) (err error) {
 			}
 			tosend := cybTypes.SimpleSend{
 				From:     gatewayAccount,
-				To:       order.User,
+				To:       order.CybUser,
 				Amount:   order.Amount.String(),
 				Asset:    assetname,
 				Password: gatewayPassword,
@@ -102,8 +102,11 @@ func handleOrders(order *model.JPOrder) (err error) {
 			}
 			tosends = append(tosends, tosend)
 		}
-		stx, err := api.Sends(tosends)
+		fmt.Println(tosends)
+		stx, err := mySend(tosends)
+		fmt.Println("xxxx", err)
 		if err != nil {
+			order.SetCurrent("cyborder", model.JPOrderStatusFailed, "send error")
 			return err
 		}
 		utils.Infoln("sendorder tx is ", *stx)
@@ -115,4 +118,16 @@ func handleOrders(order *model.JPOrder) (err error) {
 	order.SetCurrent("done", model.JPOrderStatusDone, "")
 	order.SetStatus(model.JPOrderStatusDone)
 	return nil
+}
+
+func mySend(tosends []cybTypes.SimpleSend) (tx *cybTypes.SignedTransaction, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			// utils.Errorf("%v, stack: %s", r, debug.Stack())
+			utils.Errorf("%v, stack: %s", r)
+			err = fmt.Errorf("send Error")
+		}
+	}()
+	tx, err = api.Sends(tosends)
+	return tx, err
 }
