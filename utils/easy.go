@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/mitchellh/mapstructure"
@@ -19,4 +20,9 @@ func SeedString(nowstring string) string {
 		return s
 	}
 	return nowstring
+}
+
+// ErrorAdd ...
+func ErrorAdd(errin error, msg string) error {
+	return fmt.Errorf("%s,%v", msg, errin)
 }

@@ -40,7 +40,7 @@ func HandleDeposit(result types.JPOrderResult) error {
 		BNOrderID: result.ID,
 	})
 	if err != nil {
-		return err
+		return utils.ErrorAdd(err, "HandleDeposit")
 	}
 	if len(res) > 0 {
 		order := res[0]
@@ -52,7 +52,7 @@ func HandleDeposit(result types.JPOrderResult) error {
 		// 创建订单,充值用户
 		err = createJPOrderWithDeposit(result)
 		if err != nil {
-			return err
+			return utils.ErrorAdd(err, "HandleDeposit")
 		}
 	}
 	// 如果是done或者fail,记录一条唯一日志
@@ -72,7 +72,7 @@ func createJPOrderWithDeposit(result types.JPOrderResult) error {
 		return err
 	}
 	if len(as) == 0 {
-		return fmt.Errorf("no_addrss_to_handle")
+		return fmt.Errorf("no_addrss_to_handle %s", result.To)
 	}
 	user := as[0].User
 	total, err := decimal.NewFromString(result.Value)
