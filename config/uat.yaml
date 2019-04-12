@@ -14,6 +14,8 @@ jpserver:
   appid: 100
 userserver:
   port: ":8181"
+cybserver:
+  node: "ws://47.100.98.113:38090/"
 log:
   log_dir: ""
   log_level: "DEBUG"
@@ -22,6 +24,7 @@ assets:
     handle_action: "BBB"
     deposit:
       gateway: yangyutest1
+      gatewaypass: seed__yangyutest1
       sendto: ["CYB","JADE.ETH:yangu1mm"]
       switch: true
     withdraw:

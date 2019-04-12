@@ -3,6 +3,7 @@ package model
 import (
 	"fmt"
 
+	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
 	"github.com/jinzhu/gorm"
 	"github.com/shopspring/decimal"
 )
@@ -71,6 +72,12 @@ func (j *JPOrder) Save() error {
 	return db.Save(j).Error
 }
 
+// SetStatus ...
+func (j *JPOrder) SetStatus(status string) {
+	j.Status = status
+	j.Log("SetStatus", fmt.Sprintln(status))
+}
+
 // SetCurrent ...
 func (j *JPOrder) SetCurrent(current string, state string, reason string) {
 	j.Current = current
@@ -81,12 +88,13 @@ func (j *JPOrder) SetCurrent(current string, state string, reason string) {
 
 // Log ...
 func (j *JPOrder) Log(event string, message string) {
-	log := &OrderLog{
+	log1 := &OrderLog{
 		OrderID: j.ID,
 		Event:   event,
 		Message: message,
 	}
-	db.Create(log)
+	db.Create(log1)
+	log.Infoln(*log1)
 }
 
 // JPOrderCreate ...
@@ -96,6 +104,24 @@ func JPOrderCreate(j *JPOrder) error {
 		return err
 	}
 	return nil
+}
+
+//HoldCYBOrderOne ...
+func HoldCYBOrderOne() (*JPOrder, error) {
+	var order1 JPOrder
+	s := `update jp_orders 
+	set current_state = 'PROCESSING' 
+	where id = (
+				select id 
+				from jp_orders 
+				where current_state = 'INIT' 
+				and current = 'cyborder'
+				order by id
+				limit 1
+			)
+	returning *`
+	err := db.Raw(s).Scan(&order1).Error
+	return &order1, err
 }
 
 // HoldOrderOne ...

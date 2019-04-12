@@ -5,7 +5,7 @@ import (
 
 	"bitbucket.org/woyoutlz/bbb-gateway/config"
 	"bitbucket.org/woyoutlz/bbb-gateway/model"
-	"bitbucket.org/woyoutlz/bbb-gateway/worker/order"
+	"bitbucket.org/woyoutlz/bbb-gateway/worker/cyborder"
 )
 
 func main() {
@@ -15,6 +15,7 @@ func main() {
 	}
 	config.LoadConfig(env)
 	model.INITFromViper()
-	order.HandleWorker(5)
+	cyborder.InitNode()
+	cyborder.HandleOneTime()
 	// fmt.Println(s)
 }

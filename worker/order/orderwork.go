@@ -3,6 +3,7 @@ package order
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/shopspring/decimal"
 	"github.com/spf13/viper"
@@ -17,20 +18,32 @@ func HoldOne() (*model.JPOrder, error) {
 	return order, err
 }
 
+// HandleWorker ...
+func HandleWorker(seconds int) {
+	for {
+		for {
+			ret := HandleOneTime()
+			if ret != 0 {
+				break
+			}
+		}
+		time.Sleep(time.Second * time.Duration(seconds))
+	}
+}
+
 // HandleOneTime ...
-func HandleOneTime() error {
+func HandleOneTime() int {
 	order1, _ := HoldOne()
 	if order1.ID == 0 {
-		return nil
+		return 1
 	}
-	err := handleOrders(order1)
+	handleOrders(order1)
 	order1.Save()
-	return err
+	return 0
 	// check order to process it
 }
 
 func handleOrders(order *model.JPOrder) (err error) {
-	fmt.Println(order.Asset)
 	// 是否可处理的asset
 	assets := viper.GetStringMap("assets")
 	orderAsset := strings.ToLower(order.Asset)
