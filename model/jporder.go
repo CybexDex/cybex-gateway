@@ -1,6 +1,8 @@
 package model
 
 import (
+	"fmt"
+
 	"github.com/jinzhu/gorm"
 	"github.com/shopspring/decimal"
 )
@@ -74,6 +76,17 @@ func (j *JPOrder) SetCurrent(current string, state string, reason string) {
 	j.Current = current
 	j.CurrentState = state
 	j.CurrentReason = reason
+	j.Log("SetCurrent", fmt.Sprintln(current, state, reason))
+}
+
+// Log ...
+func (j *JPOrder) Log(event string, message string) {
+	log := &OrderLog{
+		OrderID: j.ID,
+		Event:   event,
+		Message: message,
+	}
+	db.Create(log)
 }
 
 // JPOrderCreate ...

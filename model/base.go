@@ -44,6 +44,7 @@ func InitDB(host, port, username, password, dbname string) {
 		&JPOrder{},
 		&Address{},
 		&Black{},
+		&OrderLog{},
 	)
 }
 
