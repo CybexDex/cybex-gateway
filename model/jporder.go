@@ -5,10 +5,28 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+const (
+	// JPOrderStatusInit ...
+	JPOrderStatusInit = "INIT"
+	// JPOrderStatusHolding ...
+	JPOrderStatusHolding = "HOLDING"
+	// JPOrderStatusPending ...
+	JPOrderStatusPending = "PENDING"
+	// JPOrderStatusDone ...
+	JPOrderStatusDone = "DONE"
+	// JPOrderStatusFailed ...
+	JPOrderStatusFailed = "FAILED"
+	//JPOrderStatusTerminate ...
+	JPOrderStatusTerminate = "TERMINATE"
+	// JPOrderTypeDeposit ...
+	JPOrderTypeDeposit = "DEPOSIT"
+	// JPOrderTypeWithdraw ...
+	JPOrderTypeWithdraw = "WITHDRAW"
+)
+
 // JPOrder ...
 type JPOrder struct {
 	gorm.Model
-
 	Asset      string `json:"asset"` // n to 1
 	BlockChain string `json:"blockChain"`
 	User       string `json:"user"`
@@ -27,6 +45,12 @@ type JPOrder struct {
 	Resend        bool            `gorm:"not null;default:false" json:"resend"`    //
 	Status        string          `gorm:"type:varchar(32);not null" json:"status"` // INIT, HOLDING, PENDING, DONE, FAILED
 	Type          string          `gorm:"type:varchar(32);not null" json:"type"`   // DEPOSIT, WITHDRAW
+
+	Link string `json:"link"`
+
+	Current       string `json:"-"`
+	CurrentState  string `json:"-"`
+	CurrentReason string `json:"-"`
 }
 
 // JPOrderFind ...
@@ -40,6 +64,18 @@ func (j *JPOrder) Update(i *JPOrder) error {
 	return db.Model(JPOrder{}).Where("ID=?", j.ID).UpdateColumns(i).Error
 }
 
+// Save ...
+func (j *JPOrder) Save() error {
+	return db.Save(j).Error
+}
+
+// SetCurrent ...
+func (j *JPOrder) SetCurrent(current string, state string, reason string) {
+	j.Current = current
+	j.CurrentState = state
+	j.CurrentReason = reason
+}
+
 // JPOrderCreate ...
 func JPOrderCreate(j *JPOrder) error {
 	err := db.Create(j).Error
@@ -47,4 +83,22 @@ func JPOrderCreate(j *JPOrder) error {
 		return err
 	}
 	return nil
+}
+
+// HoldOrderOne ...
+func HoldOrderOne() (*JPOrder, error) {
+	var order1 JPOrder
+	s := `update jp_orders 
+	set current_state = 'PROCESSING' 
+	where id = (
+				select id 
+				from jp_orders 
+				where current_state = 'INIT' 
+				and current = 'order'
+				order by id
+				limit 1
+			)
+	returning *`
+	err := db.Raw(s).Scan(&order1).Error
+	return &order1, err
 }

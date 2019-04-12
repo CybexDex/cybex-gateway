@@ -16,6 +16,7 @@ import (
 	"bitbucket.org/woyoutlz/bbb-gateway/types"
 	"bitbucket.org/woyoutlz/bbb-gateway/utils"
 	"bitbucket.org/woyoutlz/bbb-gateway/utils/ecc"
+	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
 )
 
 // HandleWithdraw ...
@@ -33,54 +34,61 @@ func HandleWithdraw(result types.JPOrderResult) error {
 }
 
 // HandleDeposit ...
-func HandleDeposit(result types.JPOrderResult) error {
-	// 事务
-	// 是否存在订单
+func HandleDeposit(result types.JPOrderResult) (err error) {
 	res, err := model.JPOrderFind(&model.JPOrder{
 		BNOrderID: result.ID,
+		Current:   "jp",
 	})
 	if err != nil {
 		return utils.ErrorAdd(err, "HandleDeposit")
 	}
-	if len(res) > 0 {
+	lenRes := len(res)
+	var ordernow *model.JPOrder
+	if lenRes == 1 {
 		order := res[0]
-		order.Update(&model.JPOrder{
-			Confirmations: result.Confirmations,
-			Status:        result.State,
-		})
-	} else {
+		if order.Status == model.JPOrderStatusDone || order.Status == model.JPOrderStatusFailed {
+			// 如果已经是done或者fail,记录一条日志,返回错误
+			log.Errorln("final order cannot change", order.ID)
+			return fmt.Errorf("final order cannot change %d", order.ID)
+		}
+		order.Confirmations = result.Confirmations
+		order.CurrentState = strings.ToUpper(result.State)
+		ordernow = order
+	} else if lenRes == 0 {
 		// 创建订单,充值用户
-		err = createJPOrderWithDeposit(result)
+		ordernow, err = createJPOrderWithDeposit(result)
 		if err != nil {
 			return utils.ErrorAdd(err, "HandleDeposit")
 		}
+	} else {
+		return fmt.Errorf("Record lenth %d", lenRes)
 	}
-	// 如果是done或者fail,记录一条唯一日志
-
-	// 告知record
-	// record.afterJPDeposit
-	// 记录Done事件
-	// 或者抛出错误
-	fmt.Println("deposit ok", result)
-	return nil
+	if ordernow.CurrentState == "DONE" {
+		ordernow.SetCurrent("order", "INIT", "")
+	}
+	return ordernow.Save()
 }
-func createJPOrderWithDeposit(result types.JPOrderResult) error {
+func createJPOrderWithDeposit(result types.JPOrderResult) (*model.JPOrder, error) {
 	as, err := model.AddressFetch(&model.Address{
 		Address: result.To,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if len(as) == 0 {
-		return fmt.Errorf("no_addrss_to_handle %s", result.To)
+		return nil, fmt.Errorf("no_addrss_to_handle %s", result.To)
 	}
 	user := as[0].User
 	total, err := decimal.NewFromString(result.Value)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	asset := result.Type
+	if result.SubType != "" {
+		asset = result.SubType
 	}
 	jporder := &model.JPOrder{
-		Asset:      result.SubType,
+		Asset:      asset,
 		BlockChain: result.Type,
 		BNOrderID:  result.ID,
 		User:       user,
@@ -92,16 +100,18 @@ func createJPOrderWithDeposit(result types.JPOrderResult) error {
 		Confirmations: result.Confirmations,
 		Resend:        result.SendAgain,
 
-		Index:       result.N,
-		Hash:        result.Txid,
-		UUHash:      fmt.Sprintf("%s_%s_%d", result.Type, result.Txid, result.N),
-		TotalAmount: total,
-		Type:        result.BizType,
-		Status:      strings.ToUpper(result.State),
+		Index:        result.N,
+		Hash:         result.Txid,
+		UUHash:       fmt.Sprintf("%s_%s_%d", result.Type, result.Txid, result.N),
+		TotalAmount:  total,
+		Type:         result.BizType,
+		Status:       "PENDING",
+		Current:      "jp",
+		CurrentState: strings.ToUpper(result.State),
 	}
 	// jporder.create
-	err = model.JPOrderCreate(jporder)
-	return err
+	// err = model.JPOrderCreate(jporder)
+	return jporder, nil
 }
 
 // DepositAddress ...

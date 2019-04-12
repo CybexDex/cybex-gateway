@@ -17,3 +17,16 @@ userserver:
 log:
   log_dir: ""
   log_level: "DEBUG"
+assets:
+  eth:
+    handle_action: "BBB"
+    deposit:
+      gateway: yangyutest1
+      sendto: ["CYB","JADE.ETH:yangu1mm"]
+      switch: true
+    withdraw:
+      gateway: yangyu3
+      coin: "CYB"
+      wait: "JADE.ETH"
+      send: "yangyutest1"
+      

@@ -43,6 +43,7 @@ func InitDB(host, port, username, password, dbname string) {
 	db.AutoMigrate(
 		&JPOrder{},
 		&Address{},
+		&Black{},
 	)
 }
 
