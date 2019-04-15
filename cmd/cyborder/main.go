@@ -16,6 +16,9 @@ func main() {
 	config.LoadConfig(env)
 	model.INITFromViper()
 	cyborder.InitNode()
-	cyborder.HandleOneTime()
+	cyborder.InitAsset()
+	// go cyborder.HandleWorker(5)
+	cyborder.Test()
+	// select {}
 	// fmt.Println(s)
 }

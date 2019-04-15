@@ -15,21 +15,26 @@ jpserver:
 userserver:
   port: ":8181"
 cybserver:
-  node:   "wss://hangzhou.51nebula.com/" #"ws://47.100.98.113:38090/"
+  node:  "ws://18.136.140.223:38090/" # "wss://hangzhou.51nebula.com/" #"ws://47.100.98.113:38090/"
+  blockBegin: -1
 log:
   log_dir: ""
   log_level: "DEBUG"
 assets:
   eth:
+    name: "ETH"
     handle_action: "BBB"
     deposit:
-      gateway: yangyutest2
-      gatewaypass: yangyutest2dddddd
-      sendto: ["CYB","JADE.ETH:yangu1mm"]
+      gateway: bbbusdtin1
+      gatewaypass: 90be01e82b981c8f201c9a78a3d31f655743b29ff3274727b1439b093d04aa23
+      sendto: ["CYB","JADE.ETH:bbbusdtmaker1"]
       switch: true
+      just_asset: "JADE.ETH"
+      just: ["bbbusdtmaker1"] # 只是转发JADE.ETH的账户
     withdraw:
-      gateway: yangyu3
+      gateway: bbbusdtout1
+      gatewaypass: 90be01e82b981c8f201c9a78a3d31f655743b29ff3274727b1439b093d04aa23
       coin: "CYB"
       wait: "JADE.ETH"
-      send: "yangyutest2"
+      send: "bbbusdtin1"
       

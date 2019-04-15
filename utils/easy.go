@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -25,4 +26,17 @@ func SeedString(nowstring string) string {
 // ErrorAdd ...
 func ErrorAdd(errin error, msg string) error {
 	return fmt.Errorf("%s,%v", msg, errin)
+}
+
+// V2S ...
+func V2S(v interface{}, s interface{}) error {
+	bs, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(bs, &s)
+	if err != nil {
+		return err
+	}
+	return nil
 }
