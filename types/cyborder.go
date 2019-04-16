@@ -10,6 +10,7 @@ type GatewayAccount struct {
 	Account *cybTypes.Account
 	Type    string
 	Asset   string
+	MemoPri cybTypes.PrivateKeys
 }
 
 // HandleInterface ...
@@ -20,6 +21,7 @@ type HandleInterface interface {
 // AssetConfig ...
 type AssetConfig struct {
 	Name         string `json:"name"`
+	BlockChain   string `json:"blockChain"`
 	HandleAction string `json:"handle_action"`
 	Deposit      struct {
 		Gateway     string   `json:"gateway"`
@@ -36,5 +38,6 @@ type AssetConfig struct {
 		Wait        string `json:"wait"`
 		Send        string `json:"send"`
 		Switch      bool   `json:"switch"`
+		Memopre     string `json:"memopre"`
 	} `json:"withdraw"`
 }

@@ -23,6 +23,7 @@ log:
 assets:
   eth:
     name: "ETH"
+    blockChain: "ETH"
     handle_action: "BBB"
     deposit:
       gateway: bbbusdtin1
@@ -37,4 +38,5 @@ assets:
       coin: "CYB"
       wait: "JADE.ETH"
       send: "bbbusdtin1"
+      memopre: "withdraw:CybexGatewayDev"
       

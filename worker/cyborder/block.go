@@ -7,10 +7,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/shopspring/decimal"
+
 	"bitbucket.org/woyoutlz/bbb-gateway/model"
 	"bitbucket.org/woyoutlz/bbb-gateway/types"
 	"bitbucket.org/woyoutlz/bbb-gateway/utils"
 	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
+	apim "coding.net/yundkyy/cybexgolib/api"
 	"coding.net/yundkyy/cybexgolib/operations"
 	cybTypes "coding.net/yundkyy/cybexgolib/types"
 	"github.com/spf13/viper"
@@ -20,18 +23,105 @@ import (
 type BBBHandler struct {
 }
 
-// HandleTR ...
-func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.SignedTransaction) {
-	log.Infoln("bbb", op.From, tx.Signatures)
-	//to gatewayin 的话就是充值,排除from gatewayout, from 特殊账户的
+func amountToReal(amountin cybTypes.Int64, prercison int) decimal.Decimal {
+	d := decimal.New(int64(amountin), int32(-1*prercison))
+	log.Infoln(d.String())
+	return d
 }
 
-var allgateways []types.GatewayAccount
+// HandleTR ...
+func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.SignedTransaction) {
+	log.Infoln("bbb", op.To, tx.Signatures)
+	// 是否在币种中，没有的话，是否是gateway账号的UR。
+	gatewayTo := allgateways[op.To.String()]
+	//to gatewayin 的话就是充值,排除from gatewayout, from 特殊账户的
+	if gatewayTo != nil {
+		// log.Infoln("gatewayTo", *gatewayTo)
+		fromUsers, err := api.GetAccounts(op.From)
+		fromUser := fromUsers[0]
+		assetChain, err := api.GetAsset(op.Amount.Asset.String())
+		if err != nil {
+			log.Errorln(assetChain, err)
+			return
+		}
+		var assetConf *types.AssetConfig
+		for _, assetC := range allAssets {
+			if assetC.Withdraw.Coin == assetChain.Symbol {
+				assetConf = assetC
+			}
+		}
+		if assetConf == nil || assetConf.Withdraw.Gateway != gatewayTo.Account.Name {
+			// UR
+			log.Infoln("UR 不是合法币种", assetConf, assetChain.Symbol)
+			return
+		}
+		// 合法转账
+		// 锁定期
+		extensions := op.Extensions
+		if len(extensions) > 0 {
+			log.Infoln("UR extensions", op)
+			return
+		}
+		// 没有memo
+		memo := op.Memo
+		if memo == nil {
+			log.Infoln("UR Memo", *op)
+			return
+		}
+		// memo格式
+		memoout := ""
+		gatewayMemoPri := gatewayTo.MemoPri
+		for _, prv := range gatewayMemoPri {
+			s, err := memo.Decrypt(&prv)
+			if err == nil {
+				memoout = s
+			}
+		}
+		// log.Infoln(memoout, *op)
+		gatewayPrefix := assetConf.Withdraw.Memopre
+		if !strings.HasPrefix(memoout, gatewayPrefix) {
+			log.Infoln("UR:1 ", "memo:", memoout)
+			return
+		}
+		s := strings.TrimPrefix(memoout, gatewayPrefix)
+		s2 := strings.Split(s, ":")
+		if len(s2) < 3 {
+			log.Infoln("UR:2", "memo:", memoout)
+			return
+		}
+		addr := strings.Join(s2[2:], ":")
+		log.Infoln("withdraw:", addr, *op)
+		// 创建jporder对象
+		realAmount := amountToReal(op.Amount.Amount, assetChain.Precision)
+		jporder := &model.JPOrder{
+			Asset:      assetConf.Name,
+			BlockChain: "",
+			BNOrderID:  "",
+			CybUser:    fromUser.Name,
+
+			From: fromUser.Name,
+			To:   addr,
+			Memo: memoout,
+
+			TotalAmount:  realAmount,
+			Type:         "WITHDRAW",
+			Status:       "PENDING",
+			Current:      "cybinner",
+			CurrentState: "INIT",
+		}
+		log.Infoln(*jporder)
+	}
+}
+
+var allgateways map[string]*types.GatewayAccount
 var allAssets map[string]*types.AssetConfig
+var assetsOfChain map[string]*cybTypes.Asset
 
 // InitAsset ...初始化asset gateway 账户
 func InitAsset() {
 	allAssets = make(map[string]*types.AssetConfig)
+	allgateways = make(map[string]*types.GatewayAccount)
+	assetsOfChain = make(map[string]*cybTypes.Asset)
 	assets := viper.GetStringMap("assets")
 	for keyname, asset := range assets {
 		keyName := strings.ToUpper(keyname)
@@ -47,29 +137,40 @@ func InitAsset() {
 			log.Errorln("gateway account 不存在", assetC.Deposit.Gateway)
 			panic("")
 		}
+		gatewaykeyBag := apim.KeyBagByUserPass(assetC.Deposit.Gateway, assetC.Deposit.Gatewaypass)
+		memokey := account1.Options.MemoKey
+		pubkeys := cybTypes.PublicKeys{memokey}
+		gatewayMemoPri := gatewaykeyBag.PrivatesByPublics(pubkeys)
+		g1 := types.GatewayAccount{
+			Account: account1,
+			Type:    "DEPOSIT",
+			Asset:   keyName,
+			MemoPri: gatewayMemoPri,
+		}
 		account2, err := api.GetAccountByName(assetC.Withdraw.Gateway)
 		if account2 == nil {
 			log.Errorln("gateway account 不存在", assetC.Withdraw.Gateway)
 			panic("")
 		}
-		g1 := types.GatewayAccount{
-			Account: account1,
-			Type:    "DEPOSIT",
-			Asset:   keyName,
-		}
+		gatewaykeyBag2 := apim.KeyBagByUserPass(assetC.Withdraw.Gateway, assetC.Withdraw.Gatewaypass)
+		memokey2 := account2.Options.MemoKey
+		pubkeys2 := cybTypes.PublicKeys{memokey2}
+		gatewayMemoPri2 := gatewaykeyBag2.PrivatesByPublics(pubkeys2)
 		g2 := types.GatewayAccount{
 			Account: account2,
 			Type:    "WITHDRAW",
 			Asset:   keyName,
+			MemoPri: gatewayMemoPri2,
 		}
-		allgateways = append(allgateways, g1, g2)
+		allgateways[g1.Account.ID.String()] = &g1
+		allgateways[g2.Account.ID.String()] = &g2
 	}
-	log.Infoln(allgateways)
+	log.Infoln(allgateways, allAssets)
 }
 
 // Test ...
 func Test() {
-	handleBlockNum(6966405)
+	handleBlockNum(6993893) // 6993893
 }
 func readBlock(cnum int, handler types.HandleInterface) ([]string, error) {
 	blockInfo, err := api.GetBlock(uint64(cnum))

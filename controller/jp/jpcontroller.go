@@ -92,10 +92,10 @@ func createJPOrderWithDeposit(result types.JPOrderResult) (*model.JPOrder, error
 		BlockChain: result.Type,
 		BNOrderID:  result.ID,
 		CybUser:    user,
-
-		From: result.From,
-		To:   result.To,
-		Memo: result.Memo,
+		OutAddr:    result.From,
+		From:       result.From,
+		To:         result.To,
+		Memo:       result.Memo,
 
 		Confirmations: result.Confirmations,
 		Resend:        result.SendAgain,

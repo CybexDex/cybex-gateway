@@ -33,7 +33,9 @@ type JPOrder struct {
 	Asset      string `json:"asset"` // n to 1
 	BlockChain string `json:"blockChain"`
 	CybUser    string `json:"user"`
-	BNOrderID  string `gorm:"index;" json:"bnOrderID"` // n to 1
+	OutAddr    string `json:"outAddr"`
+
+	BNOrderID string `gorm:"index;" json:"bnOrderID"` // n to 1
 
 	Index         int             `json:"index"`                                 //
 	Hash          string          `gorm:"index;type:varchar(128)" json:"hash"`   //
@@ -50,6 +52,11 @@ type JPOrder struct {
 	Type          string          `gorm:"type:varchar(32);not null" json:"type"`   // DEPOSIT, WITHDRAW
 
 	Link string `json:"link"`
+
+	CYBHash  string `gorm:"index;type:varchar(128)" json:"-"`
+	CYBHash2 string `gorm:"index;type:varchar(128)" json:"-"`
+	Sig      string `json:"-"`
+	Sig2     string `json:"-"`
 
 	Current       string `json:"-"`
 	CurrentState  string `json:"-"`
