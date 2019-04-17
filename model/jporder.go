@@ -13,6 +13,8 @@ const (
 	JPOrderStatusInit = "INIT"
 	// JPOrderStatusHolding ...
 	JPOrderStatusHolding = "HOLDING"
+	// JPOrderStatusProcessing ...
+	JPOrderStatusProcessing = "PROCESSING"
 	// JPOrderStatusPending ...
 	JPOrderStatusPending = "PENDING"
 	// JPOrderStatusDone ...
@@ -53,7 +55,7 @@ type JPOrder struct {
 
 	Link string `json:"link"`
 
-	CYBHash  string `gorm:"index;type:varchar(128)" json:"-"`
+	CYBHash  string `gorm:"unique;index;type:varchar(128)" json:"-"`
 	CYBHash2 string `gorm:"index;type:varchar(128)" json:"-"`
 	Sig      string `json:"-"`
 	Sig2     string `json:"-"`
@@ -113,6 +115,16 @@ func JPOrderCreate(j *JPOrder) error {
 	return nil
 }
 
+// JPOrderUnBalanceInit ...
+func JPOrderUnBalanceInit() {
+	db.Model(JPOrder{}).Where(&JPOrder{
+		Current:      "cybinner",
+		CurrentState: "UNBALANCE",
+	}).UpdateColumn(&JPOrder{
+		CurrentState: "INIT",
+	})
+}
+
 //HoldCYBOrderOne ...
 func HoldCYBOrderOne() (*JPOrder, error) {
 	var order1 JPOrder
@@ -123,6 +135,25 @@ func HoldCYBOrderOne() (*JPOrder, error) {
 				from jp_orders 
 				where current_state = 'INIT' 
 				and current = 'cyborder'
+				order by id
+				limit 1
+			)
+	returning *`
+	err := db.Raw(s).Scan(&order1).Error
+	return &order1, err
+}
+
+//HoldCYBInnerOrderOne ...
+func HoldCYBInnerOrderOne() (*JPOrder, error) {
+	var order1 JPOrder
+	s := `update jp_orders 
+	set current_state = 'PROCESSING' 
+	where id = (
+				select id 
+				from jp_orders 
+				where current_state = 'INIT' 
+				and type = 'WITHDRAW'
+				and current = 'cybinner'
 				order by id
 				limit 1
 			)

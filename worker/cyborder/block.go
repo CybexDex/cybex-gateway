@@ -30,10 +30,40 @@ func amountToReal(amountin cybTypes.Int64, prercison int) decimal.Decimal {
 }
 
 // HandleTR ...
-func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.SignedTransaction) {
+func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.SignedTransaction, prefix string) {
 	log.Infoln("bbb", op.To, tx.Signatures)
 	// 是否在币种中，没有的话，是否是gateway账号的UR。
 	gatewayTo := allgateways[op.To.String()]
+	gatewayFrom := allgateways[op.From.String()]
+	// 先看From,是充值或者Inner订单
+	if gatewayFrom != nil {
+		// 直接看sig,能不能找到,找到就更新。没有找到的话。先不管
+		// if gatewayTo != nil {
+		sig := tx.Signatures[0].String()
+		orders, err := model.JPOrderFind(&model.JPOrder{
+			Sig:          sig,
+			CurrentState: model.JPOrderStatusPending,
+		})
+		if err != nil {
+			log.Errorln("JPOrderFind", err)
+			return
+		}
+		orderlen := len(orders)
+		if orderlen == 0 {
+
+		} else if orderlen > 1 {
+			log.Errorln("orderlen > 1", sig)
+			return
+		} else if orderlen == 1 {
+			order := orders[0]
+			order.SetCurrent("order", model.JPOrderStatusInit, "")
+			err = order.Save()
+			if err != nil {
+				log.Errorln("save error", err)
+			}
+		}
+		return
+	}
 	//to gatewayin 的话就是充值,排除from gatewayout, from 特殊账户的
 	if gatewayTo != nil {
 		// log.Infoln("gatewayTo", *gatewayTo)
@@ -98,18 +128,20 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 			BlockChain: "",
 			BNOrderID:  "",
 			CybUser:    fromUser.Name,
-
-			From: fromUser.Name,
-			To:   addr,
-			Memo: memoout,
+			OutAddr:    addr,
 
 			TotalAmount:  realAmount,
 			Type:         "WITHDRAW",
-			Status:       "PENDING",
+			Status:       model.JPOrderStatusPending,
 			Current:      "cybinner",
-			CurrentState: "INIT",
+			CurrentState: model.JPOrderStatusInit,
+			CYBHash:      prefix,
 		}
 		log.Infoln(*jporder)
+		err = jporder.Save()
+		if err != nil {
+			log.Errorln("save error", err)
+		}
 	}
 }
 
@@ -183,8 +215,8 @@ func readBlock(cnum int, handler types.HandleInterface) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	for _, tx := range block.Transactions {
-		for _, op := range tx.Operations {
+	for txnum, tx := range block.Transactions {
+		for opnum, op := range tx.Operations {
 			opbyte, _ := json.Marshal(op)
 			var opt operations.TransferOperation
 			err = json.Unmarshal(opbyte, &opt)
@@ -192,7 +224,7 @@ func readBlock(cnum int, handler types.HandleInterface) ([]string, error) {
 				return nil, err
 			}
 			if opt.From.String() != "" {
-				handler.HandleTR(&opt, &tx)
+				handler.HandleTR(&opt, &tx, fmt.Sprintf("%d:%d:%d", cnum, txnum, opnum))
 			}
 		}
 	}

@@ -15,7 +15,7 @@ type GatewayAccount struct {
 
 // HandleInterface ...
 type HandleInterface interface {
-	HandleTR(op *operations.TransferOperation, tx *cybTypes.SignedTransaction)
+	HandleTR(op *operations.TransferOperation, tx *cybTypes.SignedTransaction, prefix string)
 }
 
 // AssetConfig ...

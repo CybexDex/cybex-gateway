@@ -45,6 +45,7 @@ func InitDB(host, port, username, password, dbname string) {
 		&Address{},
 		&Black{},
 		&OrderLog{},
+		&Easy{},
 	)
 }
 

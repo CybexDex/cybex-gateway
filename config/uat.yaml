@@ -19,7 +19,7 @@ cybserver:
   blockBegin: -1
 log:
   log_dir: ""
-  log_level: "DEBUG"
+  log_level: "INFO"
 assets:
   eth:
     name: "ETH"
@@ -36,6 +36,8 @@ assets:
       gateway: bbbusdtout1
       gatewaypass: 90be01e82b981c8f201c9a78a3d31f655743b29ff3274727b1439b093d04aa23
       coin: "CYB"
+      switch: true
+      fee: "0.0001"
       wait: "JADE.ETH"
       send: "bbbusdtin1"
       memopre: "withdraw:CybexGatewayDev"
