@@ -9,6 +9,7 @@ import (
 	"bitbucket.org/woyoutlz/bbb-gateway/model"
 	"bitbucket.org/woyoutlz/bbb-gateway/server/jp"
 	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
+	jpworker "bitbucket.org/woyoutlz/bbb-gateway/worker/jp"
 )
 
 func main() {
@@ -21,6 +22,7 @@ func main() {
 	logLevel := viper.GetString("log.log_level")
 	log.InitLog(logDir, logLevel, "[bbb]")
 	model.INITFromViper()
+	go jpworker.HandleWorker(5)
 	jp.StartServer()
 	// user.StartServer()
 }

@@ -45,11 +45,22 @@ type JPAddressResult struct {
 	Type    string `json:"type"`
 }
 
+// JPWithdrawResult ...
+type JPWithdrawResult JPOrderResult
+
 // JPAddressRequest ...
 type JPAddressRequest struct {
 	Type      string `json:"type"`
 	Timestamp int64  `json:"timestamp,omitempty"`
 	Callback  string `json:"callback,omitempty"`
+}
+
+// JPWithdrawRequest ...
+type JPWithdrawRequest struct {
+	Type     string `json:"type"`
+	To       string `json:"to"`
+	Value    string `json:"value"`
+	Sequence uint   `json:"sequence"`
 }
 
 // JPSendData ...

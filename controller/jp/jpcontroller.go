@@ -21,16 +21,35 @@ import (
 
 // HandleWithdraw ...
 func HandleWithdraw(result types.JPOrderResult) error {
-	// 事务
-	// 更新提现订单
-	// jporderID := result.ID
-	// 寻找提现订单
-	// jporder.update
-	// 告知record
-	// record.afterJPWithdraw
-	// 记录Done事件
-	// 或者抛出错误
-	return nil
+	res, err := model.JPOrderFind(&model.JPOrder{
+		BNOrderID: result.ID,
+		Current:   "jpsended",
+	})
+	if err != nil {
+		return utils.ErrorAdd(err, "HandleDeposit")
+	}
+	lenRes := len(res)
+	var ordernow *model.JPOrder
+	if lenRes == 1 {
+		order := res[0]
+		if order.Status == model.JPOrderStatusDone || order.Status == model.JPOrderStatusFailed {
+			// 如果已经是done或者fail,记录一条日志,返回错误
+			log.Errorln("final order cannot change", order.ID)
+			return fmt.Errorf("final order cannot change %d", order.ID)
+		}
+		order.Confirmations = result.Confirmations
+		order.CurrentState = strings.ToUpper(result.State)
+		ordernow = order
+	} else {
+		err = fmt.Errorf("Record lenth %d", lenRes)
+		log.Errorln(err, result.ID)
+		return nil
+	}
+	if ordernow.CurrentState == "DONE" {
+		ordernow.SetCurrent("done", "DONE", "")
+		ordernow.SetStatus("DONE")
+	}
+	return ordernow.Save()
 }
 
 // HandleDeposit ...
@@ -136,6 +155,39 @@ func DepositAddress(coin string) (address *types.JPAddressResult, err error) {
 		return nil, err
 	}
 	result := types.JPAddressResult{}
+	err = utils.ResultToStruct(data.Result, &result)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	return &result, err
+}
+
+// Withdraw ...
+func Withdraw(coin string, to string, value string, sequence uint) (address *types.JPOrderResult, err error) {
+	// 构造data消息体
+	requestObj := &types.JPWithdrawRequest{}
+	requestObj.Type = coin
+	requestObj.To = to
+	requestObj.Value = value
+	requestObj.Sequence = sequence
+	// 构造ecc部分
+	sendData, err := sendDataEcc(requestObj)
+	if err != nil {
+		fmt.Println(err)
+	}
+	data := types.JPEvent{}
+	fmt.Println(sendData.Data)
+	err = bnResult("/api/v1/transactions", sendData, &data)
+	if err != nil {
+		return nil, err
+	}
+	err = CheckComing(&data)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	result := types.JPOrderResult{}
 	err = utils.ResultToStruct(data.Result, &result)
 	if err != nil {
 		fmt.Println(err)

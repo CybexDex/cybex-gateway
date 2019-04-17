@@ -125,6 +125,25 @@ func JPOrderUnBalanceInit() {
 	})
 }
 
+// HoldJPWithdrawOne ...
+func HoldJPWithdrawOne() (*JPOrder, error) {
+	var order1 JPOrder
+	s := `update jp_orders 
+	set current_state = 'PROCESSING' 
+	where id = (
+				select id 
+				from jp_orders 
+				where current_state = 'INIT' 
+				and current = 'jp'
+				and type = 'WITHDRAW'
+				order by id
+				limit 1
+			)
+	returning *`
+	err := db.Raw(s).Scan(&order1).Error
+	return &order1, err
+}
+
 //HoldCYBOrderOne ...
 func HoldCYBOrderOne() (*JPOrder, error) {
 	var order1 JPOrder
