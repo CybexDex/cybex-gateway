@@ -45,27 +45,50 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 			CurrentState: model.JPOrderStatusPending,
 		})
 		if err != nil {
-			log.Errorln("JPOrderFind", err)
+			log.Errorln("JPOrderFind error", err)
 			return
 		}
-		orderlen := len(orders)
-		if orderlen == 0 {
-
-		} else if orderlen > 1 {
-			log.Errorln("orderlen > 1", sig)
-			return
-		} else if orderlen == 1 {
+		if len(orders) == 1 {
 			order := orders[0]
-			order.SetCurrent("order", model.JPOrderStatusInit, "")
-			err = order.Save()
+			if order.Type == model.JPOrderTypeDeposit {
+				order.SetCurrent("done", model.JPOrderStatusDone, "")
+				order.SetStatus(model.JPOrderStatusDone)
+			}
+			if order.Type == model.JPOrderTypeWithdraw {
+				order.SetCurrent("order", model.JPOrderStatusInit, "")
+			}
+			err := order.Save()
 			if err != nil {
 				log.Errorln("save error", err)
 			}
+		} else if len(orders) > 1 {
+			log.Errorln("sig len ", len(orders))
 		}
 		return
 	}
 	//to gatewayin 的话就是充值,排除from gatewayout, from 特殊账户的
 	if gatewayTo != nil {
+		// sig := tx.Signatures[0].String()
+		// orders, err := model.JPOrderFind(&model.JPOrder{
+		// 	Sig:          sig,
+		// 	CurrentState: model.JPOrderStatusPending,
+		// })
+		// if err != nil {
+		// 	log.Errorln("JPOrderFind error", err)
+		// 	return
+		// }
+		// if len(orders) == 1 {
+		// 	order := orders[0]
+		// 	order.SetCurrent("order", model.JPOrderStatusInit, "")
+		// 	err := order.Save()
+		// 	if err != nil {
+		// 		log.Errorln("save error", err)
+		// 	}
+		// 	return
+		// } else if len(orders) != 0 {
+		// 	log.Errorln("sig len ", len(orders))
+		// 	return
+		// }
 		// log.Infoln("gatewayTo", *gatewayTo)
 		fromUsers, err := api.GetAccounts(op.From)
 		fromUser := fromUsers[0]
@@ -135,7 +158,7 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 			Status:       model.JPOrderStatusPending,
 			Current:      "cybinner",
 			CurrentState: model.JPOrderStatusInit,
-			CYBHash:      prefix,
+			CYBHash:      &prefix,
 		}
 		log.Infoln(*jporder)
 		err = jporder.Save()
@@ -217,11 +240,16 @@ func readBlock(cnum int, handler types.HandleInterface) ([]string, error) {
 	}
 	for txnum, tx := range block.Transactions {
 		for opnum, op := range tx.Operations {
+			if op == nil {
+				// cancel all 等无法识别的type就会解析不到 op
+				continue
+			}
 			opbyte, _ := json.Marshal(op)
 			var opt operations.TransferOperation
 			err = json.Unmarshal(opbyte, &opt)
 			if err != nil {
-				return nil, err
+				log.Errorln(cnum, txnum, opnum, op)
+				continue
 			}
 			if opt.From.String() != "" {
 				handler.HandleTR(&opt, &tx, fmt.Sprintf("%d:%d:%d", cnum, txnum, opnum))

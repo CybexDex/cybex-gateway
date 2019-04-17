@@ -7,8 +7,12 @@ import (
 
 	"bitbucket.org/woyoutlz/bbb-gateway/config"
 	"bitbucket.org/woyoutlz/bbb-gateway/model"
+	"bitbucket.org/woyoutlz/bbb-gateway/server/jp"
 	"bitbucket.org/woyoutlz/bbb-gateway/server/user"
 	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
+	"bitbucket.org/woyoutlz/bbb-gateway/worker/cyborder"
+	jpworker "bitbucket.org/woyoutlz/bbb-gateway/worker/jp"
+	"bitbucket.org/woyoutlz/bbb-gateway/worker/order"
 )
 
 func main() {
@@ -22,5 +26,13 @@ func main() {
 	log.InitLog(logDir, logLevel, "[bbb]")
 	model.INITFromViper()
 
-	user.StartServer()
+	cyborder.InitNode()
+	cyborder.InitAsset()
+	go cyborder.HandleWorker(5)
+	go cyborder.BlockRead()
+
+	go order.HandleWorker(5)
+	go user.StartServer()
+	go jpworker.HandleWorker(5)
+	jp.StartServer()
 }

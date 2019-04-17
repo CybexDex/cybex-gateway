@@ -81,6 +81,7 @@ func HandleDepositOneTime() int {
 	if order1.Current == "cyborder" {
 		handleOrders(order1)
 	}
+	order1.Save()
 	return 0
 	// check order to process it
 }
@@ -203,14 +204,15 @@ func handleOrders(order *model.JPOrder) (err error) {
 			return err
 		}
 		log.Infoln("sendorder tx is ", *stx)
-	} else {
-		log.Infoln("cannot handle this action,order", order.ID)
-		order.SetCurrent("cyborder", model.JPOrderStatusFailed, "cannot handle this action")
+		order.Sig = stx.Signatures[0].String()
+		order.SetCurrent("cyborder", model.JPOrderStatusPending, "")
 		return nil
 	}
-	order.SetCurrent("cyborder", model.JPOrderStatusPending, "")
-	// order.SetStatus(model.JPOrderStatusDone)
+	log.Infoln("cannot handle this action,order", order.ID)
+	order.SetCurrent("cyborder", model.JPOrderStatusFailed, "cannot handle this action")
 	return nil
+
+	// order.SetStatus(model.JPOrderStatusDone)
 }
 
 func mySend(tosends []cybTypes.SimpleSend) (tx *cybTypes.SignedTransaction, err error) {

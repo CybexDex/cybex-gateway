@@ -55,10 +55,10 @@ type JPOrder struct {
 
 	Link string `json:"link"`
 
-	CYBHash  string `gorm:"unique;index;type:varchar(128)" json:"-"`
-	CYBHash2 string `gorm:"index;type:varchar(128)" json:"-"`
-	Sig      string `json:"-"`
-	Sig2     string `json:"-"`
+	CYBHash  *string `gorm:"unique;index;type:varchar(128)" json:"-"`
+	CYBHash2 string  `gorm:"index;type:varchar(128)" json:"-"`
+	Sig      string  `json:"-"`
+	Sig2     string  `json:"-"`
 
 	Current       string `json:"-"`
 	CurrentState  string `json:"-"`
