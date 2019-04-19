@@ -77,5 +77,9 @@ jp_deposit_eth
 
 float 计算问题
 
+## 安装使用
 
+export GO111MODULE=on
+
+env={env} go run cmd/all/main.go
 
