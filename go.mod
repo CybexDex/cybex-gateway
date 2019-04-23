@@ -15,6 +15,7 @@ require (
 	github.com/pquerna/ffjson v0.0.0-20181028064349-e517b90714f7 // indirect
 	github.com/sasha-s/go-deadlock v0.2.0 // indirect
 	github.com/shopspring/decimal v0.0.0-20180709203117-cd690d0c9e24
+	github.com/sirupsen/logrus v1.2.0
 	github.com/spf13/viper v1.3.2
 	github.com/tevino/abool v0.0.0-20170917061928-9b9efcf221b5 // indirect
 	golang.org/x/crypto v0.0.0-20190418165655-df01cb2cc480
