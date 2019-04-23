@@ -31,7 +31,7 @@ func amountToReal(amountin cybTypes.Int64, prercison int) decimal.Decimal {
 
 // HandleTR ...
 func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.SignedTransaction, prefix string) {
-	log.Infoln("bbb", op.To, tx.Signatures)
+	log.Infoln("HandleTX", op.To, tx.Signatures)
 	// 是否在币种中，没有的话，是否是gateway账号的UR。
 	gatewayTo := allgateways[op.To.String()]
 	gatewayFrom := allgateways[op.From.String()]
@@ -185,7 +185,7 @@ func InitAsset() {
 		if err != nil {
 			panic(err)
 		}
-		log.Infoln(assetC.Name)
+		// log.Infoln(assetC.Name)
 		allAssets[assetC.Name] = &assetC
 		account1, err := api.GetAccountByName(assetC.Deposit.Gateway)
 		if account1 == nil {
@@ -220,7 +220,7 @@ func InitAsset() {
 		allgateways[g1.Account.ID.String()] = &g1
 		allgateways[g2.Account.ID.String()] = &g2
 	}
-	log.Infoln(allgateways, allAssets)
+	// log.Infoln(allgateways, allAssets)
 }
 
 // Test ...

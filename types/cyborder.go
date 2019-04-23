@@ -38,6 +38,7 @@ type AssetConfig struct {
 		Wait        string `json:"wait"`
 		Send        string `json:"send"`
 		Switch      bool   `json:"switch"`
+		Fee         string `json:"fee"`
 		Memopre     string `json:"memopre"`
 	} `json:"withdraw"`
 }
