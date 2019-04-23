@@ -26,6 +26,6 @@ func GinBodyLogMiddleware(c *gin.Context) {
 	if statusCode >= 400 {
 		//ok this is an request with error, let's make a record for it
 		// now print body (or log in your preferred way)
-		log.Infoln("Response body: " + blw.body.String())
+		log.Warningln("Response body: " + blw.body.String())
 	}
 }

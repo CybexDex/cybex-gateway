@@ -1,12 +1,53 @@
 package user
 
 import (
+	"strconv"
+
 	"bitbucket.org/woyoutlz/bbb-gateway/controller/jp"
 	model "bitbucket.org/woyoutlz/bbb-gateway/model"
 	"bitbucket.org/woyoutlz/bbb-gateway/types"
 	"bitbucket.org/woyoutlz/bbb-gateway/utils"
+	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
+	apim "coding.net/yundkyy/cybexgolib/api"
 	"github.com/spf13/viper"
 )
+
+var api apim.BitsharesAPI
+
+// InitNode ...
+func InitNode() {
+	node := viper.GetString("cybserver.node")
+	api = apim.New(node, "")
+	if err := api.Connect(); err != nil {
+		panic(err)
+	}
+}
+
+//GetRecord ...
+func GetRecord(query *types.RecordsQuery) ([]*model.JPOrder, int, error) {
+	res, count, err := model.JPOrderRecord(query.User, query.Asset, query.FundType, query.Size, query.LastID)
+	return res, count, err
+}
+
+// CheckUser ...
+func CheckUser(expiration string, user string, sig string) (isok bool, ex int, err error) {
+	toSign := expiration + user
+	log.Infoln(user, toSign, sig)
+	re, err := api.VerifySign(user, toSign, sig)
+	if err != nil {
+		return false, 0, err
+	}
+	i, err := strconv.Atoi(expiration)
+	if err != nil {
+		return false, 0, err
+	}
+	if i > 1048239662000 {
+		ex = i / 1000
+	} else {
+		ex = i
+	}
+	return re, ex, nil
+}
 
 // GetBBBAssets ...
 func GetBBBAssets() (out []*types.UserResultBBB, err error) {

@@ -71,6 +71,22 @@ func JPOrderFind(j *JPOrder) (res []*JPOrder, err error) {
 	return res, err
 }
 
+// JPOrderRecord ...
+func JPOrderRecord(user string, asset string, bizType string, size string, lastID string) (res []*JPOrder, count int, err error) {
+	dbpre := db.Where(&JPOrder{
+		CybUser: user,
+		Type:    bizType,
+		Asset:   asset,
+	}).Where("id < ?", lastID).Order("id desc")
+	err = dbpre.Limit(size).Find(&res).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	xx := []*JPOrder{}
+	err = dbpre.Find(&xx).Count(&count).Error
+	return res, count, err
+}
+
 // Update ...
 func (j *JPOrder) Update(i *JPOrder) error {
 	return db.Model(JPOrder{}).Where("ID=?", j.ID).UpdateColumns(i).Error

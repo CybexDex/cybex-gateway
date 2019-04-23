@@ -13,6 +13,7 @@ jpserver:
   eccPub: 04ace32532c90652e1bae916248e427a7ab10aeeea1067949669a3f4da10965ef90d7297f538f23006a31f94fdcfaed9e8dd38c85ba7e285f727430332925aefe5 # 瑶池的pub
   appid: 100
 userserver:
+  auth: false
   port: ":8181"
 cybserver:
   node:  "ws://18.136.140.223:38090/" # "wss://hangzhou.51nebula.com/" #"ws://47.100.98.113:38090/"
