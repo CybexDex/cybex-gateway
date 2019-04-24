@@ -47,7 +47,7 @@ func handleOrders(order *model.JPOrder) error {
 		log.Errorln("jpc.Withdraw", err)
 		return err
 	}
-	order.BNOrderID = result.ID
+	order.BNOrderID = &result.ID
 	order.Current = "jpsended"
 	order.CurrentState = result.State
 	order.Confirmations = result.Confirmations

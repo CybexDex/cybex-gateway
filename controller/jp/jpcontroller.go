@@ -22,7 +22,7 @@ import (
 // HandleWithdraw ...
 func HandleWithdraw(result types.JPOrderResult) error {
 	res, err := model.JPOrderFind(&model.JPOrder{
-		BNOrderID: result.ID,
+		BNOrderID: &result.ID,
 		Current:   "jpsended",
 	})
 	if err != nil {
@@ -55,7 +55,7 @@ func HandleWithdraw(result types.JPOrderResult) error {
 // HandleDeposit ...
 func HandleDeposit(result types.JPOrderResult) (err error) {
 	res, err := model.JPOrderFind(&model.JPOrder{
-		BNOrderID: result.ID,
+		BNOrderID: &result.ID,
 		Current:   "jp",
 	})
 	if err != nil {
@@ -109,7 +109,7 @@ func createJPOrderWithDeposit(result types.JPOrderResult) (*model.JPOrder, error
 	jporder := &model.JPOrder{
 		Asset:      asset,
 		BlockChain: result.Type,
-		BNOrderID:  result.ID,
+		BNOrderID:  &result.ID,
 		CybUser:    user,
 		OutAddr:    result.From,
 		From:       result.From,

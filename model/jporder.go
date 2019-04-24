@@ -39,7 +39,7 @@ type JPOrder struct {
 	CybUser    string `json:"user"`
 	OutAddr    string `json:"outAddr"`
 
-	BNOrderID string `gorm:"index;" json:"bnOrderID"` // n to 1
+	BNOrderID *string `gorm:"unique;index;" json:"bnOrderID"` // n to 1
 
 	Index         int             `json:"index"`                                 //
 	Hash          string          `gorm:"index;type:varchar(128)" json:"hash"`   //

@@ -151,9 +151,9 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 		jporder := &model.JPOrder{
 			Asset:      assetConf.Name,
 			BlockChain: "",
-			BNOrderID:  "",
-			CybUser:    fromUser.Name,
-			OutAddr:    addr,
+			// BNOrderID:  "",
+			CybUser: fromUser.Name,
+			OutAddr: addr,
 
 			TotalAmount:  realAmount,
 			Type:         "WITHDRAW",

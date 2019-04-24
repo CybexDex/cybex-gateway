@@ -83,3 +83,10 @@ export GO111MODULE=on
 
 env={env} go run cmd/all/main.go
 
+### tips
+
+把一个字段变成uniqe
+
+```
+db.Model(&User{}).AddUniqueIndex("idx_user_name", "name")
+```
