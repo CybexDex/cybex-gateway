@@ -21,6 +21,8 @@ const (
 	JPOrderStatusDone = "DONE"
 	// JPOrderStatusFailed ...
 	JPOrderStatusFailed = "FAILED"
+	// JPOrderStatusUnbalance ...
+	JPOrderStatusUnbalance = "UNBALANCE"
 	//JPOrderStatusTerminate ...
 	JPOrderStatusTerminate = "TERMINATE"
 	// JPOrderTypeDeposit ...
@@ -135,9 +137,9 @@ func JPOrderCreate(j *JPOrder) error {
 func JPOrderUnBalanceInit() {
 	db.Model(JPOrder{}).Where(&JPOrder{
 		Current:      "cybinner",
-		CurrentState: "UNBALANCE",
+		CurrentState: JPOrderStatusUnbalance,
 	}).UpdateColumn(&JPOrder{
-		CurrentState: "INIT",
+		CurrentState: JPOrderStatusInit,
 	})
 }
 

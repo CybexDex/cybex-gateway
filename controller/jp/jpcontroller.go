@@ -46,8 +46,8 @@ func HandleWithdraw(result types.JPOrderResult) error {
 		return nil
 	}
 	if ordernow.CurrentState == "DONE" {
-		ordernow.SetCurrent("done", "DONE", "")
-		ordernow.SetStatus("DONE")
+		ordernow.SetCurrent("done", model.JPOrderStatusDone, "")
+		ordernow.SetStatus(model.JPOrderStatusDone)
 	}
 	return ordernow.Save()
 }
@@ -83,7 +83,7 @@ func HandleDeposit(result types.JPOrderResult) (err error) {
 		return fmt.Errorf("Record lenth %d", lenRes)
 	}
 	if ordernow.CurrentState == "DONE" {
-		ordernow.SetCurrent("order", "INIT", "")
+		ordernow.SetCurrent("order", model.JPOrderStatusInit, "")
 	}
 	return ordernow.Save()
 }

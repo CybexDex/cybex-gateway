@@ -132,7 +132,7 @@ func handleInnerOrders(order *model.JPOrder) (err error) {
 			if strings.Contains(err.Error(), "insufficient_balance") {
 				// 金额不够,等待去
 				log.Errorln("insufficient_balance", err)
-				order.SetCurrent("cybinner", "UNBALANCE", err.Error())
+				order.SetCurrent("cybinner", model.JPOrderStatusUnbalance, err.Error())
 				return nil
 			}
 			log.Errorln("xxxx", err)
