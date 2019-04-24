@@ -45,7 +45,7 @@ func HandleWithdraw(result types.JPOrderResult) error {
 		log.Errorln(err, result.ID)
 		return nil
 	}
-	if ordernow.CurrentState == "DONE" {
+	if ordernow.CurrentState == model.JPOrderStatusDone {
 		ordernow.SetCurrent("done", model.JPOrderStatusDone, "")
 		ordernow.SetStatus(model.JPOrderStatusDone)
 	}
@@ -82,7 +82,7 @@ func HandleDeposit(result types.JPOrderResult) (err error) {
 	} else {
 		return fmt.Errorf("Record lenth %d", lenRes)
 	}
-	if ordernow.CurrentState == "DONE" {
+	if ordernow.CurrentState == model.JPOrderStatusDone {
 		ordernow.SetCurrent("order", model.JPOrderStatusInit, "")
 	}
 	return ordernow.Save()
@@ -124,7 +124,7 @@ func createJPOrderWithDeposit(result types.JPOrderResult) (*model.JPOrder, error
 		UUHash:       fmt.Sprintf("%s_%s_%d", result.Type, result.Txid, result.N),
 		TotalAmount:  total,
 		Type:         result.BizType,
-		Status:       "PENDING",
+		Status:       model.JPOrderStatusPending,
 		Current:      "jp",
 		CurrentState: strings.ToUpper(result.State),
 	}

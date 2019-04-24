@@ -29,6 +29,12 @@ func GetRecord(query *types.RecordsQuery) ([]*model.JPOrder, int, error) {
 	return res, count, err
 }
 
+// RecordNotDone ...
+func RecordNotDone(fromUpdate string, offset int, limit int) (res []*model.JPOrder, err error) {
+	res, err = model.JPOrderNotDone(fromUpdate, offset, limit)
+	return res, err
+}
+
 // CheckUser ...
 func CheckUser(expiration string, user string, sig string) (isok bool, ex int, err error) {
 	toSign := expiration + user

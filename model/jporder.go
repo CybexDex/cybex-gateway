@@ -62,14 +62,22 @@ type JPOrder struct {
 	Sig      string  `json:"-"`
 	Sig2     string  `json:"-"`
 
-	Current       string `json:"-"`
-	CurrentState  string `json:"-"`
-	CurrentReason string `json:"-"`
+	Current       string `json:"current"`
+	CurrentState  string `json:"currentState"`
+	CurrentReason string `json:"currentReason"`
 }
 
 // JPOrderFind ...
 func JPOrderFind(j *JPOrder) (res []*JPOrder, err error) {
 	err = db.Where(j).Find(&res).Error
+	return res, err
+}
+
+// JPOrderNotDone ...
+func JPOrderNotDone(fromUpdate string, offset int, limit int) (res []*JPOrder, err error) {
+	s := fmt.Sprintf(`select * from jp_orders where status != '%s' and updated_at + interval '%s' < now()  order by id desc offset %d limit %d;`,
+		"DONE", fromUpdate, offset, limit)
+	err = db.Raw(s).Scan(&res).Error
 	return res, err
 }
 

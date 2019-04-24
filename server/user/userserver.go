@@ -111,11 +111,25 @@ func StartServer() {
 		}
 		c.JSON(200, address)
 	})
-	authorized := r.Group("/")
+	r.GET("/v1/record/undone/:interval", func(c *gin.Context) {
+		interval := c.Param("interval")
+		size := 20
+		offset := 0
+		res, err := userc.RecordNotDone(interval, offset, size)
+		if err != nil {
+			log.Errorln("user address", err)
+			c.JSON(400, gin.H{
+				"message": err.Error(),
+			})
+			return
+		}
+		c.JSON(200, res)
+	})
+	usersigned := r.Group("/")
 	if viper.GetBool("userserver.auth") {
-		authorized.Use(authMiddleware)
+		usersigned.Use(authMiddleware)
 	}
-	authorized.GET("/v1/users/:user/assets/:asset/address", func(c *gin.Context) {
+	usersigned.GET("/v1/users/:user/assets/:asset/address", func(c *gin.Context) {
 		user := c.Param("user")
 		asset := c.Param("asset")
 		log.Infoln("GetAddress", user, asset)
@@ -129,7 +143,7 @@ func StartServer() {
 		}
 		c.JSON(200, address)
 	})
-	authorized.GET("/v1/users/:user/records", func(c *gin.Context) {
+	usersigned.GET("/v1/users/:user/records", func(c *gin.Context) {
 		user := c.Param("user")
 		log.Infoln("GetRecord", user)
 		query := &types.RecordsQuery{}
