@@ -108,7 +108,7 @@ func handleInnerOrders(order *model.JPOrder) (err error) {
 	waitCoin := assetC.Withdraw.Wait
 	SendTo := assetC.Withdraw.Send
 	if action == "BBB" {
-		log.Infoln(gatewayAccount, gatewayPassword, waitCoin, SendTo)
+		// log.Infoln(gatewayAccount, gatewayPassword, waitCoin, SendTo)
 		// 构造两个send to send
 		tosends := []cybTypes.SimpleSend{}
 		tosend1 := cybTypes.SimpleSend{
@@ -139,7 +139,8 @@ func handleInnerOrders(order *model.JPOrder) (err error) {
 			order.SetCurrent("cybinner", model.JPOrderStatusFailed, err.Error())
 			return err
 		}
-		log.Infoln("sendorder tx is ", *stx)
+		// log.Infoln("sendorder tx is ", *stx)
+		log.Infof("order:%d,%s:%+v\n", order.ID, "sendInnerOrder", *stx)
 		order.Sig = stx.Signatures[0].String()
 		order.SetCurrent("cybinner", model.JPOrderStatusPending, "")
 	} else {
@@ -166,12 +167,12 @@ func handleOrders(order *model.JPOrder) (err error) {
 	gatewayPassword := assetC.Deposit.Gatewaypass
 	sendTO := assetC.Deposit.Sendto
 	if action == "BBB" {
-		log.Infoln(gatewayAccount, gatewayPassword, sendTO)
+		// log.Infoln(gatewayAccount, sendTO)
 		//
 		tosends := []cybTypes.SimpleSend{}
 		for _, dasset := range sendTO {
 			ds := strings.Split(dasset, ":")
-			log.Infoln("ds", ds)
+			// log.Infoln("ds", ds)
 			assetname := ds[0]
 			to := ""
 			if len(ds) > 1 {
@@ -203,7 +204,8 @@ func handleOrders(order *model.JPOrder) (err error) {
 			order.SetCurrent("cyborder", model.JPOrderStatusFailed, "send error")
 			return err
 		}
-		log.Infoln("sendorder tx is ", *stx)
+		log.Infof("order:%d,%s:%+v\n", order.ID, "sendorder", *stx)
+		// log.Infoln("sendorder tx is ", *stx)
 		order.Sig = stx.Signatures[0].String()
 		order.SetCurrent("cyborder", model.JPOrderStatusPending, "")
 		return nil

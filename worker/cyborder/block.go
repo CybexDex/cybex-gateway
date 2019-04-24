@@ -25,18 +25,19 @@ type BBBHandler struct {
 
 func amountToReal(amountin cybTypes.Int64, prercison int) decimal.Decimal {
 	d := decimal.New(int64(amountin), int32(-1*prercison))
-	log.Infoln(d.String())
+	// log.Infoln(d.String())
 	return d
 }
 
 // HandleTR ...
 func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.SignedTransaction, prefix string) {
-	log.Infoln("HandleTX", op.To, tx.Signatures)
+	// log.Infoln("HandleTX", op.To, tx.Signatures)
 	// 是否在币种中，没有的话，是否是gateway账号的UR。
 	gatewayTo := allgateways[op.To.String()]
 	gatewayFrom := allgateways[op.From.String()]
 	// 先看From,是充值或者Inner订单
 	if gatewayFrom != nil {
+		log.Infof("HandleTX:,from:%s,op:%+v,tx.sig:%v\n", gatewayFrom.Account.Name, op, tx.Signatures)
 		// 直接看sig,能不能找到,找到就更新。没有找到的话。先不管
 		// if gatewayTo != nil {
 		sig := tx.Signatures[0].String()
@@ -90,6 +91,7 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 		// 	return
 		// }
 		// log.Infoln("gatewayTo", *gatewayTo)
+		log.Infof("HandleTX:,to:%s,op:%+v,tx.sig:%v\n", gatewayTo.Account.Name, op, tx.Signatures)
 		fromUsers, err := api.GetAccounts(op.From)
 		fromUser := fromUsers[0]
 		assetChain, err := api.GetAsset(op.Amount.Asset.String())
@@ -143,7 +145,7 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 			return
 		}
 		addr := strings.Join(s2[2:], ":")
-		log.Infoln("withdraw:", addr, *op)
+		// log.Infoln("withdraw:", addr, *op)
 		// 创建jporder对象
 		realAmount := amountToReal(op.Amount.Amount, assetChain.Precision)
 		jporder := &model.JPOrder{
@@ -160,11 +162,11 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 			CurrentState: model.JPOrderStatusInit,
 			CYBHash:      &prefix,
 		}
-		log.Infoln(*jporder)
 		err = jporder.Save()
 		if err != nil {
-			log.Errorln("save error", err)
+			log.Errorln("save jporder error", err)
 		}
+		log.Infof("order:%d,%s:%+v\n", jporder.ID, "save_withdraw", *jporder)
 	}
 }
 

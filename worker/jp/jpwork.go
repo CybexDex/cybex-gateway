@@ -41,7 +41,7 @@ func HoldOne() (*model.JPOrder, error) {
 	return order, err
 }
 func handleOrders(order *model.JPOrder) error {
-	log.Infoln(*order)
+	log.Infof("order:%d,%s:%+v\n", order.ID, "jpwork_handle", *order)
 	result, err := jpc.Withdraw(order.Asset, order.OutAddr, order.Amount.String(), order.ID)
 	if err != nil {
 		log.Errorln("jpc.Withdraw", err)

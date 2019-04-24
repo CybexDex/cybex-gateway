@@ -119,7 +119,7 @@ func (j *JPOrder) Log(event string, message string) {
 		Message: message,
 	}
 	db.Create(log1)
-	log.Infoln(*log1)
+	log.Infof("order:%d,%s:%+v\n", log1.OrderID, "log", *log1)
 }
 
 // JPOrderCreate ...
