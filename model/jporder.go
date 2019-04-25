@@ -81,6 +81,14 @@ func JPOrderNotDone(fromUpdate string, offset int, limit int) (res []*JPOrder, e
 	return res, err
 }
 
+// JPOrderCurrentNotDone ...
+func JPOrderCurrentNotDone(current string, fromUpdate string, offset int, limit int) (res []*JPOrder, err error) {
+	s := fmt.Sprintf(`select * from jp_orders where status != '%s' and current = '%s' and current_state != 'TERMINATE' and updated_at + interval '%s' < now()  order by id desc offset %d limit %d;`,
+		"DONE", current, fromUpdate, offset, limit)
+	err = db.Raw(s).Scan(&res).Error
+	return res, err
+}
+
 // JPOrderRecord ...
 func JPOrderRecord(user string, asset string, bizType string, size string, lastID string) (res []*JPOrder, count int, err error) {
 	dbpre := db.Where(&JPOrder{
