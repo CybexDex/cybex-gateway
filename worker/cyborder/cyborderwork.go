@@ -127,7 +127,7 @@ func handleInnerOrders(order *model.JPOrder) (err error) {
 		}
 		tosends = append(tosends, tosend1, tosend2)
 		// log.Infoln(tosends)
-		stx, err := mySend(tosends)
+		stx, err := mySend(tosends, order)
 		if err != nil {
 			if strings.Contains(err.Error(), "insufficient_balance") {
 				// 金额不够,等待去
@@ -141,7 +141,7 @@ func handleInnerOrders(order *model.JPOrder) (err error) {
 		}
 		// log.Infoln("sendorder tx is ", *stx)
 		log.Infof("order:%d,%s:%+v\n", order.ID, "sendInnerOrder", *stx)
-		order.Sig = stx.Signatures[0].String()
+		// order.Sig = stx.Signatures[0].String()
 		order.SetCurrent("cybinner", model.JPOrderStatusPending, "")
 	} else {
 		log.Infoln("cannot handle this action,order", order.ID)
@@ -198,7 +198,7 @@ func handleOrders(order *model.JPOrder) (err error) {
 			tosends = append(tosends, tosend)
 		}
 		// log.Infoln(tosends)
-		stx, err := mySend(tosends)
+		stx, err := mySend(tosends, order)
 		if err != nil {
 			log.Errorln("xxxx", err)
 			order.SetCurrent("cyborder", model.JPOrderStatusFailed, "send error")
@@ -206,7 +206,7 @@ func handleOrders(order *model.JPOrder) (err error) {
 		}
 		log.Infof("order:%d,%s:%+v\n", order.ID, "sendorder", *stx)
 		// log.Infoln("sendorder tx is ", *stx)
-		order.Sig = stx.Signatures[0].String()
+		// order.Sig = stx.Signatures[0].String()
 		order.SetCurrent("cyborder", model.JPOrderStatusPending, "")
 		return nil
 	}
@@ -217,7 +217,7 @@ func handleOrders(order *model.JPOrder) (err error) {
 	// order.SetStatus(model.JPOrderStatusDone)
 }
 
-func mySend(tosends []cybTypes.SimpleSend) (tx *cybTypes.SignedTransaction, err error) {
+func mySend(tosends []cybTypes.SimpleSend, order *model.JPOrder) (tx *cybTypes.SignedTransaction, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			// log.Errorf("%v, stack: %s", r, debug.Stack())
@@ -225,6 +225,20 @@ func mySend(tosends []cybTypes.SimpleSend) (tx *cybTypes.SignedTransaction, err 
 			err = fmt.Errorf("send Error")
 		}
 	}()
-	tx, err = api.Sends(tosends)
-	return tx, err
+	tx, err = api.PreSends(tosends)
+	if err != nil {
+		log.Errorln("updateAllUnDone", err)
+		return tx, err
+	}
+	order.Sig = tx.Signatures[0].String()
+	err = order.Save()
+	if err != nil {
+		log.Errorln("updateAllUnDone", err)
+		return tx, err
+	}
+	if err := api.BroadcastTransaction(tx); err != nil {
+		//log.Fatal(errors.Annotate(err, "BroadcastTransaction"))
+		return nil, err
+	}
+	return tx, nil
 }
