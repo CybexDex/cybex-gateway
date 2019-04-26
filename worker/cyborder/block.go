@@ -69,28 +69,6 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 	}
 	//to gatewayin 的话就是充值,排除from gatewayout, from 特殊账户的
 	if gatewayTo != nil {
-		// sig := tx.Signatures[0].String()
-		// orders, err := model.JPOrderFind(&model.JPOrder{
-		// 	Sig:          sig,
-		// 	CurrentState: model.JPOrderStatusPending,
-		// })
-		// if err != nil {
-		// 	log.Errorln("JPOrderFind error", err)
-		// 	return
-		// }
-		// if len(orders) == 1 {
-		// 	order := orders[0]
-		// 	order.SetCurrent("order", model.JPOrderStatusInit, "")
-		// 	err := order.Save()
-		// 	if err != nil {
-		// 		log.Errorln("save error", err)
-		// 	}
-		// 	return
-		// } else if len(orders) != 0 {
-		// 	log.Errorln("sig len ", len(orders))
-		// 	return
-		// }
-		// log.Infoln("gatewayTo", *gatewayTo)
 		log.Infof("HandleTX:,to:%s,op:%+v,tx.sig:%v\n", gatewayTo.Account.Name, op, tx.Signatures)
 		fromUsers, err := api.GetAccounts(op.From)
 		fromUser := fromUsers[0]
@@ -326,6 +304,10 @@ func handleBlock() {
 	}
 	// get blockhead
 	blockheadNum, err := getHeadNum()
+	if err !=nil {
+		log.Errorln(err)
+		return
+	}
 	log.Debugln("last", lastBlockNum, "head", blockheadNum, err)
 	if lastBlockNum >= blockheadNum {
 		return

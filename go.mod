@@ -18,6 +18,9 @@ require (
 	github.com/sirupsen/logrus v1.2.0
 	github.com/spf13/viper v1.3.2
 	github.com/tevino/abool v0.0.0-20170917061928-9b9efcf221b5 // indirect
+	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c // indirect
+	github.com/xdg/stringprep v1.0.0 // indirect
+	go.mongodb.org/mongo-driver v1.0.1
 	golang.org/x/crypto v0.0.0-20190418165655-df01cb2cc480
 	gopkg.in/go-playground/validator.v8 v8.18.2 // indirect
 	gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637 // indirect
