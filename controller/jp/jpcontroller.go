@@ -42,7 +42,7 @@ func HandleWithdraw(result types.JPOrderResult) error {
 		ordernow = order
 	} else {
 		err = fmt.Errorf("Record lenth %d", lenRes)
-		log.Errorln(err, result.ID)
+		log.Errorln(err, "resultID:", result.ID)
 		return nil
 	}
 	if ordernow.CurrentState == model.JPOrderStatusDone {
@@ -177,7 +177,7 @@ func Withdraw(coin string, to string, value string, sequence uint) (address *typ
 		fmt.Println(err)
 	}
 	data := types.JPEvent{}
-	fmt.Println(sendData.Data)
+	// fmt.Println(sendData.Data)
 	err = bnResult("/api/v1/transactions", sendData, &data)
 	if err != nil {
 		return nil, err

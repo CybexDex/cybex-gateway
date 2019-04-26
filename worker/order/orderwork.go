@@ -25,9 +25,9 @@ func updateAllUnDone() {
 	}
 	for _, order := range res {
 		switch order.CurrentState {
-		case "fail":
+		case model.JPOrderStatusFailed:
 			order.SetCurrent("order", model.JPOrderStatusInit, "fail to init")
-		case "processing":
+		case model.JPOrderStatusProcessing:
 			order.SetCurrent("order", model.JPOrderStatusInit, "processing to init")
 		}
 		err = order.Save()

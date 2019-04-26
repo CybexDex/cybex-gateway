@@ -34,11 +34,35 @@ func HoldInnerOne() (*model.JPOrder, error) {
 	order, err := model.HoldCYBInnerOrderOne()
 	return order, err
 }
+func updateAllUnDone(current string) {
+	res, err := model.JPOrderCurrentNotDone(current, "1m", 0, 10)
+	if err != nil {
+		log.Errorln("updateAllUnDone", err)
+		return
+	}
+	for _, order := range res {
+		switch order.CurrentState {
+		case model.JPOrderStatusFailed:
+			order.SetCurrent(current, model.JPOrderStatusInit, "fail to init")
+		case model.JPOrderStatusProcessing:
+			// 如果sig不存在
+			if order.Sig == "" {
+				order.SetCurrent(current, model.JPOrderStatusInit, "processing to init")
+			}
+		}
+		err = order.Save()
+		if err != nil {
+			log.Errorln("updateAllUnDone", err)
+		}
+	}
+}
 
 // HandleWorker ...
 func HandleWorker(seconds int) {
 	for {
 		updateAllUnBalance()
+		updateAllUnDone("cyborder")
+		updateAllUnDone("cybinner")
 		for {
 			ret := HandleDepositOneTime()
 			if ret != 0 {
@@ -145,7 +169,7 @@ func handleInnerOrders(order *model.JPOrder) (err error) {
 		order.SetCurrent("cybinner", model.JPOrderStatusPending, "")
 	} else {
 		log.Infoln("cannot handle this action,order", order.ID)
-		order.SetCurrent("cybinner", model.JPOrderStatusFailed, "cannot handle this action")
+		order.SetCurrent("cybinner", model.JPOrderStatusTerminate, "cannot handle this action")
 		return nil
 	}
 	return nil
@@ -211,7 +235,7 @@ func handleOrders(order *model.JPOrder) (err error) {
 		return nil
 	}
 	log.Infoln("cannot handle this action,order", order.ID)
-	order.SetCurrent("cyborder", model.JPOrderStatusFailed, "cannot handle this action")
+	order.SetCurrent("cyborder", model.JPOrderStatusTerminate, "cannot handle this action")
 	return nil
 
 	// order.SetStatus(model.JPOrderStatusDone)
