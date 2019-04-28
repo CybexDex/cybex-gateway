@@ -90,3 +90,14 @@ env={env} go run cmd/all/main.go
 ```
 db.Model(&User{}).AddUniqueIndex("idx_user_name", "name")
 ```
+
+## gateway 改造
+
+1. 资产全部配置化
+2. 从mongodb迁移资产。
+3. 从mongodb迁移地址
+4. 实现从老网关获取充提记录。
+5. 发送的memo字段变化
+6. 更强大的record query支持，使用admin api的。
+7. api文档
+  https://app.swaggerhub.com/apis-docs/woyoutlz/gateway/1.0.0#/record/getRecords
