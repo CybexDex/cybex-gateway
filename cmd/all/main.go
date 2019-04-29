@@ -20,6 +20,7 @@ func main() {
 	if len(env) == 0 {
 		env = "dev"
 	}
+	// init configs
 	config.LoadConfig(env)
 	logDir := viper.GetString("log.log_dir")
 	logLevel := viper.GetString("log.log_level")
@@ -28,6 +29,7 @@ func main() {
 
 	cyborder.InitNode()
 	cyborder.InitAsset()
+	// start worker and server
 	go cyborder.HandleWorker(5)
 	go cyborder.BlockRead()
 

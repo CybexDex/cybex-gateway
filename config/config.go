@@ -18,7 +18,11 @@ func LoadConfig(env string) {
 	}
 	viper.Get("")
 }
-
+// ConfGetString ...
+func ConfGetString(name string ,path string)string {
+	sub := viper.Sub(name)
+	return sub.GetString(path)
+}
 //SeedString ...
 func SeedString(path string) string {
 	return ""
