@@ -243,6 +243,9 @@ func handleBlockNum(cnum int) {
 	cyborders, err := readBlock(cnum, &handler)
 	if err != nil {
 		log.Errorln(err)
+		if err == apim.ErrShutdown {
+			api.Connect()
+		}
 		return
 	}
 	// log.Infoln(cyborders)
