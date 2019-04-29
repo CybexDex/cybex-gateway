@@ -31,6 +31,12 @@ const (
 	JPOrderTypeWithdraw = "WITHDRAW"
 )
 
+// RecordAsset ...
+type RecordAsset struct {
+	Asset string `json:"asset"`
+	Total uint   `json:"total"`
+}
+
 // JPOrder ...
 type JPOrder struct {
 	gorm.Model
@@ -87,6 +93,13 @@ func JPOrderCurrentNotDone(current string, fromUpdate string, offset int, limit 
 		"DONE", current, fromUpdate, offset, limit)
 	err = db.Raw(s).Scan(&res).Error
 	return res, err
+}
+
+// JPOrderRecordAsset ...
+func JPOrderRecordAsset(user string) (out []*RecordAsset, err error) {
+	s := fmt.Sprintf(`select asset,sum(1) as total from jp_orders where jp_orders.cyb_user='%s' group by asset;`, user)
+	err = db.Debug().Raw(s).Scan(&out).Error
+	return out, err
 }
 
 // JPOrderRecord ...

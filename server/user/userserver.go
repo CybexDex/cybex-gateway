@@ -169,6 +169,21 @@ func notDone(c *gin.Context) {
 	}
 	c.JSON(200, res)
 }
+func recordAssets(c *gin.Context) {
+	user := c.Param("user")
+	res, err := userc.GetRecordAsset(user)
+	if err != nil {
+		log.Errorln("recordAssets", err)
+		c.JSON(400, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(200, gin.H{
+		"records": res,
+		"total":   len(res),
+	})
+}
 func recordList(c *gin.Context) {
 	user := c.Param("user")
 	log.Infoln("GetRecord", user)
@@ -247,6 +262,8 @@ func StartServer() {
 	usersigned.POST("/v1/users/:user/assets/:asset/address/new", newAddress)
 	usersigned.GET("/v1/assets/:asset/address/:address/verify", verifyAddress)
 	usersigned.GET("/v1/users/:user/records", recordList)
+	usersigned.GET("/v1/users/:user/assets", recordAssets)
+
 	port := viper.GetString("userserver.port")
 	log.Infoln("userserver start at", port)
 	r.Run(port) // listen and serve on 0.0.0.0:8080

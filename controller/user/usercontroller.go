@@ -23,6 +23,12 @@ func InitNode() {
 	}
 }
 
+// GetRecordAsset ...
+func GetRecordAsset(user string) ([]*model.RecordAsset, error) {
+	res, err := model.JPOrderRecordAsset(user)
+	return res, err
+}
+
 //GetRecord ...
 func GetRecord(query *types.RecordsQuery) ([]*model.JPOrder, int, error) {
 	res, count, err := model.JPOrderRecord(query.User, query.Asset, query.FundType, query.Size, query.LastID)
