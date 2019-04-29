@@ -133,6 +133,34 @@ func createJPOrderWithDeposit(result types.JPOrderResult) (*model.JPOrder, error
 	return jporder, nil
 }
 
+// VerifyAddress ...
+func VerifyAddress(asset string, address string) (res *types.VerifyRes, err error) {
+	requestAddress := &types.JPAddressRequest{}
+	requestAddress.Type = asset
+	sendData, err := sendDataEcc(requestAddress)
+	if err != nil {
+		fmt.Println(err)
+	}
+	data := types.JPEvent{}
+	log.Infoln(sendData.Data)
+	err = bnResult("/api/v1/addresses/"+address+"/verify", sendData, &data)
+	if err != nil {
+		return nil, err
+	}
+	err = CheckComing(&data)
+	if err != nil {
+		log.Errorln(err)
+		return nil, err
+	}
+	result := types.VerifyRes{}
+	err = utils.ResultToStruct(data.Result, &result)
+	if err != nil {
+		log.Errorln(err)
+		return nil, err
+	}
+	return &result, err
+}
+
 // DepositAddress ...
 func DepositAddress(coin string) (address *types.JPAddressResult, err error) {
 	// 构造data消息体
@@ -144,20 +172,20 @@ func DepositAddress(coin string) (address *types.JPAddressResult, err error) {
 		fmt.Println(err)
 	}
 	data := types.JPEvent{}
-	fmt.Println(sendData.Data)
+	log.Infoln(sendData.Data)
 	err = bnResult("/api/v1/addresses/new", sendData, &data)
 	if err != nil {
 		return nil, err
 	}
 	err = CheckComing(&data)
 	if err != nil {
-		fmt.Println(err)
+		log.Errorln(err)
 		return nil, err
 	}
 	result := types.JPAddressResult{}
 	err = utils.ResultToStruct(data.Result, &result)
 	if err != nil {
-		fmt.Println(err)
+		log.Errorln(err)
 		return nil, err
 	}
 	return &result, err

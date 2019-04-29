@@ -89,6 +89,142 @@ func authMiddleware(c *gin.Context) {
 	// Call the next handler, which can be another middleware in the chain, or the final handler.
 	c.Next()
 }
+func getAssets(c *gin.Context) {
+	address, err := userc.GetAssets()
+	if err != nil {
+		log.Errorln("GetAssets", err)
+		c.JSON(400, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(200, address)
+}
+func getAddress(c *gin.Context) {
+	user := c.Param("user")
+	asset := c.Param("asset")
+	log.Infoln("GetAddress", user, asset)
+	asset = strings.ToUpper(asset)
+	address, err := userc.GetAddress(user, asset)
+	if err != nil {
+		log.Errorln("user address", err)
+		c.JSON(400, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(200, address)
+}
+func verifyAddress(c *gin.Context) {
+	address := c.Param("address")
+	asset := c.Param("asset")
+	asset = strings.ToUpper(asset)
+	verifyResult, err := userc.VerifyAddress(asset, address)
+	if err != nil {
+		log.Errorln("verifyResult", err)
+		c.JSON(400, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(200, verifyResult)
+}
+func newAddress(c *gin.Context) {
+	user := c.Param("user")
+	asset := c.Param("asset")
+	log.Infoln("newAddress", user, asset)
+	asset = strings.ToUpper(asset)
+	address, err := userc.NewAddress(user, asset)
+	if err != nil {
+		log.Errorln("user newAddress", err)
+		c.JSON(400, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(200, address)
+}
+func bbbAsset(c *gin.Context) {
+	address, err := userc.GetBBBAssets()
+	if err != nil {
+		log.Errorln("user address", err)
+		c.JSON(400, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(200, address)
+}
+func notDone(c *gin.Context) {
+	interval := c.Param("interval")
+	size := 20
+	offset := 0
+	res, err := userc.RecordNotDone(interval, offset, size)
+	if err != nil {
+		log.Errorln("user address", err)
+		c.JSON(400, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(200, res)
+}
+func recordList(c *gin.Context) {
+	user := c.Param("user")
+	log.Infoln("GetRecord", user)
+	query := &types.RecordsQuery{}
+	err := c.Bind(query)
+	if err != nil {
+		log.Errorln("Bind", err)
+		c.JSON(400, gin.H{
+			"message": err.Error(),
+		})
+	}
+	query.FundType = strings.ToUpper(query.FundType)
+	query.User = user
+	if query.Size == "" {
+		query.Size = "10"
+	}
+	if query.LastID == "" {
+		query.LastID = "99999999"
+	}
+	log.Infoln("GetRecord", *query)
+	res, total, err := userc.GetRecord(query)
+	var out []*types.Record
+	for _, re1 := range res {
+		confirms := fmt.Sprintf("%d", re1.Confirmations)
+		record := &types.Record{
+			Type:        re1.Type,
+			ID:          re1.ID,
+			UpdatedAt:   re1.UpdatedAt,
+			CybexName:   re1.CybUser,
+			OutAddr:     re1.OutAddr,
+			Confirms:    confirms,
+			Asset:       re1.Asset,
+			OutHash:     re1.Hash,
+			CybHash:     re1.CYBHash,
+			TotalAmount: re1.TotalAmount.String(),
+			Amount:      re1.Amount.String(),
+			Fee:         re1.Fee.String(),
+			Status:      re1.Status,
+			CreatedAt:   re1.CreatedAt,
+			Link:        re1.Link,
+		}
+		out = append(out, record)
+	}
+	if err != nil {
+		log.Errorln("GetRecord", err)
+		c.JSON(400, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(200, gin.H{
+		"records": out,
+		"size":    query.Size,
+		"total":   total,
+	})
+}
 
 // StartServer ...
 func StartServer() {
@@ -100,106 +236,17 @@ func StartServer() {
 		ecc.TestECCSign()
 		c.JSON(200, gin.H{})
 	})
-	r.GET("/v1/bbb", func(c *gin.Context) {
-		address, err := userc.GetBBBAssets()
-		if err != nil {
-			log.Errorln("user address", err)
-			c.JSON(400, gin.H{
-				"message": err.Error(),
-			})
-			return
-		}
-		c.JSON(200, address)
-	})
-	r.GET("/v1/record/undone/:interval", func(c *gin.Context) {
-		interval := c.Param("interval")
-		size := 20
-		offset := 0
-		res, err := userc.RecordNotDone(interval, offset, size)
-		if err != nil {
-			log.Errorln("user address", err)
-			c.JSON(400, gin.H{
-				"message": err.Error(),
-			})
-			return
-		}
-		c.JSON(200, res)
-	})
+	r.GET("/v1/assets", getAssets)
+	r.GET("/v1/bbb", bbbAsset)
+	r.GET("/v1/record/undone/:interval", notDone)
 	usersigned := r.Group("/")
 	if viper.GetBool("userserver.auth") {
 		usersigned.Use(authMiddleware)
 	}
-	usersigned.GET("/v1/users/:user/assets/:asset/address", func(c *gin.Context) {
-		user := c.Param("user")
-		asset := c.Param("asset")
-		log.Infoln("GetAddress", user, asset)
-		address, err := userc.GetAddress(user, asset)
-		if err != nil {
-			log.Errorln("user address", err)
-			c.JSON(400, gin.H{
-				"message": err.Error(),
-			})
-			return
-		}
-		c.JSON(200, address)
-	})
-	usersigned.GET("/v1/users/:user/records", func(c *gin.Context) {
-		user := c.Param("user")
-		log.Infoln("GetRecord", user)
-		query := &types.RecordsQuery{}
-		err := c.Bind(query)
-		if err != nil {
-			log.Errorln("Bind", err)
-			c.JSON(400, gin.H{
-				"message": err.Error(),
-			})
-		}
-		query.FundType = strings.ToUpper(query.FundType)
-		query.User = user
-		if query.Size == "" {
-			query.Size = "10"
-		}
-		if query.LastID == "" {
-			query.LastID = "99999999"
-		}
-		log.Infoln("GetRecord", *query)
-		res, total, err := userc.GetRecord(query)
-		var out []*types.Record
-		for _, re1 := range res {
-			confirms := fmt.Sprintf("%d", re1.Confirmations)
-			record := &types.Record{
-				Type:        re1.Type,
-				ID:          re1.ID,
-				UpdatedAt:   re1.UpdatedAt,
-				CybexName:   re1.CybUser,
-				OutAddr:     re1.OutAddr,
-				Confirms:    confirms,
-				Asset:       re1.Asset,
-				OutHash:     re1.Hash,
-				CybHash:     re1.CYBHash,
-				TotalAmount: re1.TotalAmount.String(),
-				Amount:      re1.Amount.String(),
-				Fee:         re1.Fee.String(),
-				Status:      re1.Status,
-				CreatedAt:   re1.CreatedAt,
-				Link:        re1.Link,
-			}
-			out = append(out, record)
-		}
-		if err != nil {
-			log.Errorln("GetRecord", err)
-			c.JSON(400, gin.H{
-				"message": err.Error(),
-			})
-			return
-		}
-		c.JSON(200, gin.H{
-			"records": out,
-			"size":    query.Size,
-			"total":   total,
-		})
-	})
-
+	usersigned.GET("/v1/users/:user/assets/:asset/address", getAddress)
+	usersigned.POST("/v1/users/:user/assets/:asset/address/new", newAddress)
+	usersigned.GET("/v1/assets/:asset/address/:address/verify", verifyAddress)
+	usersigned.GET("/v1/users/:user/records", recordList)
 	port := viper.GetString("userserver.port")
 	log.Infoln("userserver start at", port)
 	r.Run(port) // listen and serve on 0.0.0.0:8080

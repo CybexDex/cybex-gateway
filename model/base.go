@@ -39,13 +39,21 @@ func InitDB(host, port, username, password, dbname string) {
 	// FOR TEST USE ONLY !!!
 	// FOR TEST USE ONLY !!!
 	// FOR TEST USE ONLY !!!
-	// db.DropTableIfExists(&Blockchain{}, &Asset{}, &Company{}, &Account{}, &App{}, &Jadepool{}, &Order{}, &CybOrder{}, &JPOrder{}, &Event{}, &ExEvent{}, &Balance{}, &Accounting{}, &GeoAddress{}, &Address{}, &BigAsset{}, &Black{}, &Easy{})
+	// db.DropTableIfExists(
+	// 	&JPOrder{},
+	// 	&Address{},
+	// 	&Black{},
+	// 	&OrderLog{},
+	// 	&Easy{},
+	// 	&Asset{},
+	// )
 	db.AutoMigrate(
 		&JPOrder{},
 		&Address{},
 		&Black{},
 		&OrderLog{},
 		&Easy{},
+		&Asset{},
 	)
 }
 

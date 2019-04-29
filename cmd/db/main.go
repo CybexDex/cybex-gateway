@@ -16,8 +16,35 @@ func main() {
 	config.LoadConfig(env)
 	model.INITFromViper()
 	black()
+	asset()
 }
+func asset() {
+	var db = model.GetDB()
+	b := model.Asset{
+		Name:         "ETH",
+		Blockchain:   "ETH",
+		CYBName:      "JADE.ETH",
+		Confirmation: "20",
 
+		SmartContract:  "",
+		GatewayAccount: "bbbusdtin1",
+		WithdrawPrefix: "withdraw:CybexGatewayDev",
+
+		DepositSwitch:  true,
+		WithdrawSwitch: true,
+
+		// MinDeposit  :"0",
+		// MinWithdraw :"0",
+		// WithdrawFee :"0",
+		// DepositFee :"0",
+
+		// Precision	:"",
+		// ImgURL :"",
+		HashLink: "https://etherscan.io/tx/%s",
+	}
+	err := db.Create(&b).Error
+	fmt.Println(err)
+}
 func black() {
 	var db = model.GetDB()
 	b := model.Black{

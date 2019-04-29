@@ -55,6 +55,14 @@ func CheckUser(expiration string, user string, sig string) (isok bool, ex int, e
 	return re, ex, nil
 }
 
+// GetAssets ...
+func GetAssets() (out []*model.Asset, err error) {
+	assets, err := model.AssetsAll()
+	//
+	// out = toResult(assets)
+	return assets, err
+}
+
 // GetBBBAssets ...
 func GetBBBAssets() (out []*types.UserResultBBB, err error) {
 	assetsConf := viper.GetStringMap("assets")
@@ -83,6 +91,37 @@ func GetBBBAssets() (out []*types.UserResultBBB, err error) {
 		out = append(out, assetO)
 	}
 	return out, nil
+}
+
+// NewAddress ...
+func NewAddress(user string, asset string) (address *types.UserResultAddress, err error) {
+	address = &types.UserResultAddress{}
+	//找user,asset的address
+	//没有找到，获取，创建，返回
+	newaddr, err := jp.DepositAddress(asset)
+	if err != nil {
+		return address, err
+	}
+	address1 := &model.Address{
+		Address:    newaddr.Address,
+		User:       user,
+		Asset:      asset,
+		BlockChain: "",
+	}
+	err = model.AddrssCreate(address1)
+	if err != nil {
+		return address, err
+	}
+	address.Address = address1.Address
+	address.Asset = address1.Asset
+	address.CreateAt = address1.CreatedAt
+	return address, nil
+}
+
+// VerifyAddress ...
+func VerifyAddress(asset string, address string) (verifyRes *types.VerifyRes, err error) {
+	res, err := jp.VerifyAddress(asset, address)
+	return res, err
 }
 
 //GetAddress ...

@@ -14,7 +14,7 @@ jpserver:
   appid: 100
 userserver:
   auth: false
-  port: ":8181"
+  port: ":8182"
 cybserver:
   node:  "ws://18.136.140.223:38090/" # "wss://hangzhou.51nebula.com/" #"ws://47.100.98.113:38090/"
   blockBegin: -1

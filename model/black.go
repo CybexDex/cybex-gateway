@@ -11,7 +11,7 @@ import (
 type Black struct {
 	gorm.Model
 	Address    string `gorm:"type:varchar(128)" json:"address"`
-	Blockchain string `gorm:"index;type:varchar(32);not null" json:"blockchain"`
+	Blockchain string `gorm:"type:varchar(32);not null" json:"blockchain"`
 }
 
 // BlackWith ...
