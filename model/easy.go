@@ -17,6 +17,15 @@ func (j *Easy) Save() error {
 	return db.Save(j).Error
 }
 
+// EasyFristOrCreate ...
+func EasyFristOrCreate(name string) (res *Easy, err error) {
+	out := Easy{}
+	err = db.Where(&Easy{
+		Key: name,
+	}).FirstOrCreate(&out).Error
+	return &out, err
+}
+
 // EasyFind ...
 func EasyFind(j *Easy) (res []*Easy, err error) {
 	err = db.Where(j).Find(&res).Error

@@ -310,10 +310,17 @@ func handleBlock() {
 	}
 	// get blockhead
 	blockheadNum, err := getHeadNum()
-	if err !=nil {
+	if err != nil {
 		log.Errorln(err)
 		return
 	}
+	easyhead, err := model.EasyFristOrCreate("cybHeadNum")
+	if err != nil {
+		log.Errorln(err)
+		return
+	}
+	easyhead.Value = fmt.Sprintf("%d", blockheadNum)
+	easyhead.Save()
 	log.Debugln("last", lastBlockNum, "head", blockheadNum, err)
 	if lastBlockNum >= blockheadNum {
 		return
