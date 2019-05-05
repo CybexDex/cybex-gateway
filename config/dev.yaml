@@ -1,0 +1,45 @@
+database:
+  host: 39.98.58.238
+  port: 5433
+  name: bbb
+  user: bbb
+  pass: bbb
+  type: postgres
+jpserver:
+  port: ":8183"
+  ecc: true
+  bnhost: "http://127.0.0.1:7001" # 需要配置瑶池的ECC配置,还需要瑶池中配置回调 http://{jpserverhost}:{jpserver.port}/api/order/noti
+  eccPri: bf12996feeaa2977b6ca0d33a0e8bd2ccfc4844c6f8a7e6d15c099f8da4a255d  #64位随机
+  eccPub: 04ace32532c90652e1bae916248e427a7ab10aeeea1067949669a3f4da10965ef90d7297f538f23006a31f94fdcfaed9e8dd38c85ba7e285f727430332925aefe5 # 瑶池的pub
+  appid: "bbb"
+userserver:
+  auth: false
+  port: ":8182"
+cybserver:
+  node:  "ws://18.136.140.223:38090/" # "wss://hangzhou.51nebula.com/" #"ws://47.100.98.113:38090/"
+  blockBegin: -1
+log:
+  log_dir: ""
+  log_level: "INFO"
+assets:
+  eth:  # 要小写，viper的问题
+    name: "ETH" # 瑶池名字
+    blockChain: "ETH" #瑶池blockchain
+    handle_action: "BBB" # 目前要写死BBB
+    deposit:
+      gateway: bbbusdtin1  # ETH发钱账户
+      gatewaypass: 90be01e82b981c8f201c9a78a3d31f655743b29ff3274727b1439b093d04aa23 # 账户密码
+      sendto: ["CYB","JADE.ETH:bbbusdtmaker1"] # 每个元素规则是  币种:发给[默认对应用户]:数量[默认实际数量] ，最多支持三个转出
+      switch: true
+      just_asset: "JADE.ETH"
+      just: ["bbbusdtmaker1"] # 只是转发JADE.ETH的账户
+    withdraw:
+      gateway: bbbusdtout1
+      gatewaypass: 90be01e82b981c8f201c9a78a3d31f655743b29ff3274727b1439b093d04aa23
+      coin: "CYB"
+      switch: true
+      fee: "0.0001"
+      wait: "JADE.ETH"
+      send: "bbbusdtin1"
+      memopre: "withdraw:CybexGatewayDev"
+      
