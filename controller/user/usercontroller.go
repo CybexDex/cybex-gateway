@@ -61,6 +61,14 @@ func CheckUser(expiration string, user string, sig string) (isok bool, ex int, e
 	return re, ex, nil
 }
 
+// GetAssetsOne ...
+func GetAssetsOne(asset string) (out *model.Asset, err error) {
+	out, err = model.AssetsFind(asset)
+	//
+	// out = toResult(assets)
+	return out, err
+}
+
 // GetAssets ...
 func GetAssets() (out []*model.Asset, err error) {
 	assets, err := model.AssetsAll()

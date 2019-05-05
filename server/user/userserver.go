@@ -89,6 +89,18 @@ func authMiddleware(c *gin.Context) {
 	// Call the next handler, which can be another middleware in the chain, or the final handler.
 	c.Next()
 }
+func getAssetsOne(c *gin.Context) {
+	asset := c.Param("asset")
+	address, err := userc.GetAssetsOne(asset)
+	if err != nil {
+		log.Errorln("GetAssets", err)
+		c.JSON(400, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(200, address)
+}
 func getAssets(c *gin.Context) {
 	address, err := userc.GetAssets()
 	if err != nil {
@@ -252,6 +264,7 @@ func StartServer() {
 		c.JSON(200, gin.H{})
 	})
 	r.GET("/v1/assets", getAssets)
+	r.GET("/v1/assets/:asset", getAssetsOne)
 	r.GET("/v1/bbb", bbbAsset)
 	r.GET("/v1/record/undone/:interval", notDone)
 	usersigned := r.Group("/")
@@ -263,7 +276,6 @@ func StartServer() {
 	usersigned.GET("/v1/assets/:asset/address/:address/verify", verifyAddress)
 	usersigned.GET("/v1/users/:user/records", recordList)
 	usersigned.GET("/v1/users/:user/assets", recordAssets)
-
 	port := viper.GetString("userserver.port")
 	log.Infoln("userserver start at", port)
 	r.Run(port) // listen and serve on 0.0.0.0:8080

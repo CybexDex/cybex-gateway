@@ -35,3 +35,12 @@ func AssetsAll() (out []*Asset, err error) {
 	err = db.Find(&out).Error
 	return out, err
 }
+
+// AssetsFind ...
+func AssetsFind(asset string) (out *Asset, err error) {
+	out = &Asset{}
+	err = db.First(&out, &Asset{
+		Name: asset,
+	}).Error
+	return out, err
+}
