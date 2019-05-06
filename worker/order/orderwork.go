@@ -2,11 +2,7 @@ package order
 
 import (
 	"fmt"
-	"strings"
 	"time"
-
-	"github.com/shopspring/decimal"
-	"github.com/spf13/viper"
 
 	"bitbucket.org/woyoutlz/bbb-gateway/model"
 	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
@@ -68,17 +64,14 @@ func HandleOneTime() int {
 }
 func handleWithdrawOrders(order *model.JPOrder) (err error) {
 	// 是否可处理的asset
-	assets := viper.GetStringMap("assets")
-	orderAsset := strings.ToLower(order.Asset)
-	if assets[orderAsset] == nil {
-		err = fmt.Errorf("asset_cannot_find %s", order.Asset)
+	asset, err := model.AssetsFind(order.Asset)
+	if err != nil {
+		err = fmt.Errorf("asset_cannot_find %v", err)
 		log.Errorln(err)
 		return err
 	}
-	switchPath := fmt.Sprintf("assets.%s.withdraw.switch", orderAsset)
-	withdrawSwitch := viper.GetBool(switchPath)
-	// 是否可以充值
-	if !withdrawSwitch {
+	// 是否可以提现
+	if !asset.WithdrawSwitch {
 		err = fmt.Errorf("withdrawSwitch false ")
 		order.CurrentState = model.JPOrderStatusFailed
 		order.CurrentReason = "withdrawSwitch"
@@ -102,12 +95,7 @@ func handleWithdrawOrders(order *model.JPOrder) (err error) {
 		return err
 	}
 	// 计算费率
-	feePath := fmt.Sprintf("assets.%s.withdraw.fee", orderAsset)
-	feeStr := viper.GetString(feePath)
-	fee, err := decimal.NewFromString(feeStr)
-	if err != nil {
-		return err
-	}
+	fee := asset.WithdrawFee
 	order.Fee = fee
 	order.Amount = order.TotalAmount.Sub(order.Fee)
 	// 是否大额
@@ -118,17 +106,14 @@ func handleWithdrawOrders(order *model.JPOrder) (err error) {
 
 func handleOrders(order *model.JPOrder) (err error) {
 	// 是否可处理的asset
-	assets := viper.GetStringMap("assets")
-	orderAsset := strings.ToLower(order.Asset)
-	if assets[orderAsset] == nil {
+	asset, err := model.AssetsFind(order.Asset)
+	if err != nil {
 		err = fmt.Errorf("asset_cannot_find %s", order.Asset)
 		log.Errorln(err)
 		return err
 	}
-	switchPath := fmt.Sprintf("assets.%s.deposit.switch", orderAsset)
-	depositSwitch := viper.GetBool(switchPath)
 	// 是否可以充值
-	if !depositSwitch {
+	if !asset.DepositSwitch {
 		err = fmt.Errorf("depositSwitch false ")
 		order.CurrentState = model.JPOrderStatusFailed
 		order.CurrentReason = "depositSwitch"
@@ -152,11 +137,7 @@ func handleOrders(order *model.JPOrder) (err error) {
 		return err
 	}
 	// 计算费率
-	fee, err := decimal.NewFromString("0.0")
-	if err != nil {
-		return err
-	}
-	order.Fee = fee
+	order.Fee = asset.DepositFee
 	order.Amount = order.TotalAmount.Sub(order.Fee)
 	// 是否大额
 	// order 通过，进入下一阶段

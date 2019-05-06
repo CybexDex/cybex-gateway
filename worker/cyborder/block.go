@@ -67,7 +67,7 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 		}
 		return
 	}
-	//to gatewayin 的话就是充值,排除from gatewayout, from 特殊账户的
+	//to gatewayTo 的话就是提现订单
 	if gatewayTo != nil {
 		log.Infof("HandleTX:,to:%s,op:%+v,tx.sig:%v\n", gatewayTo.Account.Name, op, tx.Signatures)
 		fromUsers, err := api.GetAccounts(op.From)
@@ -77,15 +77,16 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 			log.Errorln(assetChain, err)
 			return
 		}
-		var assetConf *types.AssetConfig
-		for _, assetC := range allAssets {
-			if assetC.Withdraw.Coin == assetChain.Symbol {
-				assetConf = assetC
-			}
+		assetConf, err := model.AssetsFrist(&model.Asset{
+			CYBName: assetChain.Symbol,
+		})
+		if err != nil {
+			log.Infoln("UR 不是合法币种", assetChain.Symbol)
+			return
 		}
-		if assetConf == nil || assetConf.Withdraw.Gateway != gatewayTo.Account.Name {
+		if assetConf == nil || assetConf.GatewayAccount != gatewayTo.Account.Name {
 			// UR
-			log.Infoln("UR 不是合法币种", assetConf, assetChain.Symbol)
+			log.Infoln("UR 不是该账户合法币种", assetConf, assetChain.Symbol)
 			return
 		}
 		// 合法转账
@@ -111,7 +112,7 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 			}
 		}
 		// log.Infoln(memoout, *op)
-		gatewayPrefix := assetConf.Withdraw.Memopre
+		gatewayPrefix := assetConf.WithdrawPrefix
 		if !strings.HasPrefix(memoout, gatewayPrefix) {
 			log.Infoln("UR:1 ", "memo:", memoout)
 			return
@@ -136,7 +137,7 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 			TotalAmount:  realAmount,
 			Type:         "WITHDRAW",
 			Status:       model.JPOrderStatusPending,
-			Current:      "cybinner",
+			Current:      "order",
 			CurrentState: model.JPOrderStatusInit,
 			CYBHash:      &prefix,
 		}
