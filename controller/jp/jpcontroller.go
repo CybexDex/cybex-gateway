@@ -37,6 +37,8 @@ func HandleWithdraw(result types.JPOrderResult) error {
 			log.Errorln("final order cannot change", order.ID)
 			return fmt.Errorf("final order cannot change %d", order.ID)
 		}
+		order.Hash = result.Txid
+		order.UUHash = fmt.Sprintf("%s_%s_%d", result.Type, result.Txid, result.N)
 		order.Confirmations = result.Confirmations
 		order.CurrentState = strings.ToUpper(result.State)
 		ordernow = order

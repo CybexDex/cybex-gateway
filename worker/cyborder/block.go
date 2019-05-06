@@ -52,6 +52,7 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 		if len(orders) == 1 {
 			order := orders[0]
 			if order.Type == model.JPOrderTypeDeposit {
+				order.CYBHash = &prefix
 				order.SetCurrent("done", model.JPOrderStatusDone, "")
 				order.SetStatus(model.JPOrderStatusDone)
 			}
@@ -131,14 +132,15 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 			Asset:      assetConf.Name,
 			BlockChain: "",
 			// BNOrderID:  "",
-			CybUser: fromUser.Name,
-			OutAddr: addr,
-
+			CybUser:      fromUser.Name,
+			OutAddr:      addr,
+			Memo:         memoout,
 			TotalAmount:  realAmount,
 			Type:         "WITHDRAW",
 			Status:       model.JPOrderStatusPending,
 			Current:      "order",
 			CurrentState: model.JPOrderStatusInit,
+			Sig:          tx.Signatures[0].String(),
 			CYBHash:      &prefix,
 		}
 		err = jporder.Save()

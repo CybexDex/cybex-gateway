@@ -199,6 +199,7 @@ func handleOrders(order *model.JPOrder) (err error) {
 		Memo:     "address:" + order.To,
 	}
 	tosends = append(tosends, tosend)
+	order.Memo = tosend.Memo
 	// log.Infoln(tosends)
 	stx, err := mySend(tosends, order)
 	if err != nil {
@@ -207,8 +208,6 @@ func handleOrders(order *model.JPOrder) (err error) {
 		return err
 	}
 	log.Infof("order:%d,%s:%+v\n", order.ID, "sendorder", *stx)
-	// log.Infoln("sendorder tx is ", *stx)
-	// order.Sig = stx.Signatures[0].String()
 	order.SetCurrent("cyborder", model.JPOrderStatusPending, "")
 	return nil
 
