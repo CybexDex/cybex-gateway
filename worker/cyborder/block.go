@@ -157,55 +157,35 @@ func InitAsset() {
 	allAssets = make(map[string]*types.AssetConfig)
 	allgateways = make(map[string]*types.GatewayAccount)
 	assetsOfChain = make(map[string]*cybTypes.Asset)
-	assets := viper.GetStringMap("assets")
-	for keyname, asset := range assets {
-		keyName := strings.ToUpper(keyname)
-		assetC := types.AssetConfig{}
-		err := utils.V2S(asset, &assetC)
-		if err != nil {
-			panic(err)
-		}
-		// log.Infoln(assetC.Name)
-		allAssets[assetC.Name] = &assetC
-		account1, err := api.GetAccountByName(assetC.Deposit.Gateway)
+	assets, err := model.AssetsAll()
+	if err != nil {
+		log.Errorln("InitAsset", err)
+	}
+	for _, asset := range assets {
+		account1, _ := api.GetAccountByName(asset.GatewayAccount)
 		if account1 == nil {
-			log.Errorln("gateway account 不存在", assetC.Deposit.Gateway)
+			log.Errorln("gateway account 不存在", asset.GatewayAccount)
 			panic("")
 		}
-		gatewaykeyBag := apim.KeyBagByUserPass(assetC.Deposit.Gateway, assetC.Deposit.Gatewaypass)
+		gatewaypass := utils.SeedString(asset.GatewayPass)
+		gatewaykeyBag := apim.KeyBagByUserPass(asset.GatewayAccount, gatewaypass)
 		memokey := account1.Options.MemoKey
 		pubkeys := cybTypes.PublicKeys{memokey}
 		gatewayMemoPri := gatewaykeyBag.PrivatesByPublics(pubkeys)
 		g1 := types.GatewayAccount{
 			Account: account1,
 			Type:    "DEPOSIT",
-			Asset:   keyName,
+			Asset:   asset.Name,
 			MemoPri: gatewayMemoPri,
 		}
-		account2, err := api.GetAccountByName(assetC.Withdraw.Gateway)
-		if account2 == nil {
-			log.Errorln("gateway account 不存在", assetC.Withdraw.Gateway)
-			panic("")
-		}
-		gatewaykeyBag2 := apim.KeyBagByUserPass(assetC.Withdraw.Gateway, assetC.Withdraw.Gatewaypass)
-		memokey2 := account2.Options.MemoKey
-		pubkeys2 := cybTypes.PublicKeys{memokey2}
-		gatewayMemoPri2 := gatewaykeyBag2.PrivatesByPublics(pubkeys2)
-		g2 := types.GatewayAccount{
-			Account: account2,
-			Type:    "WITHDRAW",
-			Asset:   keyName,
-			MemoPri: gatewayMemoPri2,
-		}
 		allgateways[g1.Account.ID.String()] = &g1
-		allgateways[g2.Account.ID.String()] = &g2
 	}
 	// log.Infoln(allgateways, allAssets)
 }
 
 // Test ...
 func Test() {
-	handleBlockNum(6993893) // 6993893
+	handleBlockNum(7571221) // 6993893
 }
 func readBlock(cnum int, handler types.HandleInterface) ([]string, error) {
 	blockInfo, err := api.GetBlock(uint64(cnum))

@@ -15,6 +15,7 @@ type Asset struct {
 
 	SmartContract  string `json:"smartContract"`
 	GatewayAccount string `json:"gatewayAccount"`
+	GatewayPass    string `json:"-"` // 非常重要
 	WithdrawPrefix string `json:"withdrawPrefix"`
 
 	DepositSwitch  bool `json:"depositSwitch"`
@@ -42,5 +43,12 @@ func AssetsFind(asset string) (out *Asset, err error) {
 	err = db.First(&out, &Asset{
 		Name: asset,
 	}).Error
+	return out, err
+}
+
+// AssetsFrist ...
+func AssetsFrist(query *Asset) (out *Asset, err error) {
+	out = &Asset{}
+	err = db.First(&out, query).Error
 	return out, err
 }

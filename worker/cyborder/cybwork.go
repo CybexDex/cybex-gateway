@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"bitbucket.org/woyoutlz/bbb-gateway/model"
+	"bitbucket.org/woyoutlz/bbb-gateway/utils"
 	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
 	apim "coding.net/yundkyy/cybexgolib/api"
 	cybTypes "coding.net/yundkyy/cybexgolib/types"
@@ -69,12 +70,12 @@ func HandleWorker(seconds int) {
 				break
 			}
 		}
-		for {
-			ret := HandleInnerOneTime()
-			if ret != 0 {
-				break
-			}
-		}
+		// for {
+		// 	ret := HandleInnerOneTime()
+		// 	if ret != 0 {
+		// 		break
+		// 	}
+		// }
 		time.Sleep(time.Second * time.Duration(seconds))
 	}
 }
@@ -181,61 +182,34 @@ func handleInnerOrders(order *model.JPOrder) (err error) {
 // }
 func handleOrders(order *model.JPOrder) (err error) {
 	// 是否可处理的asset
-	assetC := allAssets[order.Asset]
-	if assetC == nil {
-		err = fmt.Errorf("asset_cannot_find %s", order.Asset)
+	assetC, err := model.AssetsFind(order.Asset)
+	if err != nil {
+		return fmt.Errorf("AssetsFind %v", err)
+	}
+	gatewayAccount := assetC.GatewayAccount
+	gatewayPassword := utils.SeedString(assetC.GatewayPass)
+	//
+	tosends := []cybTypes.SimpleSend{}
+	tosend := cybTypes.SimpleSend{
+		From:     gatewayAccount,
+		To:       order.CybUser,
+		Amount:   order.Amount.String(),
+		Asset:    assetC.CYBName,
+		Password: gatewayPassword,
+		Memo:     "address:" + order.To,
+	}
+	tosends = append(tosends, tosend)
+	// log.Infoln(tosends)
+	stx, err := mySend(tosends, order)
+	if err != nil {
+		log.Errorln("xxxx", err)
+		order.SetCurrent("cyborder", model.JPOrderStatusFailed, "send error")
 		return err
 	}
-	action := assetC.HandleAction
-	gatewayAccount := assetC.Deposit.Gateway
-	gatewayPassword := assetC.Deposit.Gatewaypass
-	sendTO := assetC.Deposit.Sendto
-	if action == "BBB" {
-		// log.Infoln(gatewayAccount, sendTO)
-		//
-		tosends := []cybTypes.SimpleSend{}
-		for _, dasset := range sendTO {
-			ds := strings.Split(dasset, ":")
-			// log.Infoln("ds", ds)
-			assetname := ds[0]
-			to := ""
-			if len(ds) > 1 {
-				to = ds[1]
-			}
-			value := ""
-			if len(ds) > 2 {
-				value = ds[2]
-			}
-			tosend := cybTypes.SimpleSend{
-				From:     gatewayAccount,
-				To:       order.CybUser,
-				Amount:   order.Amount.String(),
-				Asset:    assetname,
-				Password: gatewayPassword,
-			}
-			if to != "" {
-				tosend.To = to
-			}
-			if value != "" {
-				tosend.Amount = value
-			}
-			tosends = append(tosends, tosend)
-		}
-		// log.Infoln(tosends)
-		stx, err := mySend(tosends, order)
-		if err != nil {
-			log.Errorln("xxxx", err)
-			order.SetCurrent("cyborder", model.JPOrderStatusFailed, "send error")
-			return err
-		}
-		log.Infof("order:%d,%s:%+v\n", order.ID, "sendorder", *stx)
-		// log.Infoln("sendorder tx is ", *stx)
-		// order.Sig = stx.Signatures[0].String()
-		order.SetCurrent("cyborder", model.JPOrderStatusPending, "")
-		return nil
-	}
-	log.Infoln("cannot handle this action,order", order.ID)
-	order.SetCurrent("cyborder", model.JPOrderStatusTerminate, "cannot handle this action")
+	log.Infof("order:%d,%s:%+v\n", order.ID, "sendorder", *stx)
+	// log.Infoln("sendorder tx is ", *stx)
+	// order.Sig = stx.Signatures[0].String()
+	order.SetCurrent("cyborder", model.JPOrderStatusPending, "")
 	return nil
 
 	// order.SetStatus(model.JPOrderStatusDone)
@@ -249,6 +223,7 @@ func mySend(tosends []cybTypes.SimpleSend, order *model.JPOrder) (tx *cybTypes.S
 			err = fmt.Errorf("send Error")
 		}
 	}()
+	log.Infoln(tosends)
 	tx, err = api.PreSends(tosends)
 	if err != nil {
 		log.Errorln("updateAllUnDone", err)
