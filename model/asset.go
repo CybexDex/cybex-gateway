@@ -26,9 +26,10 @@ type Asset struct {
 	WithdrawFee decimal.Decimal `gorm:"type:numeric" json:"withdrawFee"`
 	DepositFee  decimal.Decimal `gorm:"type:numeric" json:"depositFee"`
 
-	Precision string `json:"precision"`
-	ImgURL    string `json:"imgURL"`
-	HashLink  string `json:"hashLink"`
+	Precision string                 `json:"precision"`
+	ImgURL    string                 `json:"imgURL"`
+	HashLink  string                 `json:"hashLink"`
+	Info      map[string]interface{} `gorm:"-" json:"info"`
 }
 
 // AssetsAll ...
