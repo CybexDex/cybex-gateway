@@ -80,6 +80,7 @@ type Record struct {
 	UpdatedAt   time.Time `json:"updatedAt"`
 	CybexName   string    `json:"cybexName"`
 	OutAddr     string    `json:"outAddr"`
+	GatewayAddr string    `json:"gatewayAddr"`
 	Confirms    string    `json:"confirms"`
 	Asset       string    `json:"asset"`
 	OutHash     string    `json:"outHash"`

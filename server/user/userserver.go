@@ -237,6 +237,9 @@ func recordList(c *gin.Context) {
 			CreatedAt:   re1.CreatedAt,
 			Link:        re1.Link,
 		}
+		if re1.Type == "DEPOSIT" {
+			record.GatewayAddr = re1.To
+		}
 		out = append(out, record)
 	}
 	if err != nil {

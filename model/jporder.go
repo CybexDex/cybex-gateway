@@ -40,11 +40,10 @@ type RecordAsset struct {
 // JPOrder ...
 type JPOrder struct {
 	gorm.Model
-	Asset      string `json:"asset"` // n to 1
-	BlockChain string `json:"blockChain"`
-	CybUser    string `json:"user"`
-	OutAddr    string `json:"outAddr"`
-
+	Asset         string          `json:"asset"` // n to 1
+	BlockChain    string          `json:"blockChain"`
+	CybUser       string          `json:"user"`
+	OutAddr       string          `json:"outAddr"`
 	BNOrderID     *string         `gorm:"unique;index;" json:"bnOrderID"` // n to 1
 	BNRetry       uint            `json:"-"`
 	Index         int             `json:"index"`                                 //
