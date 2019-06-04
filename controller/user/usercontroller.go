@@ -1,6 +1,7 @@
 package user
 
 import (
+	"fmt"
 	"strconv"
 
 	"bitbucket.org/woyoutlz/bbb-gateway/controller/jp"
@@ -129,6 +130,20 @@ func NewAddress(user string, asset string) (address *types.UserResultAddress, er
 	address.Address = address1.Address
 	address.Asset = address1.Asset
 	address.CreateAt = address1.CreatedAt
+	assetF, err := model.AssetsFrist(&model.Asset{
+		Name: asset,
+	})
+	if err != nil {
+		return address, err
+	}
+	if assetF == nil {
+		// UR
+		errmsg := fmt.Sprintf("%s %s", asset, "不是合法币种")
+		log.Infoln(errmsg)
+		err = fmt.Errorf("%s", errmsg)
+		return address, err
+	}
+	address.CybName = assetF.CYBName
 	return address, nil
 }
 
@@ -167,5 +182,19 @@ func GetAddress(user string, asset string) (address *types.UserResultAddress, er
 	address.Address = address1.Address
 	address.Asset = address1.Asset
 	address.CreateAt = address1.CreatedAt
+	assetF, err := model.AssetsFrist(&model.Asset{
+		Name: asset,
+	})
+	if err != nil {
+		return address, err
+	}
+	if assetF == nil {
+		// UR
+		errmsg := fmt.Sprintf("%s %s", asset, "不是合法币种")
+		log.Infoln(errmsg)
+		err = fmt.Errorf("%s", errmsg)
+		return address, err
+	}
+	address.CybName = assetF.CYBName
 	return address, nil
 }
