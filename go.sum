@@ -2,10 +2,10 @@ cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMT
 cloud.google.com/go v0.31.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 cloud.google.com/go v0.37.2/go.mod h1:H8IAquKe2L30IxoupDgqTaQvKSwF/c8prYHynGIWQbA=
-coding.net/yundkyy/cybexgolib v0.8.9 h1:XUqFc1c6xOFF/bsR+Gouim+EHIHDLkpyHqxQoTbI4Nc=
-coding.net/yundkyy/cybexgolib v0.8.9/go.mod h1:TaM3cKM/XAw4jCkO8bHODoIIdDVtahrzzCx9xkwTgnA=
-coding.net/yundkyy/cybexgolib v0.8.10 h1:Z+Wc6DNbWCimt1cNQoRv+FsR0+F3DnrAq9tnWxlJ9Tw=
-coding.net/yundkyy/cybexgolib v0.8.10/go.mod h1:TaM3cKM/XAw4jCkO8bHODoIIdDVtahrzzCx9xkwTgnA=
+github.com/CybexDex/cybex-go v0.8.9 h1:XUqFc1c6xOFF/bsR+Gouim+EHIHDLkpyHqxQoTbI4Nc=
+github.com/CybexDex/cybex-go v0.8.9/go.mod h1:TaM3cKM/XAw4jCkO8bHODoIIdDVtahrzzCx9xkwTgnA=
+github.com/CybexDex/cybex-go v0.8.10 h1:Z+Wc6DNbWCimt1cNQoRv+FsR0+F3DnrAq9tnWxlJ9Tw=
+github.com/CybexDex/cybex-go v0.8.10/go.mod h1:TaM3cKM/XAw4jCkO8bHODoIIdDVtahrzzCx9xkwTgnA=
 git.apache.org/thrift.git v0.0.0-20180902110319-2566ecd5d999/go.mod h1:fPE2ZNJGynbRyZ4dJvy6G277gSllfV2HJqblrnkyeyg=
 git.apache.org/thrift.git v0.12.0/go.mod h1:fPE2ZNJGynbRyZ4dJvy6G277gSllfV2HJqblrnkyeyg=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=

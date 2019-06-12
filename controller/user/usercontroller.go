@@ -9,11 +9,11 @@ import (
 	"bitbucket.org/woyoutlz/bbb-gateway/types"
 	"bitbucket.org/woyoutlz/bbb-gateway/utils"
 	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
-	apim "coding.net/yundkyy/cybexgolib/api"
+	apim "github.com/CybexDex/cybex-go/api"
 	"github.com/spf13/viper"
 )
 
-var api apim.BitsharesAPI
+var api apim.CybexAPI
 
 // InitNode ...
 func InitNode() {

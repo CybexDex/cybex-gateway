@@ -13,9 +13,9 @@ import (
 	"bitbucket.org/woyoutlz/bbb-gateway/types"
 	"bitbucket.org/woyoutlz/bbb-gateway/utils"
 	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
-	apim "coding.net/yundkyy/cybexgolib/api"
-	"coding.net/yundkyy/cybexgolib/operations"
-	cybTypes "coding.net/yundkyy/cybexgolib/types"
+	apim "github.com/CybexDex/cybex-go/api"
+	"github.com/CybexDex/cybex-go/operations"
+	cybTypes "github.com/CybexDex/cybex-go/types"
 	"github.com/spf13/viper"
 )
 

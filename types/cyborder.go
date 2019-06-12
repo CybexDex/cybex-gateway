@@ -1,8 +1,8 @@
 package types
 
 import (
-	"coding.net/yundkyy/cybexgolib/operations"
-	cybTypes "coding.net/yundkyy/cybexgolib/types"
+	"github.com/CybexDex/cybex-go/operations"
+	cybTypes "github.com/CybexDex/cybex-go/types"
 )
 
 // GatewayAccount ...
