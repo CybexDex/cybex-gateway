@@ -1,7 +1,7 @@
 module bitbucket.org/woyoutlz/bbb-gateway
 
 require (
-	github.com/CybexDex/cybex-go v0.8.10
+	github.com/CybexDex/cybex-go v0.1.0
 	github.com/btcsuite/btcd v0.0.0-20190418232430-6867ff32788a
 	github.com/denkhaus/logging v0.0.0-20180714213349-14bfb935047c // indirect
 	github.com/emirpasic/gods v1.12.0 // indirect
