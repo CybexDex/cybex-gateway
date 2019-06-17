@@ -3,10 +3,11 @@ package main
 import (
 	"os"
 
-	"bitbucket.org/woyoutlz/bbb-gateway/config"
-	"bitbucket.org/woyoutlz/bbb-gateway/model"
-	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
-	"bitbucket.org/woyoutlz/bbb-gateway/worker/cyborder"
+	"cybex-gateway/config"
+	"cybex-gateway/model"
+	"cybex-gateway/utils/log"
+	"cybex-gateway/worker/cyborder"
+
 	"github.com/spf13/viper"
 )
 

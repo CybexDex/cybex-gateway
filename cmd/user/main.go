@@ -5,10 +5,10 @@ import (
 
 	"github.com/spf13/viper"
 
-	"bitbucket.org/woyoutlz/bbb-gateway/config"
-	"bitbucket.org/woyoutlz/bbb-gateway/model"
-	"bitbucket.org/woyoutlz/bbb-gateway/server/user"
-	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
+	"cybex-gateway/config"
+	"cybex-gateway/model"
+	"cybex-gateway/server/user"
+	"cybex-gateway/utils/log"
 )
 
 func main() {

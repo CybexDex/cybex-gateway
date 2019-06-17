@@ -5,14 +5,14 @@ import (
 
 	"github.com/spf13/viper"
 
-	"bitbucket.org/woyoutlz/bbb-gateway/config"
-	"bitbucket.org/woyoutlz/bbb-gateway/model"
-	"bitbucket.org/woyoutlz/bbb-gateway/server/jp"
-	"bitbucket.org/woyoutlz/bbb-gateway/server/user"
-	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
-	"bitbucket.org/woyoutlz/bbb-gateway/worker/cyborder"
-	jpworker "bitbucket.org/woyoutlz/bbb-gateway/worker/jp"
-	"bitbucket.org/woyoutlz/bbb-gateway/worker/order"
+	"cybex-gateway/config"
+	"cybex-gateway/model"
+	"cybex-gateway/server/jp"
+	"cybex-gateway/server/user"
+	"cybex-gateway/utils/log"
+	"cybex-gateway/worker/cyborder"
+	jpworker "cybex-gateway/worker/jp"
+	"cybex-gateway/worker/order"
 )
 
 func main() {

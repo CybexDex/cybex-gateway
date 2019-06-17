@@ -6,12 +6,12 @@ import (
 	"strings"
 	"time"
 
-	"bitbucket.org/woyoutlz/bbb-gateway/server/middleware"
-	"bitbucket.org/woyoutlz/bbb-gateway/types"
-	"bitbucket.org/woyoutlz/bbb-gateway/utils/ecc"
+	"cybex-gateway/server/middleware"
+	"cybex-gateway/types"
+	"cybex-gateway/utils/ecc"
 
-	userc "bitbucket.org/woyoutlz/bbb-gateway/controller/user"
-	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
+	userc "cybex-gateway/controller/user"
+	"cybex-gateway/utils/log"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )

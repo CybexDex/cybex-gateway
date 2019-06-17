@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	jpc "bitbucket.org/woyoutlz/bbb-gateway/controller/jp"
-	"bitbucket.org/woyoutlz/bbb-gateway/model"
-	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
+	jpc "cybex-gateway/controller/jp"
+	"cybex-gateway/model"
+	"cybex-gateway/utils/log"
 )
 
 // HandleWorker ...

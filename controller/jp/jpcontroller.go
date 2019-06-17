@@ -12,11 +12,11 @@ import (
 	"github.com/shopspring/decimal"
 	"github.com/spf13/viper"
 
-	"bitbucket.org/woyoutlz/bbb-gateway/model"
-	"bitbucket.org/woyoutlz/bbb-gateway/types"
-	"bitbucket.org/woyoutlz/bbb-gateway/utils"
-	"bitbucket.org/woyoutlz/bbb-gateway/utils/ecc"
-	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
+	"cybex-gateway/model"
+	"cybex-gateway/types"
+	"cybex-gateway/utils"
+	"cybex-gateway/utils/ecc"
+	"cybex-gateway/utils/log"
 )
 
 // HandleWithdraw ...

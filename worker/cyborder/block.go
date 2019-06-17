@@ -9,10 +9,10 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"bitbucket.org/woyoutlz/bbb-gateway/model"
-	"bitbucket.org/woyoutlz/bbb-gateway/types"
-	"bitbucket.org/woyoutlz/bbb-gateway/utils"
-	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
+	"cybex-gateway/model"
+	"cybex-gateway/types"
+	"cybex-gateway/utils"
+	"cybex-gateway/utils/log"
 	apim "github.com/CybexDex/cybex-go/api"
 	"github.com/CybexDex/cybex-go/operations"
 	cybTypes "github.com/CybexDex/cybex-go/types"

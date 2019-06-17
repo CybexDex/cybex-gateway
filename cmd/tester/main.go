@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 
-	"bitbucket.org/woyoutlz/bbb-gateway/model"
-	"bitbucket.org/woyoutlz/bbb-gateway/utils/ecc"
+	"cybex-gateway/model"
+	"cybex-gateway/utils/ecc"
 
-	"bitbucket.org/woyoutlz/bbb-gateway/config"
-	"bitbucket.org/woyoutlz/bbb-gateway/controller/jp"
-	"bitbucket.org/woyoutlz/bbb-gateway/controller/user"
+	"cybex-gateway/config"
+	"cybex-gateway/controller/jp"
+	"cybex-gateway/controller/user"
 )
 
 func main1() {

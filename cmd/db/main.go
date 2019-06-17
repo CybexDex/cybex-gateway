@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"bitbucket.org/woyoutlz/bbb-gateway/config"
-	"bitbucket.org/woyoutlz/bbb-gateway/model"
+	"cybex-gateway/config"
+	"cybex-gateway/model"
 )
 
 func main() {

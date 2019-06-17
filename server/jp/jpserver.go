@@ -1,11 +1,11 @@
 package jp
 
 import (
-	"bitbucket.org/woyoutlz/bbb-gateway/controller/jp"
-	"bitbucket.org/woyoutlz/bbb-gateway/server/middleware"
-	"bitbucket.org/woyoutlz/bbb-gateway/types"
-	"bitbucket.org/woyoutlz/bbb-gateway/utils"
-	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
+	"cybex-gateway/controller/jp"
+	"cybex-gateway/server/middleware"
+	"cybex-gateway/types"
+	"cybex-gateway/utils"
+	"cybex-gateway/utils/log"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )

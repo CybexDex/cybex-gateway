@@ -5,11 +5,11 @@ import (
 
 	"github.com/spf13/viper"
 
-	"bitbucket.org/woyoutlz/bbb-gateway/config"
-	"bitbucket.org/woyoutlz/bbb-gateway/model"
-	"bitbucket.org/woyoutlz/bbb-gateway/server/jp"
-	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
-	jpworker "bitbucket.org/woyoutlz/bbb-gateway/worker/jp"
+	"cybex-gateway/config"
+	"cybex-gateway/model"
+	"cybex-gateway/server/jp"
+	"cybex-gateway/utils/log"
+	jpworker "cybex-gateway/worker/jp"
 )
 
 func main() {

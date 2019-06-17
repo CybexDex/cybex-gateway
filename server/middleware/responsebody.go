@@ -3,7 +3,7 @@ package middleware
 import (
 	"bytes"
 
-	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
+	"cybex-gateway/utils/log"
 	"github.com/gin-gonic/gin"
 )
 

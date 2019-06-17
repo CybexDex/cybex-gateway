@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"bitbucket.org/woyoutlz/bbb-gateway/model"
-	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
+	"cybex-gateway/model"
+	"cybex-gateway/utils/log"
 )
 
 // HoldOne ...

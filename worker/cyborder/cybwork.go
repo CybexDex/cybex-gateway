@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"bitbucket.org/woyoutlz/bbb-gateway/model"
-	"bitbucket.org/woyoutlz/bbb-gateway/utils"
-	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
+	"cybex-gateway/model"
+	"cybex-gateway/utils"
+	"cybex-gateway/utils/log"
 	apim "github.com/CybexDex/cybex-go/api"
 	cybTypes "github.com/CybexDex/cybex-go/types"
 	"github.com/spf13/viper"

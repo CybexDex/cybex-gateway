@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
-	"bitbucket.org/woyoutlz/bbb-gateway/config"
-	"bitbucket.org/woyoutlz/bbb-gateway/model"
-	"bitbucket.org/woyoutlz/bbb-gateway/worker/order"
+	"cybex-gateway/config"
+	"cybex-gateway/model"
+	"cybex-gateway/worker/order"
 )
 
 func main() {

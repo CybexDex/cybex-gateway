@@ -1,6 +1,6 @@
 package types
 
-import ecc "bitbucket.org/woyoutlz/bbb-gateway/utils/ecc"
+import ecc "cybex-gateway/utils/ecc"
 
 // JPOrderResult ...
 type JPOrderResult struct {

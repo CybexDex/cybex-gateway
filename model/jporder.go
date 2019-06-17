@@ -3,7 +3,7 @@ package model
 import (
 	"fmt"
 
-	"bitbucket.org/woyoutlz/bbb-gateway/utils/log"
+	"cybex-gateway/utils/log"
 	"github.com/jinzhu/gorm"
 	"github.com/shopspring/decimal"
 )

@@ -1,7 +1,7 @@
 package order
 
 import (
-	"bitbucket.org/woyoutlz/bbb-gateway/model"
+	"cybex-gateway/model"
 )
 
 // IsBlack ...
