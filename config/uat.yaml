@@ -21,4 +21,7 @@ cybserver:
 log:
   log_dir: ""
   log_level: "INFO"
+seed:
+  server: "http://127.0.0.1:8899"
+  cmdkey: "0efee2b9b23f5337fd4b39621e55e0c12f6d7430bde05026db6d19d4b6853de0"
       

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"cybex-gateway/utils/seed"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -18,7 +19,8 @@ func ResultToStruct(input interface{}, output interface{}) (err error) {
 func SeedString(nowstring string) string {
 	if strings.Index(nowstring, "seed__") == 0 {
 		s := strings.TrimPrefix(nowstring, "seed__")
-		return s
+		sdata := seed.GetSeedData(s)
+		return sdata
 	}
 	return nowstring
 }
