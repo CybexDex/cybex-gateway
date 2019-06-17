@@ -3,7 +3,7 @@
 为了bbb的定制化网关
 
 ## 开始
-
+GO111MODULE=on
 go run cmd/bbb/main.go
 
 会检查配置，报出错误。
