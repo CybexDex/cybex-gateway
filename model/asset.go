@@ -30,6 +30,8 @@ type Asset struct {
 	ImgURL    string                 `json:"imgURL"`
 	HashLink  string                 `json:"hashLink"`
 	Info      map[string]interface{} `gorm:"-" json:"info"`
+
+	UseMemo bool `json:"useMemo"`
 }
 
 // AssetsAll ...
