@@ -12,6 +12,8 @@ import (
 
 	userc "cybex-gateway/controller/user"
 	"cybex-gateway/utils/log"
+
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
@@ -261,6 +263,7 @@ func StartServer() {
 	userc.InitNode()
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
+	r.Use(cors.Default())
 	r.Use(middleware.GinBodyLogMiddleware)
 	r.GET("/t", func(c *gin.Context) {
 		ecc.TestECCSign()
