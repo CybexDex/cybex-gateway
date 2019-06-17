@@ -11,6 +11,7 @@ type Asset struct {
 	Name         string `gorm:"unique" json:"name"`
 	Blockchain   string `json:"blockchain"`
 	CYBName      string `json:"cybname"`
+	CYBID        string `json:"cybid"`
 	Confirmation string `json:"confirmation"`
 
 	SmartContract  string `json:"smartContract"`
