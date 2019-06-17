@@ -1,0 +1,1 @@
+env=uat go run cmd/jp/main.go
