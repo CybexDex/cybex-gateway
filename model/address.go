@@ -14,6 +14,7 @@ type Address struct {
 	Asset      string `json:"asset"`
 	BlockChain string `json:"blockChain"`
 	Address    string `gorm:"index;type:varchar(128);not null" json:"address"`
+	Adds       string `json:"-"`
 }
 
 // AddressLast ...

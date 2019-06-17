@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"cybex-gateway/utils/log"
+
 	"github.com/jinzhu/gorm"
 	"github.com/shopspring/decimal"
 )
@@ -70,6 +71,8 @@ type JPOrder struct {
 	Current       string `json:"current"`
 	CurrentState  string `json:"currentState"`
 	CurrentReason string `json:"currentReason"`
+
+	Adds string `json:"-"`
 }
 
 // JPOrderFind ...
