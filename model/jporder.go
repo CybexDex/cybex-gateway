@@ -100,7 +100,7 @@ func JPOrderCurrentNotDone(current string, fromUpdate string, offset int, limit 
 // JPOrderRecordAsset ...
 func JPOrderRecordAsset(user string) (out []*RecordAsset, err error) {
 	s := fmt.Sprintf(`select asset,sum(1) as total from jp_orders where jp_orders.cyb_user='%s' group by asset;`, user)
-	err = db.Debug().Raw(s).Scan(&out).Error
+	err = db.Raw(s).Scan(&out).Error
 	return out, err
 }
 
