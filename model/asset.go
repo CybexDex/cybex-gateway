@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/jinzhu/gorm"
+	"github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/shopspring/decimal"
 )
 
@@ -10,6 +11,7 @@ type Asset struct {
 	gorm.Model
 	Name         string `gorm:"unique" json:"name"`
 	Blockchain   string `json:"blockchain"`
+	Projectname  string `json:"projectname"`
 	CYBName      string `json:"cybname"`
 	CYBID        string `json:"cybid"`
 	Confirmation string `json:"confirmation"`
@@ -27,12 +29,11 @@ type Asset struct {
 	WithdrawFee decimal.Decimal `gorm:"type:numeric" json:"withdrawFee"`
 	DepositFee  decimal.Decimal `gorm:"type:numeric" json:"depositFee"`
 
-	Precision string                 `json:"precision"`
-	ImgURL    string                 `json:"imgURL"`
-	HashLink  string                 `json:"hashLink"`
-	Info      map[string]interface{} `gorm:"-" json:"info"`
-
-	UseMemo bool `json:"useMemo"`
+	Precision string         `json:"precision"`
+	ImgURL    string         `json:"imgURL"`
+	HashLink  string         `json:"hashLink"`
+	Info      postgres.Jsonb `json:"info"`
+	UseMemo   bool           `json:"useMemo"`
 }
 
 // AssetsAll ...

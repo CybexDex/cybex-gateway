@@ -12,6 +12,7 @@ require (
 	github.com/shopspring/decimal v0.0.0-20180709203117-cd690d0c9e24
 	github.com/sirupsen/logrus v1.4.1
 	github.com/spf13/viper v1.3.2
+	github.com/stretchr/objx v0.1.1
 	github.com/ugorji/go v1.1.5-pre // indirect
 	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c // indirect
 	github.com/xdg/stringprep v1.0.0 // indirect
