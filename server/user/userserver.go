@@ -263,7 +263,12 @@ func StartServer() {
 	userc.InitNode()
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
-	r.Use(cors.Default())
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowHeaders:     []string{"Origin", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
 	r.Use(middleware.GinBodyLogMiddleware)
 	r.GET("/t", func(c *gin.Context) {
 		ecc.TestECCSign()
