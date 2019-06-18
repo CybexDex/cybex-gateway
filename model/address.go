@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/jinzhu/gorm"
 )
@@ -35,7 +36,12 @@ func AddressLast(user string, asset string) (address *Address, err error) {
 
 // AddressFetch ...
 func AddressFetch(a *Address) (as []*Address, err error) {
-	err = db.Where(a).Find(&as).Error
+	if strings.Contains(a.Address, "[") {
+		err = db.Where(a).Find(&as).Error
+		return as, err
+	}
+	address := "^" + a.Address + "$"
+	err = db.Model("assets").Where("address ~* ?", address).Find(&as).Error
 	return as, err
 }
 
