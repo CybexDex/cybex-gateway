@@ -69,6 +69,7 @@ type RecordsQuery struct {
 	FundType string `form:"fundType"`
 	LastID   string `form:"lastid"`
 	Size     string `form:"size"`
+	Offset   string `form:"offset"`
 	Asset    string `form:"asset"`
 	User     string `form:"user"`
 }

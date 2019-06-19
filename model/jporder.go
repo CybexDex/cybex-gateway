@@ -105,13 +105,13 @@ func JPOrderRecordAsset(user string) (out []*RecordAsset, err error) {
 }
 
 // JPOrderRecord ...
-func JPOrderRecord(user string, asset string, bizType string, size string, lastID string) (res []*JPOrder, count int, err error) {
+func JPOrderRecord(user string, asset string, bizType string, size string, lastID string, offset string) (res []*JPOrder, count int, err error) {
 	dbpre := db.Where(&JPOrder{
 		CybUser: user,
 		Type:    bizType,
 		Asset:   asset,
 	}).Where("id < ?", lastID).Order("id desc")
-	err = dbpre.Limit(size).Find(&res).Error
+	err = dbpre.Offset(offset).Limit(size).Find(&res).Error
 	if err != nil {
 		return nil, 0, err
 	}
