@@ -1,4 +1,4 @@
-database:
+database:  # postgres 的连接数据
   host: localhost
   port: 5432
   name: bbb
@@ -7,21 +7,21 @@ database:
   type: postgres
 jpserver:
   port: ":8081"
-  ecc: false
+  ecc: false  # 是否开启ecc
   bnhost: "http://127.0.0.1:7001" # 需要配置瑶池的ECC配置,还需要瑶池中配置回调 http://{jpserverhost}:{jpserver.port}/api/order/noti
   eccPri: bf12996feeaa2977b6ca0d33a0e8bd2ccfc4844c6f8a7e6d15c099f8da4a255d  #64位随机
   eccPub: 04ace32532c90652e1bae916248e427a7ab10aeeea1067949669a3f4da10965ef90d7297f538f23006a31f94fdcfaed9e8dd38c85ba7e285f727430332925aefe5 # 从瑶池获取的pubkey
   appid: "bbb"
 userserver:
-  auth: false
+  auth: false # 是否开启cybex用户签名
   port: ":8182"
 cybserver:
-  node:  "ws://18.136.140.223:38090/" # "wss://hangzhou.51nebula.com/" #"ws://47.100.98.113:38090/"
-  blockBegin: -1
+  node:  "ws://18.136.140.223:38090/" # cybex 全节点地址
+  blockBegin: -1 # 从哪个cybex block 开始点，-1则从最新
 log:
-  log_dir: ""
+  log_dir: ""  # 设置了的话日志会记录到文件
   log_level: "INFO"
 seed:
-  server: "http://127.0.0.1:8899"
-  cmdkey: "0efee2b9b23f5337fd4b39621e55e0c12f6d7430bde05026db6d19d4b6853de0"
+  server: "http://127.0.0.1:8899" # seed 服务器地址
+  cmdkey: "0efee2b9b23f5337fd4b39621e55e0c12f6d7430bde05026db6d19d4b6853de0" # seed cmdkey
       
