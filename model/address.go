@@ -40,6 +40,7 @@ func AddressFetch(a *Address) (as []*Address, err error) {
 		err = db.Where(a).Find(&as).Error
 		return as, err
 	}
+	// only for support ETH blockchain
 	address := "^" + a.Address + "$"
 	err = db.Model("assets").Where("address ~* ?", address).Find(&as).Error
 	return as, err

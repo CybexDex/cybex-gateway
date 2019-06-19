@@ -58,7 +58,7 @@ type JPOrder struct {
 	Fee           decimal.Decimal `json:"fee" gorm:"type:numeric"`
 	Confirmations int             `json:"confirmations"`                           //
 	Resend        bool            `gorm:"not null;default:false" json:"resend"`    //
-	Status        string          `gorm:"type:varchar(32);not null" json:"status"` // INIT, HOLDING, PENDING, DONE, FAILED
+	Status        string          `gorm:"type:varchar(32);not null" json:"status"` // INIT, PROCESSING, PENDING, DONE, FAILED
 	Type          string          `gorm:"type:varchar(32);not null" json:"type"`   // DEPOSIT, WITHDRAW
 
 	Link string `json:"link"`
