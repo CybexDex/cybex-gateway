@@ -32,7 +32,7 @@ type Asset struct {
 	Precision string         `json:"precision"`
 	ImgURL    string         `json:"imgURL"`
 	HashLink  string         `json:"hashLink"`
-	Info      postgres.Jsonb `json:"info"`
+	Info      postgres.Jsonb `gorm:"default:'{}'" json:"info"`
 	UseMemo   bool           `json:"useMemo"`
 }
 
