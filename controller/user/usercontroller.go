@@ -9,6 +9,7 @@ import (
 	"cybex-gateway/types"
 	"cybex-gateway/utils"
 	"cybex-gateway/utils/log"
+
 	apim "github.com/CybexDex/cybex-go/api"
 	"github.com/spf13/viper"
 )
@@ -186,7 +187,7 @@ func GetAddress(user string, asset string) (address *types.UserResultAddress, er
 		Name: asset,
 	})
 	if err != nil {
-		return address, err
+		return address, fmt.Errorf("AssetFind %v", err)
 	}
 	if assetF == nil {
 		// UR
