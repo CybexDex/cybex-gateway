@@ -41,6 +41,7 @@ func HandleWithdraw(result types.JPOrderResult) error {
 		order.UUHash = fmt.Sprintf("%s_%s_%d", result.Type, result.Txid, result.N)
 		order.Confirmations = result.Confirmations
 		order.CurrentState = strings.ToUpper(result.State)
+		order.Resend = result.SendAgain
 		ordernow = order
 	} else {
 		err = fmt.Errorf("Record lenth %d", lenRes)
