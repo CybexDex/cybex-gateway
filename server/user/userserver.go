@@ -218,7 +218,7 @@ func recordList(c *gin.Context) {
 		query.LastID = "99999999"
 	}
 	if query.Offset == "" {
-		query.Offset = "1"
+		query.Offset = "0"
 	}
 	log.Infoln("GetRecord", *query)
 	res, total, err := userc.GetRecord(query)
