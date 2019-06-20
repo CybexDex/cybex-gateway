@@ -21,9 +21,9 @@ func main() {
 func asset() {
 	var db = model.GetDB()
 	b := model.Asset{
-		Name:         "XTZ",
-		Blockchain:   "XTZ",
-		CYBName:      "JADE.XTZ",
+		Name:         "ETH",
+		Blockchain:   "ETH",
+		CYBName:      "JADE.ETH",
 		Confirmation: "20",
 
 		SmartContract:  "",
