@@ -23,3 +23,7 @@
 ## 配置
 
 参见 config/template.yaml 中的注释
+
+其中 eccPub 和 eccPri 是瑶池相关的，可以直接配置。也可以写成 seed__{eccpubkey} ,seed_{eccprikey}
+{keyname}  表示 在seed中配置的keyname。 seed__ 前缀会使用 seed中的数据。
+
