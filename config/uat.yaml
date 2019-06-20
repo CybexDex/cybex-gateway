@@ -1,13 +1,13 @@
 database:
-  host: localhost
+  host: 35.220.160.53
   port: 5432
-  name: bbb
-  user: bbb
-  pass: bbb
+  name: cybex
+  user: cybex
+  pass: 123456
   type: postgres
 jpserver:
   port: ":8081"
-  ecc: true
+  ecc: false
   bnhost: "http://127.0.0.1:7001" # 需要配置瑶池的ECC配置,还需要瑶池中配置回调 http://{jpserverhost}:{jpserver.port}/api/order/noti
   eccPri: bf12996feeaa2977b6ca0d33a0e8bd2ccfc4844c6f8a7e6d15c099f8da4a255d  #64位随机
   eccPub: 04ace32532c90652e1bae916248e427a7ab10aeeea1067949669a3f4da10965ef90d7297f538f23006a31f94fdcfaed9e8dd38c85ba7e285f727430332925aefe5 # 瑶池的pub
