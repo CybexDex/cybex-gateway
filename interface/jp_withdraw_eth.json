@@ -1,0 +1,69 @@
+{
+  "code": 0,
+  "status": 0,
+  "message": "OK",
+  "crypto": "ecc",
+  "timestamp": 1554883623256,
+  "sig": {
+    "r": "ai2DMBDUzBjjMEW/zb8P3uRcSuzAsxcHcrMfOh9X+fg=",
+    "s": "RKqGtD3qQmheXBD5sRBCRCbLgrnpAJ4dQ55uqpZ7s0M=",
+    "v": 28
+  },
+  "result": {
+    "id": "3",
+    "coinName": "ETH",
+    "txid": "0xda691e6792d79646669d2bb591b175e9c85718e3aaa016e1199aa5b63e68eb1b",
+    "meta": null,
+    "state": "done",
+    "bizType": "WITHDRAW",
+    "type": "ETH",
+    "coinType": "ETH",
+    "to": "0x00fcd9a33D201E9C2Eacc3827Cd9B2a54d7Cf2B3",
+    "value": "0.11",
+    "confirmations": 68,
+    "create_at": 1554866799286,
+    "update_at": 1554866862661,
+    "actionArgs": [],
+    "actionResults": [],
+    "from": "0xb42eDCcA0Fa411e972D172D7f5D18C59eA9084ad",
+    "n": 0,
+    "fee": "0.00021",
+    "fees": [],
+    "data": {
+      "timestampBegin": 1554866802182,
+      "timestampFinish": 1554866872608,
+      "nonce": 3,
+      "failedBlockNumber": null,
+      "goodBlockNumber": 6019946,
+      "type": "Ethereum",
+      "hash": "0xda691e6792d79646669d2bb591b175e9c85718e3aaa016e1199aa5b63e68eb1b",
+      "blockNumber": 6019927,
+      "blockHash": "0x626260232c485ba92a472b4e2c364aa31b3016139587c4c9b0f2a5eccccdf8da",
+      "fee": 0.00021,
+      "confirmations": 68,
+      "from": [
+        {
+          "address": "0xb42eDCcA0Fa411e972D172D7f5D18C59eA9084ad",
+          "value": "0.11021"
+        }
+      ],
+      "to": [
+        {
+          "address": "0x00fcd9a33D201E9C2Eacc3827Cd9B2a54d7Cf2B3",
+          "value": "0.11"
+        }
+      ],
+      "ethereum": {
+        "input": "0x",
+        "gasUsed": 21000,
+        "gasPrice": "10000000000",
+        "nonce": 3
+      }
+    },
+    "hash": "0xda691e6792d79646669d2bb591b175e9c85718e3aaa016e1199aa5b63e68eb1b",
+    "block": 6019927,
+    "extraData": "",
+    "memo": "",
+    "sendAgain": false
+  }
+}

@@ -1,0 +1,1 @@
+env=uat go run cmd/order/main.go

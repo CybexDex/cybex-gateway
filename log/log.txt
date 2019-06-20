@@ -1,0 +1,7 @@
+try to find uat
+host=localhost port=5432 user=bbb dbname=bbb sslmode=disable password=bbb
+[bbb]2019/04/23 14:03:57 block.go:188: [INFO] [ETH]
+[bbb]2019/04/23 14:03:57 block.go:223: [INFO] [map[1.2.40680:0xc0000ac340 1.2.40679:0xc0001de2c0] map[ETH:0xc0000ca600]]
+[bbb]2019/04/23 14:03:57 jpserver.go:79: [INFO] [jpserver start at :8081]
+[bbb]2019/04/23 14:03:57 userserver.go:37: [INFO] [userserver start at :8181]
+signal: interrupt
