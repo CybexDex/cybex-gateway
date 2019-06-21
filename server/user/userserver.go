@@ -287,7 +287,7 @@ func StartServer() {
 	}
 	usersigned.GET("/v1/users/:user/assets/:asset/address", getAddress)
 	usersigned.POST("/v1/users/:user/assets/:asset/address/new", newAddress)
-	usersigned.GET("/v1/assets/:asset/address/:address/verify", verifyAddress)
+	r.GET("/v1/assets/:asset/address/:address/verify", verifyAddress)
 	usersigned.GET("/v1/users/:user/records", recordList)
 	usersigned.GET("/v1/users/:user/assets", recordAssets)
 	port := viper.GetString("userserver.port")
