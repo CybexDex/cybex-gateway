@@ -8,6 +8,7 @@ import (
 	"cybex-gateway/model"
 	"cybex-gateway/utils"
 	"cybex-gateway/utils/log"
+
 	apim "github.com/CybexDex/cybex-go/api"
 	cybTypes "github.com/CybexDex/cybex-go/types"
 	"github.com/spf13/viper"
@@ -46,7 +47,7 @@ func updateAllUnDone(current string) {
 		case model.JPOrderStatusFailed:
 			order.SetCurrent(current, model.JPOrderStatusInit, "fail to init")
 		case model.JPOrderStatusProcessing:
-			// 如果sig不存在
+			// 如果sig不存在,有sig了才会发
 			if order.Sig == "" {
 				order.SetCurrent(current, model.JPOrderStatusInit, "processing to init")
 			}

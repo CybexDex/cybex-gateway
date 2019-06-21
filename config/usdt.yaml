@@ -20,25 +20,4 @@ cybserver:
 log:
   log_dir: ""
   log_level: "INFO"
-assets:
-  eth:  # 要小写，viper的问题
-    name: "ETH" # 瑶池名字
-    blockChain: "ETH" #瑶池blockchain
-    handle_action: "BBB" # 目前要写死BBB
-    deposit:
-      gateway: nbusdtin1  # ETH发钱账户
-      gatewaypass: P5JdYKiuB76GVXvD9MwY17WPhTapt7UED54N4wM1LVj7z # 账户密码
-      sendto: ["BBB.USDT","JADE.USDT:yinnan-test2","CYB::1"] # 每个元素规则是  币种:发给[默认对应用户]:数量[默认实际数量] ，最多支持三个转出
-      switch: true
-      just_asset: "JADE.USDT"
-      just: ["yinnan-test2"] # 只是转发JADE.ETH的账户
-    withdraw:
-      gateway: nbusdtout1
-      gatewaypass: P5JdYKiuB76GVXvD9MwY17WPhTapt7UED54N4wM1LVj7z
-      coin: "BBB.USDT"
-      switch: true
-      fee: "0.0001"
-      wait: "JADE.USDT"
-      send: "nbusdtin1"
-      memopre: "withdraw:CybexGatewayDev"
       
