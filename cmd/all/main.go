@@ -13,6 +13,7 @@ import (
 	"cybex-gateway/worker/cyborder"
 	jpworker "cybex-gateway/worker/jp"
 	"cybex-gateway/worker/order"
+	"cybex-gateway/worker/wx"
 )
 
 func main() {
@@ -36,5 +37,6 @@ func main() {
 	go order.HandleWorker(5)
 	go user.StartServer()
 	go jpworker.HandleWorker(5)
+	go wx.HandleWorker(5)
 	jp.StartServer()
 }
