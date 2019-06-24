@@ -10,6 +10,7 @@ WORKDIR /usr/src/app
 RUN mkdir log
 RUN mkdir bin
 ADD ./bin/all ./bin
+ADD ./entry.sh .
 EXPOSE 8081 8182
 
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.5.0/wait /wait
