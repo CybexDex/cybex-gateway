@@ -24,4 +24,8 @@ log:
 seed:
   server: "http://127.0.0.1:8899" # seed 服务器地址
   cmdkey: "0efee2b9b23f5337fd4b39621e55e0c12f6d7430bde05026db6d19d4b6853de0" # seed cmdkey
-      
+wx:
+  corpid: ""
+  corpsecret: ""
+  agentid: 1000016
+  users: ""
