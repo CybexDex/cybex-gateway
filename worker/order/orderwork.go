@@ -81,7 +81,7 @@ func handleWithdrawOrders(order *model.JPOrder) (err error) {
 	// 提现金额是否过小
 	if order.TotalAmount.LessThan(asset.MinWithdraw) {
 		err = fmt.Errorf("MinWithdraw false ")
-		order.CurrentState = model.JPOrderStatusFailed
+		order.CurrentState = model.JPOrderStatusTerminate
 		order.CurrentReason = "MinWithdraw"
 		log.Errorln(err)
 		return err
@@ -131,7 +131,7 @@ func handleOrders(order *model.JPOrder) (err error) {
 	// 充值金额是否过小
 	if order.TotalAmount.LessThan(asset.MinDeposit) {
 		err = fmt.Errorf("MinDeposit false ")
-		order.CurrentState = model.JPOrderStatusFailed
+		order.CurrentState = model.JPOrderStatusTerminate
 		order.CurrentReason = "MinDeposit"
 		log.Errorln(err)
 		return err
