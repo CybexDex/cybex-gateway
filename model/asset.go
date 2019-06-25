@@ -34,11 +34,12 @@ type Asset struct {
 	HashLink  string         `json:"hashLink"`
 	Info      postgres.Jsonb `gorm:"default:'{}'" json:"info"`
 	UseMemo   bool           `json:"useMemo"`
+	Disabled  *string        `json:"-"`
 }
 
 // AssetsAll ...
 func AssetsAll() (out []*Asset, err error) {
-	err = db.Find(&out).Error
+	err = db.Find(&out, "disabled is NULL").Error
 	return out, err
 }
 
@@ -47,13 +48,13 @@ func AssetsFind(asset string) (out *Asset, err error) {
 	out = &Asset{}
 	err = db.First(&out, &Asset{
 		Name: asset,
-	}).Error
+	}, "disabled is NULL").Error
 	return out, err
 }
 
 // AssetsFrist ...
 func AssetsFrist(query *Asset) (out *Asset, err error) {
 	out = &Asset{}
-	err = db.First(&out, query).Error
+	err = db.First(&out, query, "disabled is NULL").Error
 	return out, err
 }
