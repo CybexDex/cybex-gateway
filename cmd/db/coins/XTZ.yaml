@@ -1,0 +1,18 @@
+name:           "XTZ"
+blockchain:     "XTZ"
+cybname:        "JADE.XTZ"
+cybid :         "1.3.111113"
+GatewayAccount: "bbbusdtin1"
+GatewayPass:    "90be01e82b981c8f201c9a78a3d31f655743b29ff3274727b1439b093d04aa23"
+WithdrawPrefix: "withdraw:CybexGatewayDev"
+
+DepositSwitch:  true
+WithdrawSwitch: true
+MinDeposit: 1
+MinWithdraw: 2
+WithdrawFee : 3
+DepositFee : 0
+
+Precision	: 0
+ImgURL : ""
+HashLink: "https://etherscan.io/tx/%s"
