@@ -34,7 +34,7 @@ type Asset struct {
 	HashLink  string         `json:"hashLink"`
 	Info      postgres.Jsonb `gorm:"default:'{}'" json:"info"`
 	UseMemo   bool           `json:"useMemo"`
-	Disabled  *string        `json:"-"`
+	Disabled  bool           `json:"-"`
 }
 
 // AssetsAll ...
