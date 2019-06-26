@@ -208,7 +208,8 @@ func InitAsset() {
 		}
 		if account1 == nil {
 			log.Errorln("gateway account 不存在", asset.GatewayAccount)
-			panic("")
+			continue
+			// panic("")
 		}
 		gatewaypass := utils.SeedString(asset.GatewayPass)
 		gatewaykeyBag := apim.KeyBagByUserPass(asset.GatewayAccount, gatewaypass)
