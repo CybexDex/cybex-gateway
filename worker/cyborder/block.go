@@ -153,12 +153,13 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 }
 
 var allgateways map[string]*types.GatewayAccount
-var allAssets map[string]*types.AssetConfig
+
+// var allAssets map[string]*types.AssetConfig
 var assetsOfChain map[string]*cybTypes.Asset
 
 // InitAsset ...初始化asset gateway 账户
 func InitAsset() {
-	allAssets = make(map[string]*types.AssetConfig)
+	// allAssets = make(map[string]*types.AssetConfig)
 	allgateways = make(map[string]*types.GatewayAccount)
 	assetsOfChain = make(map[string]*cybTypes.Asset)
 	assets, err := model.AssetsAll()
