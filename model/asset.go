@@ -17,8 +17,9 @@ type Asset struct {
 	Confirmation string `json:"confirmation"`
 
 	SmartContract  string `json:"smartContract"`
-	GatewayAccount string `json:"gatewayAccount"`
-	GatewayPass    string `json:"-"` // 非常重要
+	GatewayAccount string `json:"gatewayAccount"` // 以account为准
+	GatewayID      string `json:"-"`              // 方便读块时排除不需要的部分
+	GatewayPass    string `json:"-"`              // 非常重要
 	WithdrawPrefix string `json:"withdrawPrefix"`
 
 	DepositSwitch  bool `json:"depositSwitch"`
@@ -35,6 +36,11 @@ type Asset struct {
 	Info      postgres.Jsonb `gorm:"default:'{}'" json:"info"`
 	UseMemo   bool           `json:"useMemo"`
 	Disabled  bool           `json:"-"`
+}
+
+// Save ...
+func (j *Asset) Save() error {
+	return db.Save(j).Error
 }
 
 // TestJP ...
