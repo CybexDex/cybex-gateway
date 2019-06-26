@@ -33,7 +33,7 @@ func amountToReal(amountin cybTypes.Int64, prercison int) decimal.Decimal {
 // HandleTR ...
 func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.SignedTransaction, prefix string) {
 	// log.Infoln("HandleTX", op.To, tx.Signatures)
-	// 是否在币种中，没有的话，是否是gateway账号的UR。
+	// 是否在币种中，不是的话，是否是gateway账号的UR。
 	gatewayTo := allgateways[op.To.String()]
 	gatewayFrom := allgateways[op.From.String()]
 	// 先看From,是充值或者Inner订单
@@ -154,20 +154,24 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 
 var allgateways map[string]*types.GatewayAccount
 
-// var allAssets map[string]*types.AssetConfig
-var assetsOfChain map[string]*cybTypes.Asset
-
 // InitAsset ...初始化asset gateway 账户
 func InitAsset() {
+	log.Infoln("开始检查资产...")
 	// allAssets = make(map[string]*types.AssetConfig)
 	allgateways = make(map[string]*types.GatewayAccount)
-	assetsOfChain = make(map[string]*cybTypes.Asset)
 	assets, err := model.AssetsAll()
 	if err != nil {
 		log.Errorln("InitAsset", err)
 	}
 	for _, asset := range assets {
 		account1, _ := api.GetAccountByName(asset.GatewayAccount)
+		assetcyb, _ := api.GetAsset(asset.CYBName)
+		changed := false
+		if asset.CYBID != assetcyb.ID.String() {
+			log.Infoln("更新cybid", asset.Name, asset.CYBID, "=>", assetcyb.ID.String())
+			asset.CYBID = assetcyb.ID.String()
+			changed = true
+		}
 		if account1 == nil {
 			log.Errorln("gateway account 不存在", asset.GatewayAccount)
 			panic("")
@@ -184,6 +188,17 @@ func InitAsset() {
 			MemoPri: gatewayMemoPri,
 		}
 		allgateways[g1.Account.ID.String()] = &g1
+		if asset.GatewayID != account1.ID.String() {
+			log.Infoln("更新gatewayid", asset.Name, asset.GatewayID, "=>", account1.ID.String())
+			asset.GatewayID = account1.ID.String()
+			changed = true
+		}
+		if changed {
+			err := asset.Save()
+			if err != nil {
+				log.Errorln("更新asset失败", asset.Name, err)
+			}
+		}
 	}
 	// log.Infoln(allgateways, allAssets)
 }
