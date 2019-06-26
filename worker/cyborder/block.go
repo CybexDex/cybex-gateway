@@ -34,10 +34,33 @@ func amountToReal(amountin cybTypes.Int64, prercison int) decimal.Decimal {
 func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.SignedTransaction, prefix string) {
 	// log.Infoln("HandleTX", op.To, tx.Signatures)
 	// 是否在币种中，不是的话，是否是gateway账号的UR。
-	gatewayTo := allgateways[op.To.String()]
-	gatewayFrom := allgateways[op.From.String()]
+	toid := op.To.String()
+	fromid := op.From.String()
+	assetid := op.Amount.Asset.String()
+	findasset, err := model.AssetsFrist(&model.Asset{
+		CYBID: assetid,
+	})
+	if err != nil {
+		// log.Errorln(err)
+	}
+	if findasset == nil {
+		return
+	}
 	// 先看From,是充值或者Inner订单
-	if gatewayFrom != nil {
+	if findasset.GatewayID == fromid {
+		account1, _ := api.GetAccountByName(findasset.GatewayAccount)
+		gatewaypass := utils.SeedString(findasset.GatewayPass)
+		gatewaykeyBag := apim.KeyBagByUserPass(findasset.GatewayAccount, gatewaypass)
+		memokey := account1.Options.MemoKey
+		pubkeys := cybTypes.PublicKeys{memokey}
+		gatewayMemoPri := gatewaykeyBag.PrivatesByPublics(pubkeys)
+		gatewayFrom := types.GatewayAccount{
+			Account: account1,
+			Type:    "DEPOSIT",
+			Asset:   findasset.Name,
+			MemoPri: gatewayMemoPri,
+		}
+		log.Infoln(findasset.Name)
 		log.Infof("HandleTX:,from:%s,op:%+v,tx.sig:%v\n", gatewayFrom.Account.Name, op, tx.Signatures)
 		// 直接看sig,能不能找到,找到就更新。没有找到的话。先不管
 		// if gatewayTo != nil {
@@ -70,7 +93,19 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 		return
 	}
 	//to gatewayTo 的话就是提现订单
-	if gatewayTo != nil {
+	if findasset.GatewayID == toid {
+		account1, _ := api.GetAccountByName(findasset.GatewayAccount)
+		gatewaypass := utils.SeedString(findasset.GatewayPass)
+		gatewaykeyBag := apim.KeyBagByUserPass(findasset.GatewayAccount, gatewaypass)
+		memokey := account1.Options.MemoKey
+		pubkeys := cybTypes.PublicKeys{memokey}
+		gatewayMemoPri := gatewaykeyBag.PrivatesByPublics(pubkeys)
+		gatewayTo := types.GatewayAccount{
+			Account: account1,
+			Type:    "DEPOSIT",
+			Asset:   findasset.Name,
+			MemoPri: gatewayMemoPri,
+		}
 		log.Infof("HandleTX:,to:%s,op:%+v,tx.sig:%v\n", gatewayTo.Account.Name, op, tx.Signatures)
 		fromUsers, err := api.GetAccounts(op.From)
 		fromUser := fromUsers[0]
@@ -106,7 +141,6 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 		}
 		// memo格式
 		memoout := ""
-		gatewayMemoPri := gatewayTo.MemoPri
 		for _, prv := range gatewayMemoPri {
 			s, err := memo.Decrypt(&prv)
 			if err == nil {
