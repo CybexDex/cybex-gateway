@@ -115,8 +115,10 @@ func findAsset(name string) (out interface{}, err error) {
 // }
 func handleOrders(order *model.JPOrder) (err error) {
 	// 是否可处理的asset
+	log.Infoln("start handle order", order.ID)
 	assetC, err := model.AssetsFind(order.Asset)
 	if err != nil {
+		log.Errorln("AssetsFind", err)
 		return fmt.Errorf("AssetsFind %v", err)
 	}
 	gatewayAccount := assetC.GatewayAccount
@@ -133,7 +135,6 @@ func handleOrders(order *model.JPOrder) (err error) {
 	}
 	tosends = append(tosends, tosend)
 	order.Memo = tosend.Memo
-	// log.Infoln(tosends)
 	stx, err := mySend(tosends, order)
 	if err != nil {
 		log.Errorln("xxxx", err)
