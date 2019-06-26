@@ -16,3 +16,4 @@ DepositFee : 0
 Precision	: 0
 ImgURL : ""
 HashLink: "https://etherscan.io/tx/%s"
+disabled: true # 是否开放

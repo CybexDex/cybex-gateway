@@ -10,3 +10,4 @@ coin=xx  go run cmd/db/add_asset.go
 
 后面执行如果name已经存在会更新资产
 
+暂时不支持删除资产，但是可以disable掉

@@ -97,6 +97,7 @@ func asset() {
 		Precision: coinviper.GetString("precision"),
 		ImgURL:    coinviper.GetString("imgURL"),
 		HashLink:  coinviper.GetString("hashLink"),
+		Disabled:  coinviper.GetBool("disabled"),
 	}
 	_, err = model.AssetsFind(name)
 	if err != nil {
