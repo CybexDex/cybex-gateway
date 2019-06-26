@@ -13,6 +13,7 @@ import (
 	"cybex-gateway/types"
 	"cybex-gateway/utils"
 	"cybex-gateway/utils/log"
+
 	apim "github.com/CybexDex/cybex-go/api"
 	"github.com/CybexDex/cybex-go/operations"
 	cybTypes "github.com/CybexDex/cybex-go/types"
@@ -220,6 +221,27 @@ func readBlock(cnum int, handler types.HandleInterface) ([]string, error) {
 		}
 	}
 	return nil, nil
+}
+
+// HandleBlockNum ...
+func HandleBlockNum(cnum int) {
+	handler := BBBHandler{}
+	cyborders, err := readBlock(cnum, &handler)
+	if err != nil {
+		log.Errorln(err)
+		// if err == apim.ErrShutdown {
+		err = api.Connect()
+		if err != nil {
+			log.Errorln(err)
+		}
+		// }
+		return
+	}
+	// log.Infoln(cyborders)
+	// save cyborders
+	for _, order := range cyborders {
+		log.Infoln(order)
+	}
 }
 func handleBlockNum(cnum int) {
 	handler := BBBHandler{}
