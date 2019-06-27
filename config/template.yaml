@@ -15,6 +15,9 @@ jpserver:
 userserver:
   auth: false # 是否开启cybex用户签名
   port: ":8182"
+adminserver:
+  auth: true
+  port: ":8183"
 cybserver:
   node:  "ws://18.136.140.223:38090/" # cybex 全节点地址
   blockBegin: -1 # 从哪个cybex block 开始点，-1则从最新

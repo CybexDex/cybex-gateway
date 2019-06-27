@@ -13,8 +13,11 @@ jpserver:
   eccPub: 04ace32532c90652e1bae916248e427a7ab10aeeea1067949669a3f4da10965ef90d7297f538f23006a31f94fdcfaed9e8dd38c85ba7e285f727430332925aefe5 # 瑶池的pub
   appid: "bbb"
 userserver:
-  auth: true
+  auth: false
   port: ":8182"
+adminserver:
+  auth: false
+  port: ":8183"
 cybserver:
   node:  "ws://18.136.140.223:38090/" # "wss://hangzhou.51nebula.com/" #"ws://47.100.98.113:38090/"
   blockBegin: -1
@@ -28,4 +31,4 @@ wx:
   corpid: "ww128a164565b145a8"
   corpsecret: "5fUnnEfrVKQmMEuvf_xobmHMpcA9_JQCCtHmxtAh4Po"
   agentid: 1000016
-  users: "yangyu"
+  users: "@all"
