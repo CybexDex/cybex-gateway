@@ -53,7 +53,14 @@ func HandleWithdraw(result types.JPOrderResult) error {
 				order.BNRetry = order.BNRetry + 1
 				order.Log("BnResend", fmt.Sprintf("bn:%+v,order:%+v", result, order))
 				order.SetCurrent("jp", model.JPOrderStatusInit, fmt.Sprintf("BN resend,%d", order.BNRetry))
+			} else {
+				msg := fmt.Sprintf("gatewayID:%d,jadepoolID:%s", order.ID, *order.BNOrderID)
+				model.WxSendTaskCreate("BN重发次数超过3次", msg)
 			}
+		}
+		if order.Resend == false && order.CurrentState == model.JPOrderStatusFailed {
+			msg := fmt.Sprintf("gatewayID:%d,jadepoolID:%s", order.ID, *order.BNOrderID)
+			model.WxSendTaskCreate("BN failed,不resend", msg)
 		}
 		ordernow = order
 	} else {
