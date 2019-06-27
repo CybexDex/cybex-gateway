@@ -165,14 +165,14 @@ func JPOrderCreate(j *JPOrder) error {
 }
 
 // JPOrderUnBalanceInit ...
-func JPOrderUnBalanceInit() {
-	db.Model(JPOrder{}).Where(&JPOrder{
-		Current:      "cybinner",
-		CurrentState: JPOrderStatusUnbalance,
-	}).UpdateColumn(&JPOrder{
-		CurrentState: JPOrderStatusInit,
-	})
-}
+// func JPOrderUnBalanceInit() {
+// 	db.Model(JPOrder{}).Where(&JPOrder{
+// 		Current:      "cybinner",
+// 		CurrentState: JPOrderStatusUnbalance,
+// 	}).UpdateColumn(&JPOrder{
+// 		CurrentState: JPOrderStatusInit,
+// 	})
+// }
 
 // HoldJPWithdrawOne ...
 func HoldJPWithdrawOne() (*JPOrder, error) {
@@ -212,23 +212,23 @@ func HoldCYBOrderOne() (*JPOrder, error) {
 }
 
 //HoldCYBInnerOrderOne ...
-func HoldCYBInnerOrderOne() (*JPOrder, error) {
-	var order1 JPOrder
-	s := `update jp_orders 
-	set current_state = 'PROCESSING' 
-	where id = (
-				select id 
-				from jp_orders 
-				where current_state = 'INIT' 
-				and type = 'WITHDRAW'
-				and current = 'cybinner'
-				order by id
-				limit 1
-			)
-	returning *`
-	err := db.Raw(s).Scan(&order1).Error
-	return &order1, err
-}
+// func HoldCYBInnerOrderOne() (*JPOrder, error) {
+// 	var order1 JPOrder
+// 	s := `update jp_orders
+// 	set current_state = 'PROCESSING'
+// 	where id = (
+// 				select id
+// 				from jp_orders
+// 				where current_state = 'INIT'
+// 				and type = 'WITHDRAW'
+// 				and current = 'cybinner'
+// 				order by id
+// 				limit 1
+// 			)
+// 	returning *`
+// 	err := db.Raw(s).Scan(&order1).Error
+// 	return &order1, err
+// }
 
 // HoldOrderOne ...
 func HoldOrderOne() (*JPOrder, error) {

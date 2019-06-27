@@ -32,10 +32,10 @@ func HoldOne() (*model.JPOrder, error) {
 }
 
 // HoldInnerOne ...
-func HoldInnerOne() (*model.JPOrder, error) {
-	order, err := model.HoldCYBInnerOrderOne()
-	return order, err
-}
+// func HoldInnerOne() (*model.JPOrder, error) {
+// 	order, err := model.HoldCYBInnerOrderOne()
+// 	return order, err
+// }
 func updateAllUnDone(current string) {
 	res, err := model.JPOrderCurrentNotDone(current, "1m", 0, 10)
 	if err != nil {
@@ -62,9 +62,9 @@ func updateAllUnDone(current string) {
 // HandleWorker ...
 func HandleWorker(seconds int) {
 	for {
-		updateAllUnBalance()
+		// updateAllUnBalance()
 		updateAllUnDone("cyborder")
-		updateAllUnDone("cybinner")
+		// updateAllUnDone("cybinner")
 		for {
 			ret := HandleDepositOneTime()
 			if ret != 0 {
@@ -80,9 +80,10 @@ func HandleWorker(seconds int) {
 		time.Sleep(time.Second * time.Duration(seconds))
 	}
 }
-func updateAllUnBalance() {
-	model.JPOrderUnBalanceInit()
-}
+
+// func updateAllUnBalance() {
+// 	model.JPOrderUnBalanceInit()
+// }
 
 // HandleDepositOneTime ...
 func HandleDepositOneTime() int {
