@@ -26,7 +26,7 @@ func HandleWithdraw(result types.JPOrderResult) error {
 		Current:   "jpsended",
 	})
 	if err != nil {
-		return utils.ErrorAdd(err, "HandleDeposit")
+		return utils.ErrorAdd(err, "HandleWithdraw")
 	}
 	lenRes := len(res)
 	var ordernow *model.JPOrder
@@ -37,11 +37,25 @@ func HandleWithdraw(result types.JPOrderResult) error {
 			log.Errorln("final order cannot change", order.ID)
 			return fmt.Errorf("final order cannot change %d", order.ID)
 		}
+		orderSequence := order.ID*100 + order.BNRetry
+		// 如果sequence不是当前的，直接返回
+		if orderSequence != result.Sequence {
+			return nil
+		}
 		order.Hash = result.Txid
 		order.UUHash = fmt.Sprintf("%s_%s_%d", result.Type, result.Txid, result.N)
 		order.Confirmations = result.Confirmations
 		order.CurrentState = strings.ToUpper(result.State)
 		order.Resend = result.SendAgain
+		if order.Resend && order.CurrentState == model.JPOrderStatusFailed {
+			// resend 的话增加retry,可以重发
+			if order.BNRetry >= 3 {
+				return nil
+			}
+			order.BNRetry = order.BNRetry + 1
+			order.Log("BnResend", fmt.Sprintf("bn:%+v,order:%+v", result, order))
+			order.SetCurrent("jp", model.JPOrderStatusInit, fmt.Sprintf("BN resend,%d", order.BNRetry))
+		}
 		ordernow = order
 	} else {
 		err = fmt.Errorf("Record lenth %d", lenRes)

@@ -15,6 +15,7 @@ type JPOrderResult struct {
 	CoinType      string      `json:"coinType"`
 	To            string      `json:"to"`
 	Value         string      `json:"value"`
+	Sequence      uint        `json:"sequence"`
 	Confirmations int         `json:"confirmations"`
 	CreateAt      int64       `json:"create_at"`
 	UpdateAt      int64       `json:"update_at"`
