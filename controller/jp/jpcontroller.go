@@ -49,12 +49,11 @@ func HandleWithdraw(result types.JPOrderResult) error {
 		order.Resend = result.SendAgain
 		if order.Resend && order.CurrentState == model.JPOrderStatusFailed {
 			// resend 的话增加retry,可以重发
-			if order.BNRetry >= 3 {
-				return nil
+			if order.BNRetry < 3 {
+				order.BNRetry = order.BNRetry + 1
+				order.Log("BnResend", fmt.Sprintf("bn:%+v,order:%+v", result, order))
+				order.SetCurrent("jp", model.JPOrderStatusInit, fmt.Sprintf("BN resend,%d", order.BNRetry))
 			}
-			order.BNRetry = order.BNRetry + 1
-			order.Log("BnResend", fmt.Sprintf("bn:%+v,order:%+v", result, order))
-			order.SetCurrent("jp", model.JPOrderStatusInit, fmt.Sprintf("BN resend,%d", order.BNRetry))
 		}
 		ordernow = order
 	} else {
