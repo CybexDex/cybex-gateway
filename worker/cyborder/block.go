@@ -165,7 +165,7 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 		realAmount := amountToReal(op.Amount.Amount, assetChain.Precision)
 		jporder := &model.JPOrder{
 			Asset:      assetConf.Name,
-			BlockChain: "",
+			BlockChain: assetConf.Blockchain,
 			// BNOrderID:  "",
 			CybUser:      fromUser.Name,
 			OutAddr:      addr,
