@@ -48,10 +48,14 @@ func CheckGateway(asset *model.Asset) error {
 	return nil
 }
 
-// checkCYB ...
-func checkCYB(asset *model.Asset) error {
+// CheckCYB ...
+func CheckCYB(asset *model.Asset) error {
 	assetcyb, _ := api.GetAsset(asset.CYBName)
 	changed := false
+	if assetcyb.ID.String() == "" {
+		log.Errorln("cybexid  不存在", asset.CYBName)
+		return fmt.Errorf("cybexid %s 不存在", asset.CYBName)
+	}
 	if asset.CYBID != assetcyb.ID.String() {
 		log.Infoln("更新cybid", asset.Name, asset.CYBID, "=>", assetcyb.ID.String())
 		asset.CYBID = assetcyb.ID.String()

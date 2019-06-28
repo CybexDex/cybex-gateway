@@ -91,9 +91,29 @@ func authMiddleware(c *gin.Context) {
 	// Call the next handler, which can be another middleware in the chain, or the final handler.
 	c.Next()
 }
-func getAssetsOne(c *gin.Context) {
+func updateAssetsOne(c *gin.Context) {
 	query := &model.Asset{}
 	err := c.Bind(query)
+	if query.CYBName != "" {
+		err = adminc.CheckCYB(query)
+		if err != nil {
+			log.Errorln("CheckCYB", err)
+			c.JSON(400, gin.H{
+				"message": err.Error(),
+			})
+			return
+		}
+	}
+	if query.GatewayAccount != "" {
+		err = adminc.CheckGateway(query)
+		if err != nil {
+			log.Errorln("CheckGateway", err)
+			c.JSON(400, gin.H{
+				"message": err.Error(),
+			})
+			return
+		}
+	}
 	address, err := model.UpdateAsset(query)
 	if err != nil {
 		log.Errorln("GetAssets", err)
@@ -303,7 +323,7 @@ func StartServer() {
 		usersigned.Use(authMiddleware)
 	}
 	usersigned.POST("/v1/assets/list", getAssets)
-	usersigned.POST("/v1/assets/update", getAssetsOne)
+	usersigned.POST("/v1/assets/update", updateAssetsOne)
 	usersigned.POST("/v1/assets/add", createAssetsOne)
 	usersigned.GET("/v1/record/undone/:interval", notDone)
 	usersigned.GET("/v1/users/:user/assets/:asset/address", getAddress)
