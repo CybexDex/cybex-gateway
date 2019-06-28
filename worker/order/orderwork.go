@@ -75,7 +75,7 @@ func handleWithdrawOrders(order *model.JPOrder) (err error) {
 		err = fmt.Errorf("withdrawSwitch false ")
 		order.CurrentState = model.JPOrderStatusFailed
 		order.CurrentReason = "withdrawSwitch"
-		log.Errorln(err)
+		log.Warningln(err)
 		return err
 	}
 	// 提现金额是否过小
@@ -125,7 +125,7 @@ func handleOrders(order *model.JPOrder) (err error) {
 		err = fmt.Errorf("depositSwitch false ")
 		order.CurrentState = model.JPOrderStatusFailed
 		order.CurrentReason = "depositSwitch"
-		log.Errorln(err)
+		log.Warningln(err)
 		return err
 	}
 	// 充值金额是否过小
