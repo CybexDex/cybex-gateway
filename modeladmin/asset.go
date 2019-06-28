@@ -17,11 +17,12 @@ type Asset struct {
 	CYBID        string `json:"cybid"`
 	Confirmation string `json:"confirmation"`
 
-	SmartContract  string `json:"smartContract"`
-	GatewayAccount string `json:"gatewayAccount"` // 以account为准
-	GatewayID      string `json:"-"`              // 方便读块时排除不需要的部分
-	GatewayPass    string `json:"gatewayPass"`    // 非常重要
-	WithdrawPrefix string `json:"withdrawPrefix"`
+	SmartContract   string `json:"smartContract"`
+	GatewayAccount  string `json:"gatewayAccount"`           // 以account为准
+	GatewayID       string `json:"-"`                        // 方便读块时排除不需要的部分
+	GatewayPass     string `json:"-"`                        // 非常重要
+	GatewayPassword string `gorm:"-" json:"gatewayPassword"` // 非常重要
+	WithdrawPrefix  string `json:"withdrawPrefix"`
 
 	DepositSwitch  bool `json:"depositSwitch"`
 	WithdrawSwitch bool `json:"withdrawSwitch"`
@@ -48,7 +49,7 @@ func (a Asset) ValidateCreate() error {
 		validation.Field(&a.Blockchain, validation.Required),
 		validation.Field(&a.CYBName, validation.Required),
 		validation.Field(&a.GatewayAccount, validation.Required),
-		validation.Field(&a.GatewayPass, validation.Required),
+		validation.Field(&a.GatewayPassword, validation.Required),
 		validation.Field(&a.WithdrawPrefix, validation.Required),
 		validation.Field(&a.MinDeposit, validation.Required),
 		validation.Field(&a.MinWithdraw, validation.Required),

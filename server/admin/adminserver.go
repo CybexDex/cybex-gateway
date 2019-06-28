@@ -2,9 +2,7 @@ package admin
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
-	"time"
 
 	adminc "cybex-gateway/controller/admin"
 	model "cybex-gateway/modeladmin"
@@ -18,82 +16,32 @@ import (
 	"github.com/spf13/viper"
 )
 
+var tokens = map[string]bool{
+	"Bearer yangyu.DSADSDsadasd@dasd^YHN":  true,
+	"Bearer zhangyi.DDhhhCsadasd@dasd^YHN": true,
+}
+
 func authMiddleware(c *gin.Context) {
 	tokenHeader := c.GetHeader("Authorization") //Grab the token from the header
-	if tokenHeader == "" {                      //Token is missing, returns with error code 403 Unauthorized
+	if tokens[tokenHeader] == false {           //Token is missing, returns with error code 403 Unauthorized
 		c.AbortWithStatusJSON(400, gin.H{
-			"message": "no token",
+			"message": "token不对",
 		})
 		return
 	}
-
-	splitted := strings.Split(tokenHeader, " ") //The token normally comes in format `Bearer {token-body}`, we check if the retrieved token matched this requirement
-	if len(splitted) != 2 {
-		c.AbortWithStatusJSON(400, gin.H{
-			"message": "token format error",
-		})
-		return
-	}
-
-	tokenPart := splitted[1]
-	tokenArr := strings.Split(tokenPart, ".")
-	if len(tokenArr) != 3 {
-		c.AbortWithStatusJSON(400, gin.H{
-			"message": "token format error 2",
-		})
-		return
-	}
-	signTime := tokenArr[0]
-	signTimeInt, err := strconv.Atoi(signTime)
-	if err != nil {
-		c.AbortWithStatusJSON(400, gin.H{
-			"message": "signTimeInt error",
-		})
-		return
-	}
-	now := time.Now().Unix()
-	if (int64(signTimeInt) < now-15*60) || (int64(signTimeInt) > now+15*60) {
-		c.AbortWithStatusJSON(400, gin.H{
-			"message": "auth time error",
-		})
-		return
-	}
-	user := tokenArr[1]
-	varsUser := c.Param("user")
-	// check is tokenpart in db
-	isok, _, err := adminc.CheckUser(signTime, user, tokenArr[2])
-	if err != nil {
-		log.Errorln(err)
-		c.AbortWithStatusJSON(400, gin.H{
-			"message": "CheckUser err error",
-		})
-		return
-	}
-	if !isok {
-		c.AbortWithStatusJSON(400, gin.H{
-			"message": "CheckUser fail",
-		})
-		return
-	}
-	if user == "" {
-		// TODO uncomment this
-		c.AbortWithStatusJSON(400, gin.H{
-			"message": "no user error",
-		})
-		return
-	}
-	if varsUser != "" && varsUser != user {
-		c.AbortWithStatusJSON(400, gin.H{
-			"message": "wrong user error",
-		})
-		return
-	}
+	log.Infoln(tokenHeader)
 	// Call the next handler, which can be another middleware in the chain, or the final handler.
 	c.Next()
 }
 func updateAssetsOne(c *gin.Context) {
 	query := &model.Asset{}
 	err := c.Bind(query)
+	if query.GatewayAccount != "" || query.GatewayPass != "" {
+		c.JSON(400, gin.H{
+			"message": "不可更新网关账户，如非改不可请联系管理员",
+		})
+		return
+	}
 	if query.CYBName != "" {
 		err = adminc.CheckCYB(query)
 		if err != nil {
@@ -143,6 +91,7 @@ func createAssetsOne(c *gin.Context) {
 		})
 		return
 	}
+	query.GatewayPass = query.GatewayPassword
 	address, err := model.AssetsCreate(query)
 	if err != nil {
 		log.Errorln("GetAssets", err)
@@ -308,11 +257,12 @@ func StartServer() {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
-		AllowHeaders:     []string{"Origin", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
+		AllowOrigins:  []string{"*"},
+		AllowHeaders:  []string{"*"},
+		ExposeHeaders: []string{"Content-Length"},
+		// AllowCredentials: true,
 	}))
+	r.Use(middleware.RequestLogger())
 	r.Use(middleware.GinBodyLogMiddleware)
 	r.GET("/t", func(c *gin.Context) {
 		ecc.TestECCSign()
