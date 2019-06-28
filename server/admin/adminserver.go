@@ -115,6 +115,14 @@ func createAssetsOne(c *gin.Context) {
 		})
 		return
 	}
+	err = adminc.CheckAsset(query)
+	if err != nil {
+		log.Errorln("valid", err)
+		c.JSON(400, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
 	address, err := model.AssetsCreate(query)
 	if err != nil {
 		log.Errorln("GetAssets", err)

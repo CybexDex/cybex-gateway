@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"cybex-gateway/controller/jp"
-	model "cybex-gateway/model"
+	model "cybex-gateway/modeladmin"
 	"cybex-gateway/types"
 	"cybex-gateway/utils"
 	"cybex-gateway/utils/log"
@@ -23,6 +23,81 @@ func InitNode() {
 	if err := api.Connect(); err != nil {
 		panic(err)
 	}
+}
+
+// CheckGateway ...
+func CheckGateway(asset *model.Asset) error {
+	account1, _ := api.GetAccountByName(asset.GatewayAccount)
+	changed := false
+	if account1 == nil {
+		log.Errorln("gateway account 不存在", asset.GatewayAccount)
+		return fmt.Errorf("gateway %s 不存在 ", asset.GatewayAccount)
+	}
+	if asset.GatewayID != account1.ID.String() {
+		log.Infoln("更新gatewayid", asset.Name, asset.GatewayID, "=>", account1.ID.String())
+		asset.GatewayID = account1.ID.String()
+		changed = true
+	}
+	if changed {
+		err := asset.Save()
+		if err != nil {
+			log.Errorln("更新asset失败", asset.Name, err)
+			return fmt.Errorf("更新asset失败 %s", asset.Name)
+		}
+	}
+	return nil
+}
+
+// checkCYB ...
+func checkCYB(asset *model.Asset) error {
+	assetcyb, _ := api.GetAsset(asset.CYBName)
+	changed := false
+	if asset.CYBID != assetcyb.ID.String() {
+		log.Infoln("更新cybid", asset.Name, asset.CYBID, "=>", assetcyb.ID.String())
+		asset.CYBID = assetcyb.ID.String()
+		changed = true
+	}
+	if changed {
+		err := asset.Save()
+		if err != nil {
+			log.Errorln("更新asset失败", asset.Name, err)
+			return fmt.Errorf("更新asset失败 %s", asset.Name)
+		}
+	}
+	return nil
+}
+
+// CheckAsset ...
+func CheckAsset(asset *model.Asset) error {
+	account1, _ := api.GetAccountByName(asset.GatewayAccount)
+	assetcyb, _ := api.GetAsset(asset.CYBName)
+	changed := false
+	if assetcyb.ID.String() == "" {
+		log.Errorln("cybexid  不存在", asset.CYBName)
+		return fmt.Errorf("cybexid %s 不存在", asset.CYBName)
+	}
+	if asset.CYBID != assetcyb.ID.String() {
+		log.Infoln("更新cybid", asset.Name, asset.CYBID, "=>", assetcyb.ID.String())
+		asset.CYBID = assetcyb.ID.String()
+		changed = true
+	}
+	if account1 == nil {
+		log.Errorln("gateway account 不存在", asset.GatewayAccount)
+		return fmt.Errorf("gateway %s 不存在 ", asset.GatewayAccount)
+	}
+	if asset.GatewayID != account1.ID.String() {
+		log.Infoln("更新gatewayid", asset.Name, asset.GatewayID, "=>", account1.ID.String())
+		asset.GatewayID = account1.ID.String()
+		changed = true
+	}
+	if changed {
+		err := asset.Save()
+		if err != nil {
+			log.Errorln("更新asset失败", asset.Name, err)
+			return fmt.Errorf("更新asset失败 %s", asset.Name)
+		}
+	}
+	return nil
 }
 
 // GetRecordAsset ...
