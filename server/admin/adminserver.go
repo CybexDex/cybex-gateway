@@ -105,9 +105,7 @@ func getAssetsOne(c *gin.Context) {
 	c.JSON(200, address)
 }
 func createAssetsOne(c *gin.Context) {
-	query := &model.Asset{
-		Name: "haha",
-	}
+	query := &model.Asset{}
 	err := c.Bind(query)
 	err = (*query).ValidateCreate()
 	if err != nil {
@@ -177,17 +175,6 @@ func newAddress(c *gin.Context) {
 	address, err := adminc.NewAddress(user, asset)
 	if err != nil {
 		log.Errorln("user newAddress", err)
-		c.JSON(400, gin.H{
-			"message": err.Error(),
-		})
-		return
-	}
-	c.JSON(200, address)
-}
-func bbbAsset(c *gin.Context) {
-	address, err := adminc.GetBBBAssets()
-	if err != nil {
-		log.Errorln("user address", err)
 		c.JSON(400, gin.H{
 			"message": err.Error(),
 		})
@@ -310,7 +297,6 @@ func StartServer() {
 	usersigned.POST("/v1/assets/list", getAssets)
 	usersigned.POST("/v1/assets/update", getAssetsOne)
 	usersigned.POST("/v1/assets/add", createAssetsOne)
-	// r.GET("/v1/bbb", bbbAsset)
 	usersigned.GET("/v1/record/undone/:interval", notDone)
 	usersigned.GET("/v1/users/:user/assets/:asset/address", getAddress)
 	usersigned.POST("/v1/users/:user/assets/:asset/address/new", newAddress)
