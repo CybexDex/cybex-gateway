@@ -104,7 +104,7 @@ func UpdateAsset(query *Asset) (out *Asset, err error) {
 
 // AssetsQuery ...
 func AssetsQuery(query *Asset) (out []*Asset, err error) {
-	err = db.Find(&out, query).Error
+	err = db.Order("id desc").Find(&out, query).Error
 	return out, err
 }
 
