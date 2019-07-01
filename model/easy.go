@@ -1,6 +1,8 @@
 package model
 
 import (
+	"time"
+
 	"github.com/jinzhu/gorm"
 )
 
@@ -8,8 +10,9 @@ import (
 type Easy struct {
 	gorm.Model
 
-	Key   string `gorm:"unique;index;type:varchar(128);default:null" json:"key"` // n to n, ???
-	Value string `json:"value"`                                                  // people to event list
+	Key        string    `gorm:"unique;index;type:varchar(128);default:null" json:"key"` // n to n, ???
+	Value      string    `json:"value"`                                                  // people to event list
+	RecordTime time.Time `json:"recordTime"`
 }
 
 // Save ...

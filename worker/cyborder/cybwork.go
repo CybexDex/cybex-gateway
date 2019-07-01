@@ -31,6 +31,33 @@ func HoldOne() (*model.JPOrder, error) {
 	return order, err
 }
 
+// UpdateExpire ...
+func UpdateExpire() {
+	current, err := model.EasyFristOrCreate("cybLastBlockNum")
+	if err != nil {
+		log.Errorln("updateExpire", err)
+		return
+	}
+	res, err := model.CYBOrderExpire(current.RecordTime, "1m", 0, 10)
+	if err != nil {
+		log.Errorln("updateExpire", err)
+		return
+	}
+	for _, order := range res {
+		switch order.CurrentState {
+		case model.JPOrderStatusPending:
+			order.SetCurrent("cyborder", model.JPOrderStatusFailed, "expire Pending to fail")
+		case model.JPOrderStatusProcessing:
+			// 如果sig不存在,有sig了才会发
+			order.SetCurrent("cyborder", model.JPOrderStatusFailed, "expire processing to fail")
+		}
+		err = order.Save()
+		if err != nil {
+			log.Errorln("UpdateExpire save", err)
+		}
+	}
+}
+
 // HoldInnerOne ...
 // func HoldInnerOne() (*model.JPOrder, error) {
 // 	order, err := model.HoldCYBInnerOrderOne()
@@ -64,6 +91,7 @@ func HandleWorker(seconds int) {
 	for {
 		// updateAllUnBalance()
 		updateAllUnDone("cyborder")
+		UpdateExpire()
 		// updateAllUnDone("cybinner")
 		for {
 			ret := HandleDepositOneTime()
@@ -165,6 +193,7 @@ func mySend(tosends []cybTypes.SimpleSend, order *model.JPOrder) (tx *cybTypes.S
 		log.Errorln("updateAllUnDone", err)
 		return tx, err
 	}
+	order.ExpireTime = tx.Transaction.Expiration.Time
 	order.Sig = tx.Signatures[0].String()
 	err = order.Save()
 	if err != nil {

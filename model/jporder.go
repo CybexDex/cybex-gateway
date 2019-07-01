@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"time"
 
 	"cybex-gateway/utils/log"
 
@@ -66,13 +67,14 @@ type JPOrder struct {
 	CYBHash  *string `gorm:"unique;index;type:varchar(128)" json:"-"`
 	CYBHash2 string  `gorm:"index;type:varchar(128)" json:"-"`
 	Sig      string  `json:"-"`
-	Sig2     string  `json:"-"`
 
-	Current       string `json:"current"`
-	CurrentState  string `json:"currentState"`
-	CurrentReason string `json:"currentReason"`
+	Sig2 string `json:"-"`
 
-	Adds string `json:"-"`
+	Current       string    `json:"current"`
+	CurrentState  string    `json:"currentState"`
+	CurrentReason string    `json:"currentReason"`
+	ExpireTime    time.Time `json:"-"`
+	Adds          string    `json:"-"`
 }
 
 // JPOrderFind ...
@@ -85,6 +87,15 @@ func JPOrderFind(j *JPOrder) (res []*JPOrder, err error) {
 func JPOrderNotDone(fromUpdate string, offset int, limit int) (res []*JPOrder, err error) {
 	s := fmt.Sprintf(`select * from jp_orders where status != '%s' and updated_at + interval '%s' < now()  order by id desc offset %d limit %d;`,
 		"DONE", fromUpdate, offset, limit)
+	err = db.Raw(s).Scan(&res).Error
+	return res, err
+}
+
+// CYBOrderExpire ...
+func CYBOrderExpire(current time.Time, fromUpdate string, offset int, limit int) (res []*JPOrder, err error) {
+	timestr := current.Format("2006-01-02 15:04:05-07")
+	s := fmt.Sprintf(`select * from jp_orders where status != '%s' and current = 'cyborder' and (current_state = 'PROCESSING' or current_state = 'PENDING') and expire_time + interval '%s' < '%s'  order by id desc offset %d limit %d;`,
+		"DONE", fromUpdate, timestr, offset, limit)
 	err = db.Raw(s).Scan(&res).Error
 	return res, err
 }

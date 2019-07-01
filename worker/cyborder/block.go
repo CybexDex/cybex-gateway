@@ -294,6 +294,22 @@ func HandleBlockNum(cnum int) {
 		log.Infoln(order)
 	}
 }
+
+// UpdateLastTime ...
+func UpdateLastTime(cnum int) (t time.Time, error error) {
+	blockInfo, err := api.GetBlock(uint64(cnum))
+	if err != nil {
+		return t, err
+	}
+	bs, _ := json.Marshal(blockInfo)
+	var block cybTypes.Block
+	err = json.Unmarshal(bs, &block)
+	if err != nil {
+		return t, err
+	}
+	return block.TimeStamp.Time, nil
+
+}
 func handleBlockNum(cnum int) {
 	handler := BBBHandler{}
 	cyborders, err := readBlock(cnum, &handler)
@@ -384,13 +400,19 @@ func handleBlock() {
 	// for
 	for cnum := lastBlockNum; cnum <= blockheadNum; cnum = cnum + 1 {
 		handleBlockNum(cnum)
-		updateLastBlock(cnum, easy)
+		t, err := UpdateLastTime(cnum)
+		if err != nil {
+			log.Errorln(err)
+			return
+		}
+		updateLastBlock(cnum, t, easy)
 	}
 	//
 }
-func updateLastBlock(cnum int, easy *model.Easy) error {
+func updateLastBlock(cnum int, t time.Time, easy *model.Easy) error {
 	bstr := strconv.Itoa(cnum + 1)
 	easy.Value = bstr
+	easy.RecordTime = t
 	err := easy.Save()
 	return err
 }
