@@ -1,0 +1,31 @@
+database:
+  host: localhost
+  port: 5432
+  name: cybex
+  user: cybex
+  pass: 123456
+  type: postgres
+jpserver:
+  port: ":8081"
+  ecc: false
+  bnhost: "http://127.0.0.1:7001" # 需要配置瑶池的ECC配置,还需要瑶池中配置回调 http://{jpserverhost}:{jpserver.port}/api/order/noti
+  eccPri: seed__gatewayEccPriv  #64位随机
+  eccPub: seed__bnEccPub # 瑶池的pub
+  appid: "cybex"
+userserver:
+  auth: false
+  port: ":8182"
+cybserver:
+  node:  "wss://shanghai.51nebula.com/" # "wss://hangzhou.51nebula.com/" #"ws://47.100.98.113:38090/"
+  blockBegin: -1
+log:
+  log_dir: ""
+  log_level: "INFO"
+seed:
+  server: "http://127.0.0.1:8899"
+  cmdkey: "0efee2b9b23f5337fd4b39621e55e0c12f6d7430bde05026db6d19d4b6853de0"
+wx:
+  corpid: "ww128a164565b145a8"
+  corpsecret: "5fUnnEfrVKQmMEuvf_xobmHMpcA9_JQCCtHmxtAh4Po"
+  agentid: 1000016
+  users: "@all"
