@@ -197,7 +197,7 @@ func mySend(tosends []cybTypes.SimpleSend, order *model.JPOrder) (tx *cybTypes.S
 	order.Sig = tx.Signatures[0].String()
 	err = order.Save()
 	if err != nil {
-		log.Errorln("updateAllUnDone", err)
+		log.Errorln("order send before", err)
 		return tx, err
 	}
 	if err := api.BroadcastTransaction(tx); err != nil {
