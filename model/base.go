@@ -25,7 +25,7 @@ func INITFromViper() {
 // InitDB ...
 func InitDB(host, port, username, password, dbname string) {
 	dbURI := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s", host, port, username, dbname, password)
-	fmt.Println(dbURI)
+	// fmt.Println(dbURI)
 
 	conn, err := gorm.Open("postgres", dbURI)
 	if err != nil {
