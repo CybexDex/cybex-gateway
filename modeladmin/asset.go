@@ -24,8 +24,8 @@ type Asset struct {
 	GatewayPassword string `gorm:"-" json:"gatewayPassword"` // 非常重要
 	WithdrawPrefix  string `json:"withdrawPrefix"`
 
-	DepositSwitch  bool `json:"depositSwitch"`
-	WithdrawSwitch bool `json:"withdrawSwitch"`
+	DepositSwitch  *bool `json:"depositSwitch"`
+	WithdrawSwitch *bool `json:"withdrawSwitch"`
 
 	MinDeposit  decimal.Decimal `gorm:"type:numeric" json:"minDeposit"`
 	MinWithdraw decimal.Decimal `gorm:"type:numeric" json:"minWithdraw"`
@@ -36,8 +36,8 @@ type Asset struct {
 	ImgURL    string         `json:"imgURL"`
 	HashLink  string         `json:"hashLink"`
 	Info      postgres.Jsonb `gorm:"default:'{}'" json:"info"`
-	UseMemo   bool           `json:"useMemo"`
-	Disabled  bool           `json:"disabled"`
+	UseMemo   *bool          `json:"useMemo"`
+	Disabled  *bool          `json:"disabled"`
 }
 
 // ValidateCreate ...
