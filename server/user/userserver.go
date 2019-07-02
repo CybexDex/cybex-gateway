@@ -280,7 +280,7 @@ func StartServer() {
 	r.GET("/v1/assets", getAssets)
 	r.GET("/v1/assets/:asset", getAssetsOne)
 	// r.GET("/v1/bbb", bbbAsset)
-	r.GET("/v1/record/undone/:interval", notDone)
+	// r.GET("/v1/record/undone/:interval", notDone)
 	usersigned := r.Group("/")
 	if viper.GetBool("userserver.auth") {
 		usersigned.Use(authMiddleware)
