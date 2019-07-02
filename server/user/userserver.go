@@ -65,7 +65,7 @@ func authMiddleware(c *gin.Context) {
 	if err != nil {
 		log.Infoln("CheckUser", err)
 		c.AbortWithStatusJSON(400, gin.H{
-			"message": "CheckUser err error",
+			"message": fmt.Sprintf("CheckUser err error %v", err),
 		})
 		return
 	}
