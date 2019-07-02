@@ -263,7 +263,7 @@ func readBlock(cnum int, handler types.HandleInterface) ([]string, error) {
 			var opt operations.TransferOperation
 			err = json.Unmarshal(opbyte, &opt)
 			if err != nil {
-				log.Errorln(cnum, txnum, opnum, op, err)
+				log.Warningln("非交易", cnum, txnum, opnum, op, err)
 				continue
 			}
 			if opt.From.String() != "" {
