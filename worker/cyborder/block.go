@@ -310,24 +310,25 @@ func UpdateLastTime(cnum int) (t time.Time, error error) {
 	return block.TimeStamp.Time, nil
 
 }
-func handleBlockNum(cnum int) {
+func handleBlockNum(cnum int) error {
 	handler := BBBHandler{}
 	cyborders, err := readBlock(cnum, &handler)
 	if err != nil {
-		log.Errorln(err)
+		log.Errorln("readBlock", cnum, err)
 		// if err == apim.ErrShutdown {
 		err = api.Connect()
 		if err != nil {
 			log.Errorln(err)
 		}
 		// }
-		return
+		return err
 	}
 	// log.Infoln(cyborders)
 	// save cyborders
 	for _, order := range cyborders {
 		log.Infoln(order)
 	}
+	return nil
 }
 func getHeadNum() (int, error) {
 	s, err := api.GetDynamicGlobalProperties()
@@ -399,10 +400,14 @@ func handleBlock() {
 	}
 	// for
 	for cnum := lastBlockNum; cnum <= blockheadNum; cnum = cnum + 1 {
-		handleBlockNum(cnum)
+		err := handleBlockNum(cnum)
+		if err != nil {
+			log.Errorln("handleBlockNum", cnum, err)
+			return
+		}
 		t, err := UpdateLastTime(cnum)
 		if err != nil {
-			log.Errorln(err)
+			log.Errorln("block UpdateLastTime", cnum, err)
 			return
 		}
 		updateLastBlock(cnum, t, easy)
