@@ -63,7 +63,7 @@ func authMiddleware(c *gin.Context) {
 	// check is tokenpart in db
 	isok, _, err := userc.CheckUser(signTime, user, tokenArr[2])
 	if err != nil {
-		log.Errorln(err)
+		log.Infoln("CheckUser", err)
 		c.AbortWithStatusJSON(400, gin.H{
 			"message": "CheckUser err error",
 		})
