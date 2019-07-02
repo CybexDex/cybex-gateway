@@ -102,7 +102,7 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 		gatewayMemoPri := gatewaykeyBag.PrivatesByPublics(pubkeys)
 		gatewayTo := types.GatewayAccount{
 			Account: account1,
-			Type:    "DEPOSIT",
+			Type:    "WITHDRAW",
 			Asset:   findasset.Name,
 			MemoPri: gatewayMemoPri,
 		}

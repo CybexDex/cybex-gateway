@@ -33,7 +33,7 @@ func HoldOne() (*model.JPOrder, error) {
 
 // UpdateExpire ...
 func UpdateExpire() {
-	current, err := model.EasyFristOrCreate("cybLastBlockNum")
+	current, err := model.EasyFrist("cybLastBlockNum")
 	if err != nil {
 		log.Errorln("updateExpire", err)
 		return

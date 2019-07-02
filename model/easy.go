@@ -29,6 +29,15 @@ func EasyFristOrCreate(name string) (res *Easy, err error) {
 	return &out, err
 }
 
+// EasyFrist ...
+func EasyFrist(name string) (res *Easy, err error) {
+	out := Easy{}
+	err = db.Where(&Easy{
+		Key: name,
+	}).First(&out).Error
+	return &out, err
+}
+
 // EasyFind ...
 func EasyFind(j *Easy) (res []*Easy, err error) {
 	err = db.Where(j).Find(&res).Error
