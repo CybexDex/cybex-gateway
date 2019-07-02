@@ -30,8 +30,68 @@ func amountToReal(amountin cybTypes.Int64, prercison int) decimal.Decimal {
 	return d
 }
 
+// CheckUR ...
+func (a *BBBHandler) CheckUR(op *operations.TransferOperation, tx *cybTypes.SignedTransaction, prefix string) {
+	toid := op.To.String()
+	toasset, err := model.AssetsFrist(&model.Asset{
+		GatewayID: toid,
+	})
+	if err != nil {
+		// log.Errorln(err)
+	}
+	// 相关至少是UR
+	fromUsers, err := api.GetAccounts(op.From)
+	fromUser := fromUsers[0]
+	assetChain, err := api.GetAsset(op.Amount.Asset.String())
+	if err != nil {
+		log.Errorln(assetChain, err)
+		return
+	}
+	realAmount := amountToReal(op.Amount.Amount, assetChain.Precision)
+	memo := op.Memo
+	memoout := ""
+	if memo == nil {
+
+	} else {
+		account1, _ := api.GetAccountByName(toasset.GatewayAccount)
+		gatewaypass := utils.SeedString(toasset.GatewayPass)
+		gatewaykeyBag := apim.KeyBagByUserPass(toasset.GatewayAccount, gatewaypass)
+		memokey := account1.Options.MemoKey
+		pubkeys := cybTypes.PublicKeys{memokey}
+		gatewayMemoPri := gatewaykeyBag.PrivatesByPublics(pubkeys)
+		for _, prv := range gatewayMemoPri {
+			s, err := memo.Decrypt(&prv)
+			if err == nil {
+				memoout = s
+			}
+		}
+	}
+	// memo格式
+
+	jporder := &model.JPOrder{
+		Asset: op.Amount.Asset.String(),
+
+		// BNOrderID:  "",
+		CybUser:     fromUser.Name,
+		CYBHash2:    toasset.GatewayAccount,
+		TotalAmount: realAmount,
+		Type:        "UR",
+		Memo:        memoout,
+		// Status:       model.JPOrderStatusPending,
+		// Current:      "order",
+		// CurrentState: model.JPOrderStatusInit,
+		Sig:     tx.Signatures[0].String(),
+		CYBHash: &prefix,
+	}
+	err = jporder.Save()
+	if err != nil {
+		log.Errorln("save UR error", err)
+	}
+	log.Infof("order:%d,%s:%+v\n", jporder.ID, "save_ur", *jporder)
+}
+
 // HandleTR ...
-func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.SignedTransaction, prefix string) {
+func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.SignedTransaction, prefix string) bool {
 	// log.Infoln("HandleTX", op.To, tx.Signatures)
 	// 是否在币种中，不是的话，是否是gateway账号的UR。
 	toid := op.To.String()
@@ -44,7 +104,7 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 		// log.Errorln(err)
 	}
 	if findasset == nil {
-		return
+		return false
 	}
 	// 先看From,是充值或者Inner订单
 	if findasset.GatewayID == fromid {
@@ -71,7 +131,7 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 		})
 		if err != nil {
 			log.Errorln("JPOrderFind error", err)
-			return
+			return false
 		}
 		if len(orders) == 1 {
 			order := orders[0]
@@ -90,7 +150,7 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 		} else if len(orders) > 1 {
 			log.Errorln("sig len ", len(orders))
 		}
-		return
+		return true
 	}
 	//to gatewayTo 的话就是提现订单
 	if findasset.GatewayID == toid {
@@ -112,32 +172,32 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 		assetChain, err := api.GetAsset(op.Amount.Asset.String())
 		if err != nil {
 			log.Errorln(assetChain, err)
-			return
+			return false
 		}
 		assetConf, err := model.AssetsFrist(&model.Asset{
 			CYBName: assetChain.Symbol,
 		})
 		if err != nil {
 			log.Infoln("UR 不是合法币种", assetChain.Symbol)
-			return
+			return false
 		}
 		if assetConf == nil || assetConf.GatewayAccount != gatewayTo.Account.Name {
 			// UR
 			log.Infoln("UR 不是该账户合法币种", assetConf, assetChain.Symbol)
-			return
+			return false
 		}
 		// 合法转账
 		// 锁定期
 		extensions := op.Extensions
 		if len(extensions) > 0 {
 			log.Infoln("UR extensions", op)
-			return
+			return false
 		}
 		// 没有memo
 		memo := op.Memo
 		if memo == nil {
 			log.Infoln("UR Memo", *op)
-			return
+			return false
 		}
 		// memo格式
 		memoout := ""
@@ -151,13 +211,13 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 		gatewayPrefix := assetConf.WithdrawPrefix
 		if !strings.HasPrefix(memoout, gatewayPrefix) {
 			log.Infoln("UR:1 ", "memo:", memoout)
-			return
+			return false
 		}
 		s := strings.TrimPrefix(memoout, gatewayPrefix)
 		s2 := strings.Split(s, ":")
 		if len(s2) < 3 {
 			log.Infoln("UR:2", "memo:", memoout)
-			return
+			return false
 		}
 		addr := strings.Join(s2[2:], ":")
 		// log.Infoln("withdraw:", addr, *op)
@@ -183,7 +243,9 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 			log.Errorln("save jporder error", err)
 		}
 		log.Infof("order:%d,%s:%+v\n", jporder.ID, "save_withdraw", *jporder)
+		return true
 	}
+	return false
 }
 
 var allgateways map[string]*types.GatewayAccount
@@ -269,7 +331,10 @@ func readBlock(cnum int, handler types.HandleInterface) ([]string, error) {
 					continue
 				}
 				if opt.From.String() != "" {
-					handler.HandleTR(&opt, &tx, fmt.Sprintf("%d:%d:%d", cnum, txnum, opnum))
+					ok := handler.HandleTR(&opt, &tx, fmt.Sprintf("%d:%d:%d", cnum, txnum, opnum))
+					if !ok {
+						handler.CheckUR(&opt, &tx, fmt.Sprintf("%d:%d:%d", cnum, txnum, opnum))
+					}
 				}
 			}
 		}
