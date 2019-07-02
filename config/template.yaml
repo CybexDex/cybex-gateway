@@ -15,6 +15,7 @@ jpserver:
 userserver:
   auth: false # 是否开启cybex用户签名
   port: ":8182"
+  cor: false
 adminserver:
   auth: true
   port: ":8183"
