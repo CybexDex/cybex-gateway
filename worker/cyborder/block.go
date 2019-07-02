@@ -261,13 +261,16 @@ func readBlock(cnum int, handler types.HandleInterface) ([]string, error) {
 			}
 			opbyte, _ := json.Marshal(op)
 			var opt operations.TransferOperation
-			err = json.Unmarshal(opbyte, &opt)
-			if err != nil {
-				log.Infoln("非交易", cnum, txnum, opnum, op.Type(), err)
-				continue
-			}
-			if opt.From.String() != "" {
-				handler.HandleTR(&opt, &tx, fmt.Sprintf("%d:%d:%d", cnum, txnum, opnum))
+			if op.Type() == opt.Type() {
+				var opt operations.TransferOperation
+				err = json.Unmarshal(opbyte, &opt)
+				if err != nil {
+					log.Infoln("非交易", cnum, txnum, opnum, op.Type(), err)
+					continue
+				}
+				if opt.From.String() != "" {
+					handler.HandleTR(&opt, &tx, fmt.Sprintf("%d:%d:%d", cnum, txnum, opnum))
+				}
 			}
 		}
 	}
