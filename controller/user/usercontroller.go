@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"cybex-gateway/controller/jp"
+	jp "cybex-gateway/controller/jpselect"
 	model "cybex-gateway/model"
 	"cybex-gateway/types"
 	"cybex-gateway/utils"
@@ -114,7 +114,10 @@ func NewAddress(user string, asset string) (address *types.UserResultAddress, er
 	address = &types.UserResultAddress{}
 	//找user,asset的address
 	//没有找到，获取，创建，返回
-	newaddr, err := jp.DepositAddress(asset)
+	var newaddr *types.JPAddressResult
+
+	newaddr, err = jp.DepositAddress(asset)
+
 	if err != nil {
 		return address, err
 	}
@@ -150,7 +153,8 @@ func NewAddress(user string, asset string) (address *types.UserResultAddress, er
 
 // VerifyAddress ...
 func VerifyAddress(asset string, address string) (verifyRes *types.VerifyRes, err error) {
-	res, err := jp.VerifyAddress(asset, address)
+	var res *types.VerifyRes
+	res, err = jp.VerifyAddress(asset, address)
 	return res, err
 }
 
@@ -164,7 +168,8 @@ func GetAddress(user string, asset string) (address *types.UserResultAddress, er
 			return address, err
 		}
 		//没有找到，获取，创建，返回
-		newaddr, err := jp.DepositAddress(asset)
+		var newaddr *types.JPAddressResult
+		newaddr, err = jp.DepositAddress(asset)
 		if err != nil {
 			return address, err
 		}

@@ -26,7 +26,7 @@ func HandleWithdraw(result types.JPOrderResult) error {
 		Current:   "jpsended",
 	})
 	if err != nil {
-		return utils.ErrorAdd(err, "HandleDeposit")
+		return utils.ErrorAdd(err, "HandleWithdraw")
 	}
 	lenRes := len(res)
 	var ordernow *model.JPOrder
@@ -37,11 +37,31 @@ func HandleWithdraw(result types.JPOrderResult) error {
 			log.Errorln("final order cannot change", order.ID)
 			return fmt.Errorf("final order cannot change %d", order.ID)
 		}
+		orderSequence := order.ID*100 + order.BNRetry
+		// 如果sequence不是当前的，直接返回
+		if orderSequence != result.Sequence {
+			return nil
+		}
 		order.Hash = result.Txid
 		order.UUHash = fmt.Sprintf("%s_%s_%d", result.Type, result.Txid, result.N)
 		order.Confirmations = result.Confirmations
 		order.CurrentState = strings.ToUpper(result.State)
 		order.Resend = result.SendAgain
+		if order.Resend && order.CurrentState == model.JPOrderStatusFailed {
+			// resend 的话增加retry,可以重发
+			if order.BNRetry < 3 {
+				order.BNRetry = order.BNRetry + 1
+				order.Log("BnResend", fmt.Sprintf("bn:%+v,order:%+v", result, order))
+				order.SetCurrent("jp", model.JPOrderStatusInit, fmt.Sprintf("BN resend,%d", order.BNRetry))
+			} else {
+				msg := fmt.Sprintf("gatewayID:%d,jadepoolID:%s", order.ID, *order.BNOrderID)
+				model.WxSendTaskCreate("BN重发次数超过3次", msg)
+			}
+		}
+		if order.Resend == false && order.CurrentState == model.JPOrderStatusFailed {
+			msg := fmt.Sprintf("gatewayID:%d,jadepoolID:%s", order.ID, *order.BNOrderID)
+			model.WxSendTaskCreate("BN failed,不resend", msg)
+		}
 		ordernow = order
 	} else {
 		err = fmt.Errorf("Record lenth %d", lenRes)
@@ -140,7 +160,9 @@ func createJPOrderWithDeposit(result types.JPOrderResult) (*model.JPOrder, error
 func VerifyAddress(asset string, address string) (res *types.VerifyRes, err error) {
 	requestAddress := &types.JPAddressRequest{}
 	requestAddress.Type = asset
-	sendData, err := sendDataEcc(requestAddress)
+	timestamp := time.Now().Unix() * 1000
+	requestAddress.Timestamp = timestamp
+	sendData, err := sendDataEcc(requestAddress, timestamp)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -169,8 +191,10 @@ func DepositAddress(coin string) (address *types.JPAddressResult, err error) {
 	// 构造data消息体
 	requestAddress := &types.JPAddressRequest{}
 	requestAddress.Type = coin
+	timestamp := time.Now().Unix() * 1000
+	requestAddress.Timestamp = timestamp
 	// 构造ecc部分
-	sendData, err := sendDataEcc(requestAddress)
+	sendData, err := sendDataEcc(requestAddress, timestamp)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -203,12 +227,15 @@ func Withdraw(coin string, to string, value string, sequence uint) (address *typ
 	requestObj.Value = value
 	requestObj.Sequence = sequence
 	// 构造ecc部分
-	sendData, err := sendDataEcc(requestObj)
+	timestamp := time.Now().Unix() * 1000
+	requestObj.Timestamp = timestamp
+	// 构造ecc部分
+	sendData, err := sendDataEcc(requestObj, timestamp)
 	if err != nil {
 		fmt.Println(err)
 	}
 	data := types.JPEvent{}
-	// fmt.Println(sendData.Data)
+
 	err = bnResult("/api/v1/transactions", sendData, &data)
 	if err != nil {
 		return nil, err
@@ -249,6 +276,7 @@ func CheckComing(data *types.JPEvent) (err error) {
 }
 func bnResult(urlPath string, sendData *types.JPSendData, v interface{}) (err error) {
 	bs, _ := json.Marshal(sendData)
+
 	jadepoolAddr := viper.GetString("jpserver.bnhost")
 	url := jadepoolAddr + urlPath
 	resp, err := http.Post(url, "application/json", bytes.NewReader(bs))
@@ -266,11 +294,10 @@ func bnResult(urlPath string, sendData *types.JPSendData, v interface{}) (err er
 	}
 	return nil
 }
-func sendDataEcc(data interface{}) (sendData *types.JPSendData, err error) {
+func sendDataEcc(data interface{}, timestamp int64) (sendData *types.JPSendData, err error) {
 	sendData = &types.JPSendData{}
 	sendData.Crypto = "ecc"
 	sendData.Encode = "base64"
-	timestamp := time.Now().Unix() * 1000
 	sendData.Timestamp = timestamp
 	sendData.Hash = "sha3"
 	sendData.AppID = viper.GetString("jpserver.appid")

@@ -1,4 +1,4 @@
-package jp
+package sass
 
 import (
 	"cybex-gateway/controller/jp"
@@ -129,8 +129,8 @@ func StartServer() {
 	r.Use(middleware.RequestLogger())
 	r.Use(middleware.GinBodyLogMiddleware)
 	r.POST("/api/order/noti", sassNotify)
-	port := viper.GetString("jpserver.port")
-	log.Infoln("jpserver start at", port)
+	port := viper.GetString("sassserver.port")
+	log.Infoln("sassserver start at", port)
 	err := r.Run(port) // listen and serve on 0.0.0.0:8080
 	if err != nil {
 		log.Errorln(err)

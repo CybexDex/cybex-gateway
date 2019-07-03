@@ -3,13 +3,12 @@ package main
 import (
 	"os"
 
-	"github.com/spf13/viper"
-
 	"cybex-gateway/config"
 	"cybex-gateway/model"
-	"cybex-gateway/server/jpselect"
 	"cybex-gateway/utils/log"
-	jpworker "cybex-gateway/worker/jpselect"
+	"cybex-gateway/worker/cyborder"
+
+	"github.com/spf13/viper"
 )
 
 func main() {
@@ -18,11 +17,19 @@ func main() {
 		env = "dev"
 	}
 	config.LoadConfig(env)
+
 	logDir := viper.GetString("log.log_dir")
 	logLevel := viper.GetString("log.log_level")
 	log.InitLog(logDir, logLevel, "[bbb]")
+
 	model.INITFromViper()
-	go jpworker.HandleWorker(5)
-	jpselect.StartServer()
-	// user.StartServer()
+	cyborder.InitNode()
+	// cyborder.InitAsset()
+	// go cyborder.HandleWorker(5)
+	// go cyborder.BlockRead()
+	cyborder.HandleBlockNum(9200569)
+	// cyborder.UpdateLastTime(9086606)
+	// cyborder.UpdateExpire()
+	// select {}
+	// fmt.Println(s)
 }

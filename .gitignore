@@ -1,2 +1,7 @@
 vendor/
 bin/
+config/dev.yaml
+admin
+modeladmin
+cmd/db/coins/XTZ.yaml
+lab

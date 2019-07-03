@@ -7,12 +7,13 @@ import (
 
 	"cybex-gateway/config"
 	"cybex-gateway/model"
-	"cybex-gateway/server/jp"
+	"cybex-gateway/server/jpselect"
 	"cybex-gateway/server/user"
 	"cybex-gateway/utils/log"
 	"cybex-gateway/worker/cyborder"
-	jpworker "cybex-gateway/worker/jp"
+	jpworker "cybex-gateway/worker/jpselect"
 	"cybex-gateway/worker/order"
+	"cybex-gateway/worker/wx"
 )
 
 func main() {
@@ -35,6 +36,7 @@ func main() {
 
 	go order.HandleWorker(5)
 	go user.StartServer()
+	go wx.HandleWorker(5)
 	go jpworker.HandleWorker(5)
-	jp.StartServer()
+	jpselect.StartServer()
 }

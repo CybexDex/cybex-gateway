@@ -1,4 +1,4 @@
-package jp
+package sass
 
 import (
 	"fmt"
@@ -12,6 +12,7 @@ import (
 
 // HandleWorker ...
 func HandleWorker(seconds int) {
+	log.Infoln("sass worker start")
 	for {
 		for {
 			ret := HandleOneTime()
@@ -52,6 +53,8 @@ func handleOrders(order *model.JPOrder) error {
 		errstr := fmt.Sprintf("jpc.Withdraw:%v", err)
 		log.Errorf("order:%d,%s:%+v\n", order.ID, "jpc.Withdraw", err)
 		order.SetCurrent(order.Current, model.JPOrderStatusFailed, errstr)
+		errmsg := fmt.Sprintf("id:%d\nerr:%s", order.ID, errstr)
+		model.WxSendTaskCreate("网关提现失败", errmsg)
 		return err
 	}
 	evt2 := fmt.Sprintf("sequence:%d,%+v", order.ID*100+order.BNRetry, *result)

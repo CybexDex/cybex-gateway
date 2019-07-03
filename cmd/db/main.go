@@ -15,7 +15,7 @@ func main() {
 	}
 	config.LoadConfig(env)
 	model.INITFromViper()
-	// black()
+	black()
 	asset()
 }
 func asset() {

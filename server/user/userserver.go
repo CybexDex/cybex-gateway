@@ -63,9 +63,9 @@ func authMiddleware(c *gin.Context) {
 	// check is tokenpart in db
 	isok, _, err := userc.CheckUser(signTime, user, tokenArr[2])
 	if err != nil {
-		log.Errorln(err)
+		log.Infoln("CheckUser", err)
 		c.AbortWithStatusJSON(400, gin.H{
-			"message": "CheckUser err error",
+			"message": fmt.Sprintf("CheckUser err error %v", err),
 		})
 		return
 	}
@@ -266,12 +266,15 @@ func StartServer() {
 	userc.InitNode()
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
-	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
-		AllowHeaders:     []string{"Origin", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-	}))
+	if viper.GetBool("userserver.cor") {
+		log.Infoln("cor")
+		r.Use(cors.New(cors.Config{
+			AllowOrigins:     []string{"*"},
+			AllowHeaders:     []string{"Origin", "Authorization"},
+			ExposeHeaders:    []string{"Content-Length"},
+			AllowCredentials: true,
+		}))
+	}
 	r.Use(middleware.GinBodyLogMiddleware)
 	r.GET("/t", func(c *gin.Context) {
 		ecc.TestECCSign()
@@ -279,15 +282,15 @@ func StartServer() {
 	})
 	r.GET("/v1/assets", getAssets)
 	r.GET("/v1/assets/:asset", getAssetsOne)
-	r.GET("/v1/bbb", bbbAsset)
-	r.GET("/v1/record/undone/:interval", notDone)
+	// r.GET("/v1/bbb", bbbAsset)
+	// r.GET("/v1/record/undone/:interval", notDone)
 	usersigned := r.Group("/")
 	if viper.GetBool("userserver.auth") {
 		usersigned.Use(authMiddleware)
 	}
 	usersigned.GET("/v1/users/:user/assets/:asset/address", getAddress)
 	usersigned.POST("/v1/users/:user/assets/:asset/address/new", newAddress)
-	usersigned.GET("/v1/assets/:asset/address/:address/verify", verifyAddress)
+	r.GET("/v1/assets/:asset/address/:address/verify", verifyAddress)
 	usersigned.GET("/v1/users/:user/records", recordList)
 	usersigned.GET("/v1/users/:user/assets", recordAssets)
 	port := viper.GetString("userserver.port")

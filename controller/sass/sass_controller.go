@@ -55,7 +55,7 @@ func HandleWithdraw(result *OrderInfo) error {
 		order.CurrentState = strings.ToUpper(result.State)
 		ordernow = order
 	} else {
-		err = fmt.Errorf("Record lenth %d", lenRes)
+		err = fmt.Errorf("JPOrderFind Record lenth %d", lenRes)
 		log.Errorln(err, "resultID:", result.ID)
 		return nil
 	}
@@ -164,9 +164,9 @@ func VerifyAddress(asset string, address string) (res *types.VerifyRes, err erro
 // InitAPI ...
 func InitAPI() {
 	api = &API{
-		APIAddr:   "http://39.98.58.238:8092",
-		AppKey:    "jFJDa2Iha04tED6fYBwsjMZC",
-		AppSecret: "yeTJ3EnOkyQQEjhTMVqn165Dqjp43bhTwXLIv25Ycdu8qwDOyqpa0WV54C6sO4HW",
+		APIAddr:   viper.GetString("sassserver.host"),
+		AppKey:    viper.GetString("sassserver.appKey"),
+		AppSecret: viper.GetString("sassserver.appSecret"),
 	}
 }
 

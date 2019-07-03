@@ -13,6 +13,7 @@ import (
 	"cybex-gateway/types"
 	"cybex-gateway/utils"
 	"cybex-gateway/utils/log"
+
 	apim "github.com/CybexDex/cybex-go/api"
 	"github.com/CybexDex/cybex-go/operations"
 	cybTypes "github.com/CybexDex/cybex-go/types"
@@ -29,14 +30,102 @@ func amountToReal(amountin cybTypes.Int64, prercison int) decimal.Decimal {
 	return d
 }
 
+// CheckUR ...
+func (a *BBBHandler) CheckUR(op *operations.TransferOperation, tx *cybTypes.SignedTransaction, prefix string) {
+	toid := op.To.String()
+	toasset, err := model.AssetsFrist(&model.Asset{
+		GatewayID: toid,
+	})
+	if err != nil {
+		// 不是处理中的资产
+		// log.Errorln(err)
+		return
+	}
+	if toasset == nil {
+		// return
+	}
+	// 相关至少是UR
+	fromUsers, err := api.GetAccounts(op.From)
+	fromUser := fromUsers[0]
+	assetChain, err := api.GetAsset(op.Amount.Asset.String())
+	if err != nil {
+		log.Errorln(assetChain, err)
+		return
+	}
+	realAmount := amountToReal(op.Amount.Amount, assetChain.Precision)
+	memo := op.Memo
+	memoout := ""
+	if memo == nil {
+
+	} else {
+		account1, _ := api.GetAccountByName(toasset.GatewayAccount)
+		gatewaypass := utils.SeedString(toasset.GatewayPass)
+		gatewaykeyBag := apim.KeyBagByUserPass(toasset.GatewayAccount, gatewaypass)
+		memokey := account1.Options.MemoKey
+		pubkeys := cybTypes.PublicKeys{memokey}
+		gatewayMemoPri := gatewaykeyBag.PrivatesByPublics(pubkeys)
+		for _, prv := range gatewayMemoPri {
+			s, err := memo.Decrypt(&prv)
+			if err == nil {
+				memoout = s
+			}
+		}
+	}
+	// memo格式
+
+	jporder := &model.JPOrder{
+		Asset: op.Amount.Asset.String(),
+
+		// BNOrderID:  "",
+		CybUser:     fromUser.Name,
+		CYBHash2:    toasset.GatewayAccount,
+		TotalAmount: realAmount,
+		Type:        "UR",
+		Memo:        memoout,
+		// Status:       model.JPOrderStatusPending,
+		// Current:      "order",
+		// CurrentState: model.JPOrderStatusInit,
+		Sig:     tx.Signatures[0].String(),
+		CYBHash: &prefix,
+	}
+	err = jporder.Save()
+	if err != nil {
+		log.Errorln("save UR error", err)
+	}
+	log.Infof("order:%d,%s:%+v\n", jporder.ID, "save_ur", *jporder)
+}
+
 // HandleTR ...
-func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.SignedTransaction, prefix string) {
+func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.SignedTransaction, prefix string) bool {
 	// log.Infoln("HandleTX", op.To, tx.Signatures)
-	// 是否在币种中，没有的话，是否是gateway账号的UR。
-	gatewayTo := allgateways[op.To.String()]
-	gatewayFrom := allgateways[op.From.String()]
+	// 是否在币种中，不是的话，是否是gateway账号的UR。
+	toid := op.To.String()
+	fromid := op.From.String()
+	assetid := op.Amount.Asset.String()
+	findasset, err := model.AssetsFrist(&model.Asset{
+		CYBID: assetid,
+	})
+	if err != nil {
+		// log.Errorln(err)
+	}
+	if findasset == nil {
+		return false
+	}
 	// 先看From,是充值或者Inner订单
-	if gatewayFrom != nil {
+	if findasset.GatewayID == fromid {
+		account1, _ := api.GetAccountByName(findasset.GatewayAccount)
+		gatewaypass := utils.SeedString(findasset.GatewayPass)
+		gatewaykeyBag := apim.KeyBagByUserPass(findasset.GatewayAccount, gatewaypass)
+		memokey := account1.Options.MemoKey
+		pubkeys := cybTypes.PublicKeys{memokey}
+		gatewayMemoPri := gatewaykeyBag.PrivatesByPublics(pubkeys)
+		gatewayFrom := types.GatewayAccount{
+			Account: account1,
+			Type:    "DEPOSIT",
+			Asset:   findasset.Name,
+			MemoPri: gatewayMemoPri,
+		}
+		log.Infoln(findasset.Name)
 		log.Infof("HandleTX:,from:%s,op:%+v,tx.sig:%v\n", gatewayFrom.Account.Name, op, tx.Signatures)
 		// 直接看sig,能不能找到,找到就更新。没有找到的话。先不管
 		// if gatewayTo != nil {
@@ -47,7 +136,7 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 		})
 		if err != nil {
 			log.Errorln("JPOrderFind error", err)
-			return
+			return false
 		}
 		if len(orders) == 1 {
 			order := orders[0]
@@ -66,46 +155,57 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 		} else if len(orders) > 1 {
 			log.Errorln("sig len ", len(orders))
 		}
-		return
+		return true
 	}
 	//to gatewayTo 的话就是提现订单
-	if gatewayTo != nil {
+	if findasset.GatewayID == toid {
+		account1, _ := api.GetAccountByName(findasset.GatewayAccount)
+		gatewaypass := utils.SeedString(findasset.GatewayPass)
+		gatewaykeyBag := apim.KeyBagByUserPass(findasset.GatewayAccount, gatewaypass)
+		memokey := account1.Options.MemoKey
+		pubkeys := cybTypes.PublicKeys{memokey}
+		gatewayMemoPri := gatewaykeyBag.PrivatesByPublics(pubkeys)
+		gatewayTo := types.GatewayAccount{
+			Account: account1,
+			Type:    "WITHDRAW",
+			Asset:   findasset.Name,
+			MemoPri: gatewayMemoPri,
+		}
 		log.Infof("HandleTX:,to:%s,op:%+v,tx.sig:%v\n", gatewayTo.Account.Name, op, tx.Signatures)
 		fromUsers, err := api.GetAccounts(op.From)
 		fromUser := fromUsers[0]
 		assetChain, err := api.GetAsset(op.Amount.Asset.String())
 		if err != nil {
 			log.Errorln(assetChain, err)
-			return
+			return false
 		}
 		assetConf, err := model.AssetsFrist(&model.Asset{
 			CYBName: assetChain.Symbol,
 		})
 		if err != nil {
 			log.Infoln("UR 不是合法币种", assetChain.Symbol)
-			return
+			return false
 		}
 		if assetConf == nil || assetConf.GatewayAccount != gatewayTo.Account.Name {
 			// UR
 			log.Infoln("UR 不是该账户合法币种", assetConf, assetChain.Symbol)
-			return
+			return false
 		}
 		// 合法转账
 		// 锁定期
 		extensions := op.Extensions
 		if len(extensions) > 0 {
 			log.Infoln("UR extensions", op)
-			return
+			return false
 		}
 		// 没有memo
 		memo := op.Memo
 		if memo == nil {
 			log.Infoln("UR Memo", *op)
-			return
+			return false
 		}
 		// memo格式
 		memoout := ""
-		gatewayMemoPri := gatewayTo.MemoPri
 		for _, prv := range gatewayMemoPri {
 			s, err := memo.Decrypt(&prv)
 			if err == nil {
@@ -116,13 +216,13 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 		gatewayPrefix := assetConf.WithdrawPrefix
 		if !strings.HasPrefix(memoout, gatewayPrefix) {
 			log.Infoln("UR:1 ", "memo:", memoout)
-			return
+			return false
 		}
 		s := strings.TrimPrefix(memoout, gatewayPrefix)
 		s2 := strings.Split(s, ":")
 		if len(s2) < 3 {
 			log.Infoln("UR:2", "memo:", memoout)
-			return
+			return false
 		}
 		addr := strings.Join(s2[2:], ":")
 		// log.Infoln("withdraw:", addr, *op)
@@ -130,7 +230,7 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 		realAmount := amountToReal(op.Amount.Amount, assetChain.Precision)
 		jporder := &model.JPOrder{
 			Asset:      assetConf.Name,
-			BlockChain: "",
+			BlockChain: assetConf.Blockchain,
 			// BNOrderID:  "",
 			CybUser:      fromUser.Name,
 			OutAddr:      addr,
@@ -148,27 +248,35 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 			log.Errorln("save jporder error", err)
 		}
 		log.Infof("order:%d,%s:%+v\n", jporder.ID, "save_withdraw", *jporder)
+		return true
 	}
+	return false
 }
 
 var allgateways map[string]*types.GatewayAccount
-var allAssets map[string]*types.AssetConfig
-var assetsOfChain map[string]*cybTypes.Asset
 
 // InitAsset ...初始化asset gateway 账户
 func InitAsset() {
-	allAssets = make(map[string]*types.AssetConfig)
+	log.Infoln("开始检查资产...")
+	// allAssets = make(map[string]*types.AssetConfig)
 	allgateways = make(map[string]*types.GatewayAccount)
-	assetsOfChain = make(map[string]*cybTypes.Asset)
 	assets, err := model.AssetsAll()
 	if err != nil {
 		log.Errorln("InitAsset", err)
 	}
 	for _, asset := range assets {
 		account1, _ := api.GetAccountByName(asset.GatewayAccount)
+		assetcyb, _ := api.GetAsset(asset.CYBName)
+		changed := false
+		if asset.CYBID != assetcyb.ID.String() {
+			log.Infoln("更新cybid", asset.Name, asset.CYBID, "=>", assetcyb.ID.String())
+			asset.CYBID = assetcyb.ID.String()
+			changed = true
+		}
 		if account1 == nil {
 			log.Errorln("gateway account 不存在", asset.GatewayAccount)
-			panic("")
+			continue
+			// panic("")
 		}
 		gatewaypass := utils.SeedString(asset.GatewayPass)
 		gatewaykeyBag := apim.KeyBagByUserPass(asset.GatewayAccount, gatewaypass)
@@ -182,6 +290,17 @@ func InitAsset() {
 			MemoPri: gatewayMemoPri,
 		}
 		allgateways[g1.Account.ID.String()] = &g1
+		if asset.GatewayID != account1.ID.String() {
+			log.Infoln("更新gatewayid", asset.Name, asset.GatewayID, "=>", account1.ID.String())
+			asset.GatewayID = account1.ID.String()
+			changed = true
+		}
+		if changed {
+			err := asset.Save()
+			if err != nil {
+				log.Errorln("更新asset失败", asset.Name, err)
+			}
+		}
 	}
 	// log.Infoln(allgateways, allAssets)
 }
@@ -209,19 +328,27 @@ func readBlock(cnum int, handler types.HandleInterface) ([]string, error) {
 			}
 			opbyte, _ := json.Marshal(op)
 			var opt operations.TransferOperation
-			err = json.Unmarshal(opbyte, &opt)
-			if err != nil {
-				log.Errorln(cnum, txnum, opnum, op, err)
-				continue
-			}
-			if opt.From.String() != "" {
-				handler.HandleTR(&opt, &tx, fmt.Sprintf("%d:%d:%d", cnum, txnum, opnum))
+			if op.Type() == opt.Type() {
+				var opt operations.TransferOperation
+				err = json.Unmarshal(opbyte, &opt)
+				if err != nil {
+					log.Infoln("非交易", cnum, txnum, opnum, op.Type(), err)
+					continue
+				}
+				if opt.From.String() != "" {
+					ok := handler.HandleTR(&opt, &tx, fmt.Sprintf("%d:%d:%d", cnum, txnum, opnum))
+					if !ok {
+						handler.CheckUR(&opt, &tx, fmt.Sprintf("%d:%d:%d", cnum, txnum, opnum))
+					}
+				}
 			}
 		}
 	}
 	return nil, nil
 }
-func handleBlockNum(cnum int) {
+
+// HandleBlockNum ...
+func HandleBlockNum(cnum int) {
 	handler := BBBHandler{}
 	cyborders, err := readBlock(cnum, &handler)
 	if err != nil {
@@ -239,6 +366,42 @@ func handleBlockNum(cnum int) {
 	for _, order := range cyborders {
 		log.Infoln(order)
 	}
+}
+
+// UpdateLastTime ...
+func UpdateLastTime(cnum int) (t time.Time, error error) {
+	blockInfo, err := api.GetBlock(uint64(cnum))
+	if err != nil {
+		return t, err
+	}
+	bs, _ := json.Marshal(blockInfo)
+	var block cybTypes.Block
+	err = json.Unmarshal(bs, &block)
+	if err != nil {
+		return t, err
+	}
+	return block.TimeStamp.Time, nil
+
+}
+func handleBlockNum(cnum int) error {
+	handler := BBBHandler{}
+	cyborders, err := readBlock(cnum, &handler)
+	if err != nil {
+		log.Errorln("readBlock", cnum, err)
+		// if err == apim.ErrShutdown {
+		err = api.Connect()
+		if err != nil {
+			log.Errorln(err)
+		}
+		// }
+		return err
+	}
+	// log.Infoln(cyborders)
+	// save cyborders
+	for _, order := range cyborders {
+		log.Infoln(order)
+	}
+	return nil
 }
 func getHeadNum() (int, error) {
 	s, err := api.GetDynamicGlobalProperties()
@@ -310,14 +473,24 @@ func handleBlock() {
 	}
 	// for
 	for cnum := lastBlockNum; cnum <= blockheadNum; cnum = cnum + 1 {
-		handleBlockNum(cnum)
-		updateLastBlock(cnum, easy)
+		err := handleBlockNum(cnum)
+		if err != nil {
+			log.Errorln("handleBlockNum", cnum, err)
+			return
+		}
+		t, err := UpdateLastTime(cnum)
+		if err != nil {
+			log.Errorln("block UpdateLastTime", cnum, err)
+			return
+		}
+		updateLastBlock(cnum, t, easy)
 	}
 	//
 }
-func updateLastBlock(cnum int, easy *model.Easy) error {
+func updateLastBlock(cnum int, t time.Time, easy *model.Easy) error {
 	bstr := strconv.Itoa(cnum + 1)
 	easy.Value = bstr
+	easy.RecordTime = t
 	err := easy.Save()
 	return err
 }

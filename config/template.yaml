@@ -12,9 +12,19 @@ jpserver:
   eccPri: bf12996feeaa2977b6ca0d33a0e8bd2ccfc4844c6f8a7e6d15c099f8da4a255d  #64位随机
   eccPub: 04ace32532c90652e1bae916248e427a7ab10aeeea1067949669a3f4da10965ef90d7297f538f23006a31f94fdcfaed9e8dd38c85ba7e285f727430332925aefe5 # 从瑶池获取的pubkey
   appid: "bbb"
+sassserver:
+  port: ":8082"
+  host:   ""
+  appKey:    "xx"
+  appSecret: "xxx"
+useSass: true
 userserver:
   auth: false # 是否开启cybex用户签名
   port: ":8182"
+  cor: false
+adminserver:
+  auth: true
+  port: ":8183"
 cybserver:
   node:  "ws://18.136.140.223:38090/" # cybex 全节点地址
   blockBegin: -1 # 从哪个cybex block 开始点，-1则从最新
@@ -24,4 +34,8 @@ log:
 seed:
   server: "http://127.0.0.1:8899" # seed 服务器地址
   cmdkey: "0efee2b9b23f5337fd4b39621e55e0c12f6d7430bde05026db6d19d4b6853de0" # seed cmdkey
-      
+wx:
+  corpid: ""
+  corpsecret: ""
+  agentid: 1000016
+  users: ""
