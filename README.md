@@ -18,7 +18,7 @@
 
 ​	参考 config 下 template.yaml 编写自己的 xxx.yaml
 
-​	env=xxx go run cmd/bbb/main.go
+​	env=xxx go run cmd/all/main.go
 
 ## 配置
 
