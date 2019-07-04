@@ -34,7 +34,7 @@ git clone 到 GOPATH之外
 1. 是直接连接瑶池，还是使用saas。如果使用saas，useSass选项设置为true，sassserver下的配置需要配置。否则jpserver下需要配置
 2. userserver 是供客户端访问的api，是否要验签和支持跨域在 userserver 下配置
 3. seed 用于存储敏感信息。
-4. 使用不使用微信高级 wx.enable 设置为false
+4. 使用不使用微信报警 wx.enable 设置为false
 
 ## 订单子阶段
 充值
