@@ -33,6 +33,7 @@ func HoldOne() (*model.JPOrder, error) {
 
 // UpdateExpire ...
 func UpdateExpire() {
+	log.Infoln("UpdateExpire...")
 	current, err := model.EasyFrist("cybLastBlockNum")
 	if err != nil {
 		log.Errorln("updateExpire", err)
@@ -91,7 +92,10 @@ func HandleWorker(seconds int) {
 	for {
 		// updateAllUnBalance()
 		updateAllUnDone("cyborder")
-		UpdateExpire()
+		isauthFail := viper.GetBool("cybserver.expireAuthFail")
+		if isauthFail {
+			UpdateExpire()
+		}
 		// updateAllUnDone("cybinner")
 		for {
 			ret := HandleDepositOneTime()
