@@ -55,7 +55,7 @@ func InitWx() {
 
 // HandleWorker ...
 func HandleWorker(seconds int) {
-	log.Infoln(("wx start...")
+	log.Infoln("wx start...")
 	InitWx()
 	for {
 		for {
