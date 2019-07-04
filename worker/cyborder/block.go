@@ -389,9 +389,9 @@ func handleBlockNum(cnum int) error {
 	if err != nil {
 		log.Errorln("readBlock", cnum, err)
 		// if err == apim.ErrShutdown {
-		err = api.Connect()
-		if err != nil {
-			log.Errorln(err)
+		err2 := api.Connect()
+		if err2 != nil {
+			log.Errorln(err2)
 		}
 		// }
 		return err
