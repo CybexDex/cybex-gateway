@@ -8,6 +8,7 @@ database:  # postgres 的连接数据
 jpserver: # 使用网关可以不配置
   port: ":8081"
   ecc: false  # 是否开启ecc
+  resend : false
   bnhost: "http://127.0.0.1:7001" # 需要配置瑶池的ECC配置,还需要瑶池中配置回调 http://{jpserverhost}:{jpserver.port}/api/order/noti
   eccPri: bf12996feeaa2977b6ca0d33a0e8bd2ccfc4844c6f8a7e6d15c099f8da4a255d  #64位随机
   eccPub: 04ace32532c90652e1bae916248e427a7ab10aeeea1067949669a3f4da10965ef90d7297f538f23006a31f94fdcfaed9e8dd38c85ba7e285f727430332925aefe5 # 从瑶池获取的pubkey
@@ -28,6 +29,7 @@ adminserver:
 cybserver:
   node:  "ws://18.136.140.223:38090/" # cybex 全节点地址
   blockBegin: -1 # 从哪个cybex block 开始点，-1则从最新
+  expireAuthFail: false  # 过期是否自动fail 
 log:
   log_dir: ""  # 设置了的话日志会记录到文件
   log_level: "INFO"
