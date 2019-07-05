@@ -58,7 +58,7 @@ type JPAddressRequest struct {
 
 // JPWithdrawRequest ...
 type JPWithdrawRequest struct {
-	Type      string `json:"type"`
+	// Type      string `json:"type"`
 	To        string `json:"to"`
 	Value     string `json:"value"`
 	Sequence  uint   `json:"sequence"`

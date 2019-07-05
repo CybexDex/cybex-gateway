@@ -108,6 +108,14 @@ func JPOrderCurrentNotDone(current string, fromUpdate string, offset int, limit 
 	return res, err
 }
 
+// JPWithdrawFailed ...
+func JPWithdrawFailed(fromUpdate string, offset int, limit int) (res []*JPOrder, err error) {
+	s := fmt.Sprintf(`select * from jp_orders where status != '%s' and type = 'WITHDRAW' and current = 'jp' and current_state != 'TERMINATE' and updated_at + interval '%s' < now()  order by id desc offset %d limit %d;`,
+		"DONE", fromUpdate, offset, limit)
+	err = db.Raw(s).Scan(&res).Error
+	return res, err
+}
+
 // JPOrderRecordAsset ...
 func JPOrderRecordAsset(user string) (out []*RecordAsset, err error) {
 	s := fmt.Sprintf(`select asset,sum(1) as total from jp_orders where jp_orders.cyb_user='%s' group by asset;`, user)

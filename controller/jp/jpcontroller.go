@@ -226,7 +226,7 @@ func DepositAddress(coin string) (address *types.JPAddressResult, err error) {
 func Withdraw(coin string, to string, value string, sequence uint) (address *types.JPOrderResult, err error) {
 	// 构造data消息体
 	requestObj := &types.JPWithdrawRequest{}
-	requestObj.Type = coin
+	// requestObj.Type = coin
 	requestObj.To = to
 	requestObj.Value = value
 	requestObj.Sequence = sequence
@@ -239,8 +239,8 @@ func Withdraw(coin string, to string, value string, sequence uint) (address *typ
 		fmt.Println(err)
 	}
 	data := types.JPEvent{}
-
-	err = bnResult("/api/v1/transactions", sendData, &data)
+	url := fmt.Sprintf("/api/v2/wallet/%s/withdraw", coin)
+	err = bnResult(url, sendData, &data)
 	if err != nil {
 		return nil, err
 	}
