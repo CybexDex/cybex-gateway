@@ -228,7 +228,7 @@ func recordList(c *gin.Context) {
 		record := &types.RecordStr{
 			Type:        re1.Type,
 			ID:          re1.ID,
-			UpdatedAt:   re1.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
+			UpdatedAt:   re1.UpdatedAt.UTC().Format("2006-01-02T15:04:05Z"),
 			CybexName:   re1.CybUser,
 			OutAddr:     re1.OutAddr,
 			Confirms:    confirms,
@@ -239,7 +239,7 @@ func recordList(c *gin.Context) {
 			Amount:      re1.Amount.String(),
 			Fee:         re1.Fee.String(),
 			Status:      re1.Status,
-			CreatedAt:   re1.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+			CreatedAt:   re1.CreatedAt.UTC().Format("2006-01-02T15:04:05Z"),
 			Link:        re1.Link,
 		}
 		if re1.Type == "DEPOSIT" {
