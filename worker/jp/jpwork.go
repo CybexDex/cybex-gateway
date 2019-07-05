@@ -43,10 +43,10 @@ func HoldOne() (*model.JPOrder, error) {
 	return order, err
 }
 func handleOrders(order *model.JPOrder) error {
-	log.Infof("order:%d,%s:%+v\n", order.ID, "jpwork_handle", *order)
+	log.Infof("处理提现 order:%d,%s:%+v\n", order.ID, "jpwork_handle", *order)
 	// 订单序列号设置
 	evt := fmt.Sprintf("sequence:%d,%+v", order.ID*100+order.BNRetry, *order)
-	order.Log("before_BNWithdraw", evt)
+	order.Log("提现开始", evt)
 	result, err := jpc.Withdraw(order.Asset, order.OutAddr, order.Amount.String(), order.ID*100+order.BNRetry)
 	if err != nil {
 		errstr := fmt.Sprintf("jpc.Withdraw:%v", err)
@@ -57,7 +57,7 @@ func handleOrders(order *model.JPOrder) error {
 		return err
 	}
 	evt2 := fmt.Sprintf("sequence:%d,%+v", order.ID*100+order.BNRetry, *result)
-	order.Log("after_BNWithdraw", evt2)
+	order.Log("提现结束", evt2)
 	order.BNOrderID = &result.ID
 	order.Current = "jpsended"
 	order.CurrentState = result.State

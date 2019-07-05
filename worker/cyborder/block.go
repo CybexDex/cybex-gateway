@@ -97,11 +97,11 @@ func (a *BBBHandler) CheckUR(op *operations.TransferOperation, tx *cybTypes.Sign
 
 // HandleTR ...
 func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.SignedTransaction, prefix string) bool {
-	// log.Infoln("HandleTX", op.To, tx.Signatures)
 	// 是否在币种中，不是的话，是否是gateway账号的UR。
 	toid := op.To.String()
 	fromid := op.From.String()
 	assetid := op.Amount.Asset.String()
+	log.Debugln("HandleTX 转账 ...", op.From, "=>", op.To, op.Amount.Amount, op.Amount.Asset, prefix)
 	findasset, err := model.AssetsFrist(&model.Asset{
 		CYBID: assetid,
 	})
@@ -125,8 +125,7 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 			Asset:   findasset.Name,
 			MemoPri: gatewayMemoPri,
 		}
-		log.Infoln(findasset.Name)
-		log.Infof("HandleTX:,from:%s,op:%+v,tx.sig:%v\n", gatewayFrom.Account.Name, op, tx.Signatures)
+		log.Infof("HandleTX 从gateway账号打出:,from:%s, asset:%s, op:%+v,tx.sig:%v\n", gatewayFrom.Account.Name, findasset.Name, op, tx.Signatures)
 		// 直接看sig,能不能找到,找到就更新。没有找到的话。先不管
 		// if gatewayTo != nil {
 		sig := tx.Signatures[0].String()
@@ -134,6 +133,7 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 			Sig:          sig,
 			CurrentState: model.JPOrderStatusPending,
 		})
+		log.Debugln("orders:", orders, err)
 		if err != nil {
 			log.Errorln("JPOrderFind error", err)
 			return false
@@ -154,6 +154,8 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 			}
 		} else if len(orders) > 1 {
 			log.Errorln("sig len ", len(orders))
+		} else {
+			log.Debugln(prefix, "没有需要更新的充值订单")
 		}
 		return true
 	}
@@ -384,6 +386,7 @@ func UpdateLastTime(cnum int) (t time.Time, error error) {
 
 }
 func handleBlockNum(cnum int) error {
+	log.Debugln("handleBlockNum ...", cnum)
 	handler := BBBHandler{}
 	cyborders, err := readBlock(cnum, &handler)
 	if err != nil {
@@ -467,7 +470,7 @@ func handleBlock() {
 	}
 	easyhead.Value = fmt.Sprintf("%d", blockheadNum)
 	easyhead.Save()
-	log.Debugln("last", lastBlockNum, "head", blockheadNum, err)
+	// log.Debugln("next block", lastBlockNum, "head", blockheadNum, err)
 	if lastBlockNum >= blockheadNum {
 		return
 	}
@@ -504,7 +507,7 @@ func BlockRead() {
 	i := 0
 	for {
 		i = i + 1
-		log.Debugln("read round:", i)
+		// log.Debugln("read round:", i)
 		handleBlock()
 		time.Sleep(time.Second * 3)
 	}
