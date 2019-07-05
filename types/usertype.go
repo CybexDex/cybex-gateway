@@ -93,3 +93,23 @@ type Record struct {
 	CreatedAt   time.Time `json:"createdAt"`
 	Link        string    `json:"link"`
 }
+
+// RecordStr ...
+type RecordStr struct {
+	Type        string  `json:"type"`
+	ID          uint    `json:"id"`
+	UpdatedAt   string  `json:"updatedAt"`
+	CybexName   string  `json:"cybexName"`
+	OutAddr     string  `json:"outAddr"`
+	GatewayAddr string  `json:"gatewayAddr"`
+	Confirms    string  `json:"confirms"`
+	Asset       string  `json:"asset"`
+	OutHash     string  `json:"outHash"`
+	CybHash     *string `json:"cybHash"`
+	TotalAmount string  `json:"totalAmount"`
+	Amount      string  `json:"amount"`
+	Fee         string  `json:"fee"`
+	Status      string  `json:"status"`
+	CreatedAt   string  `json:"createdAt"`
+	Link        string  `json:"link"`
+}

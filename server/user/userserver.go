@@ -222,13 +222,13 @@ func recordList(c *gin.Context) {
 	}
 	log.Infoln("GetRecord", *query)
 	res, total, err := userc.GetRecord(query)
-	var out []*types.Record
+	var out []*types.RecordStr
 	for _, re1 := range res {
 		confirms := fmt.Sprintf("%d", re1.Confirmations)
-		record := &types.Record{
+		record := &types.RecordStr{
 			Type:        re1.Type,
 			ID:          re1.ID,
-			UpdatedAt:   re1.UpdatedAt,
+			UpdatedAt:   re1.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
 			CybexName:   re1.CybUser,
 			OutAddr:     re1.OutAddr,
 			Confirms:    confirms,
@@ -239,7 +239,7 @@ func recordList(c *gin.Context) {
 			Amount:      re1.Amount.String(),
 			Fee:         re1.Fee.String(),
 			Status:      re1.Status,
-			CreatedAt:   re1.CreatedAt,
+			CreatedAt:   re1.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 			Link:        re1.Link,
 		}
 		if re1.Type == "DEPOSIT" {
