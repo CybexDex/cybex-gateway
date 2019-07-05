@@ -27,5 +27,5 @@ echo -e "3 build docker image"
 docker build --force-rm --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') --build-arg VERSION=$VERSION -t gateway-backend:$VERSION -f ./Dockerfile .
 
 echo -e "---------------------------"
-echo -e "build saas success"
+echo -e "build gateway backend success"
 echo -e "---------------------------"
