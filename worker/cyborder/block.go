@@ -483,7 +483,11 @@ func handleBlock() {
 			log.Errorln("block UpdateLastTime", cnum, err)
 			return
 		}
-		updateLastBlock(cnum, t, easy)
+		err = updateLastBlock(cnum, t, easy)
+		if err != nil {
+			log.Errorln("block updateLastBlock", cnum, err)
+			return
+		}
 	}
 	//
 }
