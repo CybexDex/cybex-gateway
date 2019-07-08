@@ -27,8 +27,8 @@ adminserver:
   auth: true
   port: ":8183"
   tokens: 
-    - "yangyu.DSADSDsadasd@dasd^YHN"
-    - "zhangyi.DDhhhCsadasd@dasd^YHN"
+    - "yourtoken1.DSADSDsadasd@dasd^YHN"
+    - "yourtoken2.DDhhhCsadasd@dasd^YHN"
 cybserver:
   node:  "ws://18.136.140.223:38090/" # cybex 全节点地址
   blockBegin: -1 # 从哪个cybex block 开始点，-1则从最新
