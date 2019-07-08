@@ -2,6 +2,7 @@ package jp
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	jpc "cybex-gateway/controller/jp"
@@ -78,6 +79,12 @@ func handleOrders(order *model.JPOrder) error {
 	if err != nil {
 		errstr := fmt.Sprintf("jpc.Withdraw:%v", err)
 		log.Errorf("order:%d,%s:%+v\n", order.ID, "jpc.Withdraw", err)
+		if strings.Contains(errstr, "BN request failed") {
+			order.SetCurrent(order.Current, model.JPOrderStatusTerminate, errstr)
+			errmsg := fmt.Sprintf("id:%d\nerr:%s", order.ID, errstr)
+			model.WxSendTaskCreate("瑶池提现失败", errmsg)
+			return err
+		}
 		order.SetCurrent(order.Current, model.JPOrderStatusFailed, errstr)
 		errmsg := fmt.Sprintf("id:%d\nerr:%s", order.ID, errstr)
 		model.WxSendTaskCreate("瑶池提现失败", errmsg)
