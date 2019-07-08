@@ -115,6 +115,26 @@ func getAssets(c *gin.Context) {
 	}
 	c.JSON(200, address)
 }
+func getOrders(c *gin.Context) {
+	query := &model.JPOrder{}
+	err := c.Bind(query)
+	if query.Limit == 0 {
+		query.Limit = 20
+	}
+	address, total, err := model.OrderQuery(query)
+	if err != nil {
+		log.Errorln("getOrders", err)
+		c.JSON(400, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(200, gin.H{
+		"data":  address,
+		"total": total,
+		"size":  query.Limit,
+	})
+}
 func getAddress(c *gin.Context) {
 	user := c.Param("user")
 	asset := c.Param("asset")
@@ -275,6 +295,9 @@ func StartServer() {
 	usersigned.POST("/v1/assets/list", getAssets)
 	usersigned.POST("/v1/assets/update", updateAssetsOne)
 	usersigned.POST("/v1/assets/add", createAssetsOne)
+	//
+	usersigned.POST("/v1/orders/list", getOrders)
+	//
 	usersigned.GET("/v1/record/undone/:interval", notDone)
 	usersigned.GET("/v1/users/:user/assets/:asset/address", getAddress)
 	usersigned.POST("/v1/users/:user/assets/:asset/address/new", newAddress)

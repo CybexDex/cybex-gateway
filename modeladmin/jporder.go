@@ -46,7 +46,7 @@ type JPOrder struct {
 	CybUser       string          `json:"user"`
 	OutAddr       string          `json:"outAddr"`
 	BNOrderID     *string         `gorm:"unique;index;" json:"bnOrderID"` // n to 1
-	BNRetry       uint            `json:"-"`
+	BNRetry       uint            `json:"bnRetry"`
 	Index         int             `json:"index"`                                 //
 	Hash          string          `gorm:"index;type:varchar(128)" json:"hash"`   //
 	UUHash        string          `gorm:"index;type:varchar(256)" json:"uuhash"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
@@ -63,16 +63,28 @@ type JPOrder struct {
 
 	Link string `json:"link"`
 
-	CYBHash  *string `gorm:"unique;index;type:varchar(128)" json:"-"`
-	CYBHash2 string  `gorm:"index;type:varchar(128)" json:"-"`
-	Sig      string  `json:"-"`
+	CYBHash  *string `gorm:"unique;index;type:varchar(128)" json:"cybhash"`
+	CYBHash2 string  `gorm:"index;type:varchar(128)" json:"cybhash2"`
+	Sig      string  `json:"sig"`
 	Sig2     string  `json:"-"`
 
 	Current       string `json:"current"`
 	CurrentState  string `json:"currentState"`
 	CurrentReason string `json:"currentReason"`
 
-	Adds string `json:"-"`
+	Adds   string `json:"-"`
+	Offset int    `gorm:"-" json:"offset"`
+	Limit  int    `gorm:"-" json:"limit"`
+}
+
+// OrderQuery ...
+func OrderQuery(j *JPOrder) (res []*JPOrder, total int, err error) {
+	err = db.Where(j).Order("id desc").Offset(j.Offset).Limit(j.Limit).Find(&res).Count(&total).Error
+	// if err != nil {
+	// 	return res, total, err
+	// }
+	// err = db.Where(j)..Count(&total).Error
+	return res, total, err
 }
 
 // JPOrderFind ...
