@@ -7,9 +7,12 @@ import (
 	jpc "cybex-gateway/controller/jp"
 	"cybex-gateway/model"
 	"cybex-gateway/utils/log"
+
+	"github.com/spf13/viper"
 )
 
 func updateAllUnDone() {
+	log.Infoln("jp fail => init")
 	res, err := model.JPWithdrawFailed("1m", 0, 10)
 	if err != nil {
 		log.Errorln("updateAllUnDone", err)
@@ -33,7 +36,10 @@ func updateAllUnDone() {
 func HandleWorker(seconds int) {
 	log.Infoln("jp worker start")
 	for {
-		updateAllUnDone()
+		isfail2init := viper.GetBool("jpserver.isfail2init")
+		if isfail2init {
+			updateAllUnDone()
+		}
 		for {
 			ret := HandleOneTime()
 			if ret != 0 {
