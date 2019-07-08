@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/shopspring/decimal"
+
 	"cybex-gateway/model"
 	"cybex-gateway/utils/log"
 )
@@ -106,6 +108,14 @@ func handleWithdrawOrders(order *model.JPOrder) (err error) {
 	fee := asset.WithdrawFee
 	order.Fee = fee
 	order.Amount = order.TotalAmount.Sub(order.Fee)
+	zero, _ := decimal.NewFromString("0")
+	if order.Amount.LessThanOrEqual(zero) {
+		err = fmt.Errorf("order.Amount <= 0 ")
+		order.CurrentState = model.JPOrderStatusTerminate
+		order.CurrentReason = "amountless0"
+		log.Errorln(err)
+		return err
+	}
 	// 是否大额
 	// order 通过，进入下一阶段
 	order.SetCurrent("jp", model.JPOrderStatusInit, "")
@@ -155,6 +165,14 @@ func handleOrders(order *model.JPOrder) (err error) {
 	// 计算费率
 	order.Fee = asset.DepositFee
 	order.Amount = order.TotalAmount.Sub(order.Fee)
+	zero, _ := decimal.NewFromString("0")
+	if order.Amount.LessThanOrEqual(zero) {
+		err = fmt.Errorf("order.Amount <= 0 ")
+		order.CurrentState = model.JPOrderStatusTerminate
+		order.CurrentReason = "amountless0"
+		log.Errorln(err)
+		return err
+	}
 	// 是否大额
 	// order 通过，进入下一阶段
 	order.SetCurrent("cyborder", model.JPOrderStatusInit, "")
