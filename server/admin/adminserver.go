@@ -17,8 +17,8 @@ import (
 )
 
 var tokens = map[string]bool{
-	"Bearer yangyu.DSADSDsadasd@dasd^YHN":  true,
-	"Bearer zhangyi.DDhhhCsadasd@dasd^YHN": true,
+	// "Bearer yangyu.DSADSDsadasd@dasd^YHN":  true,
+	// "Bearer zhangyi.DDhhhCsadasd@dasd^YHN": true,
 }
 
 func authMiddleware(c *gin.Context) {
@@ -306,5 +306,10 @@ func StartServer() {
 	usersigned.GET("/v1/users/:user/assets", recordAssets)
 	port := viper.GetString("adminserver.port")
 	log.Infoln("userserver start at", port)
+	admintoken := viper.GetStringSlice("adminserver.tokens")
+	for _, token := range admintoken {
+		fulltoken := "Bearer " + token
+		tokens[fulltoken] = true
+	}
 	r.Run(port) // listen and serve on 0.0.0.0:8080
 }
