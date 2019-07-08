@@ -6,7 +6,7 @@ gitbranch := $(shell git rev-parse --abbrev-ref HEAD)
 ####
 toDev: buildAllLinux scpAllDev scpDevConfig
 ##################
-.PHONY: buildAll buildAllLinux scpDevConfig scpAllDev
+.PHONY: buildAll buildAllLinux scpDevConfig scpAllDev buildAdmin buildAdminLinux
 buildAll:
 	@echo "build all......"
 	@(cd ${curDir}/cmd/all;\
@@ -15,6 +15,14 @@ buildAllLinux:
 	@echo "build all linux......"
 	@(cd ${curDir}/cmd/all;\
 	GOOS=linux GOARCH=amd64 go build -v -ldflags "-X main.version=$(version) -X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/all)
+buildAdmin:
+	@echo "build admin......"
+	@(cd ${curDir}/cmd/admin;\
+	go build -v -ldflags "-X main.version=$(version) -X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/admin)
+buildAdminLinux:
+	@echo "build admin linux......"
+	@(cd ${curDir}/cmd/admin;\
+	GOOS=linux GOARCH=amd64 go build -v -ldflags "-X main.version=$(version) -X main.githash=$(githash) -X main.buildtime=$(date) -X main.branch=$(gitbranch)" -o ${curDir}/bin/admin)
 scpAllDev:
 	@echo "scp All to dev......"
 	#@(ssh root@39.98.58.238 "mv ~/bbb/config/dev.yaml ~/bbb/config/dev.yaml.bak")
