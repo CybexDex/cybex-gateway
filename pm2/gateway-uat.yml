@@ -9,7 +9,7 @@ apps:
     out_file : ./log/gateway-jp-out.log
     env:
       GO111MODULE: "on"
-      env: "pro"
+      env: "uat"
 
   - cwd: ./
     name: gateway-order
@@ -21,7 +21,7 @@ apps:
     out_file : ./log/gateway-order-out.log
     env:
       GO111MODULE: "on"
-      env: "pro"
+      env: "uat"
 
   - cwd: ./
     name: gateway-cyborder
@@ -33,7 +33,7 @@ apps:
     out_file : ./log/gateway-cyborder-out.log
     env:
       GO111MODULE: "on"
-      env: "pro"
+      env: "uat"
 
   - cwd: ./
     name: gateway-user
@@ -45,7 +45,7 @@ apps:
     out_file : ./log/gateway-user-out.log
     env:
       GO111MODULE: "on"
-      env: "pro"
+      env: "uat"
 
   - cwd: ./
     name: gateway-admin
@@ -57,7 +57,7 @@ apps:
     out_file : ./log/gateway-admin-out.log
     env:
       GO111MODULE: "on"
-      env: "pro"
+      env: "uat"
 
   - cwd: ./
     name: gateway-wx
@@ -69,4 +69,4 @@ apps:
     out_file : ./log/gateway-wx-out.log
     env:
       GO111MODULE: "on"
-      env: "pro"
+      env: "uat"
