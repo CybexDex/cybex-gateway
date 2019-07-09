@@ -1,0 +1,72 @@
+apps:
+  - cwd: ./
+    name: gateway-jp
+    script: /Users/nan/code/cybex-gateway/cmd/jp/main.go
+    interpreter: /usr/local/bin/go
+    interpreter_args: run
+    watch: false
+    error_file : ./log/gateway-jp-error.log
+    out_file : ./log/gateway-jp-out.log
+    env:
+      GO111MODULE: "on"
+      env: "pro"
+
+  - cwd: ./
+    name: gateway-order
+    script: /Users/nan/code/cybex-gateway/cmd/order/main.go
+    interpreter: /usr/local/bin/go
+    interpreter_args: run
+    watch: false
+    error_file : ./log/gateway-order-error.log
+    out_file : ./log/gateway-order-out.log
+    env:
+      GO111MODULE: "on"
+      env: "pro"
+
+  - cwd: ./
+    name: gateway-cyborder
+    script: /Users/nan/code/cybex-gateway/cmd/cyborder/main.go
+    interpreter: /usr/local/bin/go
+    interpreter_args: run
+    watch: false
+    error_file : ./log/gateway-cyborder-error.log
+    out_file : ./log/gateway-cyborder-out.log
+    env:
+      GO111MODULE: "on"
+      env: "pro"
+
+  - cwd: ./
+    name: gateway-user
+    script: /Users/nan/code/cybex-gateway/cmd/user/main.go
+    interpreter: /usr/local/bin/go
+    interpreter_args: run
+    watch: false
+    error_file : ./log/gateway-user-error.log
+    out_file : ./log/gateway-user-out.log
+    env:
+      GO111MODULE: "on"
+      env: "pro"
+
+  - cwd: ./
+    name: gateway-admin
+    script: /Users/nan/code/cybex-gateway/cmd/admin/main.go
+    interpreter: /usr/local/bin/go
+    interpreter_args: run
+    watch: false
+    error_file : ./log/gateway-admin-error.log
+    out_file : ./log/gateway-admin-out.log
+    env:
+      GO111MODULE: "on"
+      env: "pro"
+
+  - cwd: ./
+    name: gateway-wx
+    script: /Users/nan/code/cybex-gateway/cmd/wx/main.go
+    interpreter: /usr/local/bin/go
+    interpreter_args: run
+    watch: false
+    error_file : ./log/gateway-wx-error.log
+    out_file : ./log/gateway-wx-out.log
+    env:
+      GO111MODULE: "on"
+      env: "pro"
