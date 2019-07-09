@@ -1,7 +1,7 @@
 apps:
-  - cwd: ./
+  - cwd: /Users/nan/code/cybex-gateway
     name: gateway-jp
-    script: /Users/nan/code/cybex-gateway/cmd/jp/main.go
+    script: ./cmd/jp/main.go
     interpreter: /usr/local/bin/go
     interpreter_args: run
     watch: false
@@ -11,9 +11,9 @@ apps:
       GO111MODULE: "on"
       env: "pro"
 
-  - cwd: ./
+  - cwd: /Users/nan/code/cybex-gateway
     name: gateway-order
-    script: /Users/nan/code/cybex-gateway/cmd/order/main.go
+    script: ./cmd/order/main.go
     interpreter: /usr/local/bin/go
     interpreter_args: run
     watch: false
@@ -23,9 +23,9 @@ apps:
       GO111MODULE: "on"
       env: "pro"
 
-  - cwd: ./
+  - cwd: /Users/nan/code/cybex-gateway
     name: gateway-cyborder
-    script: /Users/nan/code/cybex-gateway/cmd/cyborder/main.go
+    script: ./cmd/cyborder/main.go
     interpreter: /usr/local/bin/go
     interpreter_args: run
     watch: false
@@ -35,9 +35,9 @@ apps:
       GO111MODULE: "on"
       env: "pro"
 
-  - cwd: ./
+  - cwd: /Users/nan/code/cybex-gateway
     name: gateway-user
-    script: /Users/nan/code/cybex-gateway/cmd/user/main.go
+    script: ./cmd/user/main.go
     interpreter: /usr/local/bin/go
     interpreter_args: run
     watch: false
@@ -47,9 +47,9 @@ apps:
       GO111MODULE: "on"
       env: "pro"
 
-  - cwd: ./
+  - cwd: /Users/nan/code/cybex-gateway
     name: gateway-admin
-    script: /Users/nan/code/cybex-gateway/cmd/admin/main.go
+    script: ./cmd/admin/main.go
     interpreter: /usr/local/bin/go
     interpreter_args: run
     watch: false
@@ -59,9 +59,9 @@ apps:
       GO111MODULE: "on"
       env: "pro"
 
-  - cwd: ./
+  - cwd: /Users/nan/code/cybex-gateway
     name: gateway-wx
-    script: /Users/nan/code/cybex-gateway/cmd/wx/main.go
+    script: ./cmd/wx/main.go
     interpreter: /usr/local/bin/go
     interpreter_args: run
     watch: false
