@@ -55,11 +55,18 @@ func SignECCData(prikey string, data interface{}) (*ECCSig, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	var R [32]byte
+	var S [32]byte
+	copy(R[32-len(sig.R.Bytes()):], sig.R.Bytes())
+	copy(S[32-len(sig.S.Bytes()):], sig.S.Bytes())
 	_sig := &ECCSig{
-		R: base64.StdEncoding.EncodeToString(sig.R.Bytes()),
-		S: base64.StdEncoding.EncodeToString(sig.S.Bytes()),
+		R: hex.EncodeToString(R[:]),
+		S: hex.EncodeToString(S[:]),
 	}
+	// _sig := &ECCSig{
+	// 	R: base64.StdEncoding.EncodeToString(R[:]),
+	// 	S: base64.StdEncoding.EncodeToString(S[:]),
+	// }
 	return _sig, nil
 }
 func TestECCSign() {

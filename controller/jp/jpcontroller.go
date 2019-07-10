@@ -299,10 +299,15 @@ func bnResult(urlPath string, sendData *types.JPSendData, v interface{}) (err er
 	}
 	return nil
 }
+
+// SendDataEcc ...
+func SendDataEcc(data interface{}, timestamp int64) (sendData *types.JPSendData, err error) {
+	return sendDataEcc(data, timestamp)
+}
 func sendDataEcc(data interface{}, timestamp int64) (sendData *types.JPSendData, err error) {
 	sendData = &types.JPSendData{}
 	sendData.Crypto = "ecc"
-	sendData.Encode = "base64"
+	sendData.Encode = "hex"
 	sendData.Timestamp = timestamp
 	sendData.Hash = "sha3"
 	sendData.AppID = viper.GetString("jpserver.appid")
