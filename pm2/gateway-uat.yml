@@ -2,7 +2,7 @@ apps:
   - cwd: ./
     name: gateway-jp
     script: ./cmd/jp/main.go
-    interpreter: /usr/local/go/bin/go
+    interpreter: go
     interpreter_args: run
     watch: false
     error_file : ./log/gateway-jp-error.log
@@ -14,7 +14,7 @@ apps:
   - cwd: ./
     name: gateway-order
     script: ./cmd/order/main.go
-    interpreter: /usr/local/go/bin/go
+    interpreter: go
     interpreter_args: run
     watch: false
     error_file : ./log/gateway-order-error.log
@@ -26,7 +26,7 @@ apps:
   - cwd: ./
     name: gateway-cyborder
     script: ./cmd/cyborder/main.go
-    interpreter: /usr/local/go/bin/go
+    interpreter: go
     interpreter_args: run
     watch: false
     error_file : ./log/gateway-cyborder-error.log
@@ -38,7 +38,7 @@ apps:
   - cwd: ./
     name: gateway-user
     script: ./cmd/user/main.go
-    interpreter: /usr/local/go/bin/go
+    interpreter: go
     interpreter_args: run
     watch: false
     error_file : ./log/gateway-user-error.log
@@ -50,7 +50,7 @@ apps:
   - cwd: ./
     name: gateway-admin
     script: ./cmd/admin/main.go
-    interpreter: /usr/local/go/bin/go
+    interpreter: go
     interpreter_args: run
     watch: false
     error_file : ./log/gateway-admin-error.log
@@ -62,7 +62,7 @@ apps:
   - cwd: ./
     name: gateway-wx
     script: ./cmd/wx/main.go
-    interpreter: /usr/local/go/bin/go
+    interpreter: go
     interpreter_args: run
     watch: false
     error_file : ./log/gateway-wx-error.log
