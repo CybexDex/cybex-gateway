@@ -83,7 +83,8 @@ func OrderQuery(j *JPOrder) (res []*JPOrder, total int, err error) {
 	if err != nil {
 		return res, total, err
 	}
-	err = db.Debug().Where(j).Find(&JPOrder{}).Count(&total).Error
+	var x []*JPOrder
+	err = db.Debug().Where(j).Find(&x).Count(&total).Error
 	return res, total, err
 }
 
