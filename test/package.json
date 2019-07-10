@@ -1,0 +1,31 @@
+{
+  "name": "smoke2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "watch": "babel -w src/ -d dist/",
+    "build": "babel src/ -d dist/",
+    "serve": "babel -w src/ -d dist/ | nodemon dist/",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@jadepool/crypto": "^0.1.2",
+    "argparse": "^1.0.10",
+    "axios": "^0.18.0",
+    "bignumber.js": "^8.1.1",
+    "decorator-wrap": "^1.2.4",
+    "lodash": "^4.17.11",
+    "moment": "^2.24.0",
+    "pg": "^7.10.0",
+    "supports-color": "^5.5.0"
+  },
+  "devDependencies": {
+    "babel": "^6.23.0",
+    "babel-cli": "^6.26.0",
+    "babel-plugin-transform-decorators-legacy": "^1.3.5",
+    "nodemon": "^1.19.0"
+  }
+}

@@ -4,3 +4,6 @@ config/dev.yaml
 cmd/db/coins/XTZ.yaml
 lab
 config/*.yaml
+
+test/node_modules
+test/package-lock.json
