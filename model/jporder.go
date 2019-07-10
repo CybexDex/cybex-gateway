@@ -46,8 +46,9 @@ type JPOrder struct {
 	BlockChain    string          `json:"blockChain"`
 	CybUser       string          `json:"user"`
 	OutAddr       string          `json:"outAddr"`
-	BNOrderID     *string         `gorm:"unique;index;" json:"bnOrderID"` // n to 1
-	BNRetry       uint            `json:"-"`
+	BNOrderID     *string         `gorm:"unique;index;" json:"bnOrderID"`        // n to 1
+	BNRetry       uint            `json:"-"`                                     // bn notify fail and resend = tre
+	BNSendFailNum uint            `json:"-"`                                     // bn send fail num
 	Index         int             `json:"index"`                                 //
 	Hash          string          `gorm:"index;type:varchar(128)" json:"hash"`   //
 	UUHash        string          `gorm:"index;type:varchar(256)" json:"uuhash"` // = BLOCKCHAINNAME + HASH + INDEX (if INDEX is null then ignore)
