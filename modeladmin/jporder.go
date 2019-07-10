@@ -79,11 +79,11 @@ type JPOrder struct {
 
 // OrderQuery ...
 func OrderQuery(j *JPOrder) (res []*JPOrder, total int, err error) {
-	err = db.Where(j).Order("id desc").Offset(j.Offset).Limit(j.Limit).Find(&res).Count(&total).Error
-	// if err != nil {
-	// 	return res, total, err
-	// }
-	// err = db.Where(j)..Count(&total).Error
+	err = db.Debug().Where(j).Order("id desc").Offset(j.Offset).Limit(j.Limit).Find(&res).Error
+	if err != nil {
+		return res, total, err
+	}
+	err = db.Debug().Where(j).Find(&JPOrder{}).Count(&total).Error
 	return res, total, err
 }
 
