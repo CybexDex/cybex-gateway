@@ -307,7 +307,7 @@ func SendDataEcc(data interface{}, timestamp int64) (sendData *types.JPSendData,
 func sendDataEcc(data interface{}, timestamp int64) (sendData *types.JPSendData, err error) {
 	sendData = &types.JPSendData{}
 	sendData.Crypto = "ecc"
-	sendData.Encode = "hex"
+	sendData.Encode = "base64"
 	sendData.Timestamp = timestamp
 	sendData.Hash = "sha3"
 	sendData.AppID = viper.GetString("jpserver.appid")
