@@ -280,7 +280,8 @@ func CheckComing(data *types.JPEvent) (err error) {
 }
 func bnResult(urlPath string, sendData *types.JPSendData, v interface{}) (err error) {
 	bs, _ := json.Marshal(sendData)
-
+	strsend := string(bs)
+	log.Debugln("send jp json", strsend)
 	jadepoolAddr := viper.GetString("jpserver.bnhost")
 	url := jadepoolAddr + urlPath
 	resp, err := http.Post(url, "application/json", bytes.NewReader(bs))
