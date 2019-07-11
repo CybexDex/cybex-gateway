@@ -138,6 +138,26 @@ func failOrder(c *gin.Context) {
 	}
 	c.JSON(200, address)
 }
+func orderLogs(c *gin.Context) {
+	query := &model.OrderLog{}
+	err := c.Bind(query)
+	if query.Limit == 0 {
+		query.Limit = 20
+	}
+	address, total, err := model.ShowLogs(query)
+	if err != nil {
+		log.Errorln("ShowLogs", err)
+		c.JSON(400, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(200, gin.H{
+		"data":  address,
+		"total": total,
+		"size":  query.Limit,
+	})
+}
 func getOrders(c *gin.Context) {
 	query := &model.JPOrder{}
 	err := c.Bind(query)
@@ -320,6 +340,7 @@ func StartServer() {
 	usersigned.POST("/v1/assets/add", createAssetsOne)
 	//
 	usersigned.POST("/v1/orders/list", getOrders)
+	usersigned.POST("/v1/orders/logs", orderLogs)
 	usersigned.POST("/v1/orders/failed", failOrder)
 	//
 	usersigned.GET("/v1/record/undone/:interval", notDone)
