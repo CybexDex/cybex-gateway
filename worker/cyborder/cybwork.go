@@ -158,6 +158,10 @@ func handleOrders(order *model.JPOrder) (err error) {
 	gatewayPassword := utils.SeedString(assetC.GatewayPass)
 	//
 	tosends := []cybTypes.SimpleSend{}
+	if gatewayAccount == order.CybUser {
+		order.SetCurrent("cyborder", model.JPOrderStatusTerminate, "网关账号不能发给自己")
+		return nil
+	}
 	tosend := cybTypes.SimpleSend{
 		From:     gatewayAccount,
 		To:       order.CybUser,
