@@ -88,6 +88,16 @@ func OrderQuery(j *JPOrder) (res []*JPOrder, total int, err error) {
 	return res, total, err
 }
 
+// Failit ...
+func (j *JPOrder) Failit() error {
+	if j.CurrentState == JPOrderStatusPending || j.CurrentState == JPOrderStatusTerminate {
+		j.SetCurrent(j.Current, JPOrderStatusFailed, fmt.Sprintf("man fail %s=>%s", j.CurrentState, JPOrderStatusFailed))
+		err := j.Save()
+		return err
+	}
+	return fmt.Errorf("不能改变此状态")
+}
+
 // JPOrderFind ...
 func JPOrderFind(j *JPOrder) (res []*JPOrder, err error) {
 	err = db.Where(j).Find(&res).Error
