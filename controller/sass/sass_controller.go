@@ -139,6 +139,11 @@ func createJPOrderWithDeposit(result *OrderInfo) (*model.JPOrder, error) {
 		Current:      "jp",
 		CurrentState: strings.ToUpper(result.State),
 	}
+	out, err := model.AssetsFind(asset)
+	if err != nil {
+
+	}
+	jporder.CybAsset = out.CYBName
 	// jporder.create
 	// err = model.JPOrderCreate(jporder)
 	return jporder, nil
