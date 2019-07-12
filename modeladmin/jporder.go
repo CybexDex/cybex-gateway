@@ -42,6 +42,7 @@ type RecordAsset struct {
 type JPOrder struct {
 	gorm.Model
 	Asset         string          `json:"asset"` // n to 1
+	CybAsset      string          `json:"cybAsset"`
 	BlockChain    string          `json:"blockChain"`
 	CybUser       string          `json:"user"`
 	OutAddr       string          `json:"outAddr"`
