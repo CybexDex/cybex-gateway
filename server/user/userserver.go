@@ -233,6 +233,7 @@ func recordList(c *gin.Context) {
 			OutAddr:     re1.OutAddr,
 			Confirms:    confirms,
 			Asset:       re1.Asset,
+			CybexAsset:  re1.CybAsset,
 			OutHash:     re1.Hash,
 			CybHash:     re1.CYBHash,
 			TotalAmount: re1.TotalAmount.String(),

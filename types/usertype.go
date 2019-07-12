@@ -104,6 +104,7 @@ type RecordStr struct {
 	GatewayAddr string  `json:"gatewayAddr"`
 	Confirms    string  `json:"confirms"`
 	Asset       string  `json:"asset"`
+	CybexAsset  string  `json:"cybexAsset"`
 	OutHash     string  `json:"outHash"`
 	CybHash     *string `json:"cybHash"`
 	TotalAmount string  `json:"totalAmount"`
