@@ -14,7 +14,6 @@ import (
 	"cybex-gateway/utils"
 	"cybex-gateway/utils/log"
 
-	apim "github.com/CybexDex/cybex-go/api"
 	"github.com/CybexDex/cybex-go/operations"
 	cybTypes "github.com/CybexDex/cybex-go/types"
 	"github.com/spf13/viper"
@@ -59,8 +58,7 @@ func (a *BBBHandler) CheckUR(op *operations.TransferOperation, tx *cybTypes.Sign
 
 	} else {
 		account1, _ := api.GetAccountByName(toasset.GatewayAccount)
-		gatewaypass := utils.SeedString(toasset.GatewayPass)
-		gatewaykeyBag := apim.KeyBagByUserPass(toasset.GatewayAccount, gatewaypass)
+		gatewaykeyBag := utils.KeyBagByUserSeedPass(toasset.GatewayAccount, toasset.GatewayPass)
 		memokey := account1.Options.MemoKey
 		pubkeys := cybTypes.PublicKeys{memokey}
 		gatewayMemoPri := gatewaykeyBag.PrivatesByPublics(pubkeys)
@@ -114,8 +112,9 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 	// 先看From,是充值或者Inner订单
 	if findasset.GatewayID == fromid {
 		account1, _ := api.GetAccountByName(findasset.GatewayAccount)
-		gatewaypass := utils.SeedString(findasset.GatewayPass)
-		gatewaykeyBag := apim.KeyBagByUserPass(findasset.GatewayAccount, gatewaypass)
+		// gatewaypass := utils.SeedString(findasset.GatewayPass)
+		gatewaykeyBag := utils.KeyBagByUserSeedPass(findasset.GatewayAccount, findasset.GatewayPass)
+		// gatewaykeyBag := apim.KeyBagByUserPass(findasset.GatewayAccount, gatewaypass)
 		memokey := account1.Options.MemoKey
 		pubkeys := cybTypes.PublicKeys{memokey}
 		gatewayMemoPri := gatewaykeyBag.PrivatesByPublics(pubkeys)
@@ -162,8 +161,9 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 	//to gatewayTo 的话就是提现订单
 	if findasset.GatewayID == toid {
 		account1, _ := api.GetAccountByName(findasset.GatewayAccount)
-		gatewaypass := utils.SeedString(findasset.GatewayPass)
-		gatewaykeyBag := apim.KeyBagByUserPass(findasset.GatewayAccount, gatewaypass)
+		// gatewaypass := utils.SeedString(findasset.GatewayPass)
+		// gatewaykeyBag := apim.KeyBagByUserPass(findasset.GatewayAccount, gatewaypass)
+		gatewaykeyBag := utils.KeyBagByUserSeedPass(findasset.GatewayAccount, findasset.GatewayPass)
 		memokey := account1.Options.MemoKey
 		pubkeys := cybTypes.PublicKeys{memokey}
 		gatewayMemoPri := gatewaykeyBag.PrivatesByPublics(pubkeys)
@@ -281,8 +281,9 @@ func InitAsset() {
 			continue
 			// panic("")
 		}
-		gatewaypass := utils.SeedString(asset.GatewayPass)
-		gatewaykeyBag := apim.KeyBagByUserPass(asset.GatewayAccount, gatewaypass)
+		// gatewaypass := utils.SeedString(asset.GatewayPass)
+		// gatewaykeyBag := apim.KeyBagByUserPass(asset.GatewayAccount, gatewaypass)
+		gatewaykeyBag := utils.KeyBagByUserSeedPass(asset.GatewayAccount, asset.GatewayPass)
 		memokey := account1.Options.MemoKey
 		pubkeys := cybTypes.PublicKeys{memokey}
 		gatewayMemoPri := gatewaykeyBag.PrivatesByPublics(pubkeys)

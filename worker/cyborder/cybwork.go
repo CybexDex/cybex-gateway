@@ -155,7 +155,14 @@ func handleOrders(order *model.JPOrder) (err error) {
 		return fmt.Errorf("AssetsFind %v", err)
 	}
 	gatewayAccount := assetC.GatewayAccount
-	gatewayPassword := utils.SeedString(assetC.GatewayPass)
+	// gatewayPassword := utils.SeedString(assetC.GatewayPass)
+	keybag := utils.KeyBagByUserSeedPass(gatewayAccount, assetC.GatewayPass)
+	prikeys := keybag.Privates()
+	priWifs := []string{}
+	for _, prikey := range prikeys {
+		priWifs = append(priWifs, prikey.ToWIF())
+	}
+	prikeysStr := strings.Join(priWifs, ",")
 	//
 	tosends := []cybTypes.SimpleSend{}
 	if gatewayAccount == order.CybUser {
@@ -167,7 +174,7 @@ func handleOrders(order *model.JPOrder) (err error) {
 		To:       order.CybUser,
 		Amount:   order.Amount.String(),
 		Asset:    assetC.CYBName,
-		Password: gatewayPassword,
+		Password: prikeysStr,
 		Memo:     "address:" + order.To,
 	}
 	tosends = append(tosends, tosend)
