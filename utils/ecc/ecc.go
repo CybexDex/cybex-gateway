@@ -9,6 +9,8 @@ import (
 	"math/big"
 	"reflect"
 	"sort"
+	"strconv"
+	"strings"
 
 	"github.com/btcsuite/btcd/btcec"
 	"golang.org/x/crypto/sha3"
@@ -149,10 +151,22 @@ func BuildMsg(val interface{}) string {
 		}
 	case reflect.Slice:
 		arr := val.([]interface{})
+		keyVals := make(map[string]string)
+		keys := make([]string, 0, len(arr))
+
 		for i, v := range arr {
-			itemMsg := BuildMsg(v)
-			msg += fmt.Sprintf("%d%s", i, itemMsg)
+			key := strconv.Itoa(i)
+			keys = append(keys, key)
+			keyVals[key] = BuildMsg(v)
 		}
+		sort.Strings(keys)
+
+		groupStrs := make([]string, 0, len(keys))
+		for _, key := range keys {
+			groupStrs = append(groupStrs, key+keyVals[key])
+		}
+		msg += strings.Join(groupStrs, "")
+
 	default:
 		msg = fmt.Sprintf("%v", val)
 	}
