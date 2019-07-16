@@ -174,7 +174,7 @@ func handleOrders(order *model.JPOrder) (err error) {
 		To:       order.CybUser,
 		Amount:   order.Amount.String(),
 		Asset:    assetC.CYBName,
-		Password: prikeysStr,
+		Password: "," + prikeysStr,
 		Memo:     "address:" + order.To,
 	}
 	tosends = append(tosends, tosend)
