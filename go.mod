@@ -2,7 +2,7 @@ module cybex-gateway
 
 require (
 	coding.net/yundkyy/cybexgolib v0.9.0
-	github.com/CybexDex/cybex-go v0.1.5
+	github.com/CybexDex/cybex-go v0.1.6
 	github.com/btcsuite/btcd v0.0.0-20190418232430-6867ff32788a
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-contrib/cors v1.3.0
