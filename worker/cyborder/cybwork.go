@@ -202,7 +202,7 @@ func mySend(tosends []cybTypes.SimpleSend, order *model.JPOrder) (tx *cybTypes.S
 			err = fmt.Errorf("send Error")
 		}
 	}()
-	log.Infoln(tosends)
+	// log.Infoln(tosends)
 	tx, err = api.PreSends(tosends)
 	if err != nil {
 		log.Errorln("updateAllUnDone", err)
