@@ -12,7 +12,7 @@ import (
 )
 
 func updateAllUnDone() {
-	log.Infoln("jp fail => init")
+	// log.Infoln("jp fail => init")
 	res, err := model.JPWithdrawFailed("1m", 0, 10)
 	if err != nil {
 		log.Errorln("updateAllUnDone", err)
