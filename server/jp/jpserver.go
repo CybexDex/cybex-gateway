@@ -43,7 +43,7 @@ func jpNotify(c *gin.Context) {
 		// 提现订单
 		err = jp.HandleWithdraw(result)
 		if err != nil {
-			log.Errorln("Error HandleWithdraw", result.ID, err)
+			log.Errorln("Error HandleWithdraw", "BNID:", result.ID, err)
 			errorRes(c, 400, gin.H{
 				"message": "HandleWithdraw Error",
 			})
@@ -53,7 +53,7 @@ func jpNotify(c *gin.Context) {
 		// 充值订单
 		err = jp.HandleDeposit(result)
 		if err != nil {
-			log.Errorln("Error HandleDeposit", result.ID, err)
+			log.Errorln("Error HandleDeposit", "BNID:", result.ID, err)
 			errorRes(c, 400, gin.H{
 				"message": "HandleDeposit Error",
 			})
