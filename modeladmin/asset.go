@@ -1,6 +1,9 @@
 package modeladmin
 
 import (
+	"cybex-gateway/types"
+	"strings"
+
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/jinzhu/gorm"
 	"github.com/jinzhu/gorm/dialects/postgres"
@@ -93,6 +96,26 @@ func AssetsFind(asset string) (out *Asset, err error) {
 func AssetsCreate(query *Asset) (*Asset, error) {
 	err := db.Save(query).Error
 	return query, err
+}
+
+// AssetsSwitch ...
+func AssetsSwitch(query *types.Switch) (out []*Asset, err error) {
+	// out = &Asset{}
+	var names []string
+	update := &Asset{}
+	if query.Withdraw != nil {
+		update.WithdrawSwitch = query.Withdraw
+	}
+	if query.Deposit != nil {
+		update.DepositSwitch = query.Deposit
+	}
+	if query.Name != "" {
+		names = strings.Split(query.Name, ",")
+		err = db.Model(update).Where("name in (?)", names).UpdateColumns(update).Error
+	} else {
+		err = db.Model(update).UpdateColumns(update).Error
+	}
+	return out, err
 }
 
 // UpdateAsset ...

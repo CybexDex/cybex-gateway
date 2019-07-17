@@ -74,6 +74,13 @@ type RecordsQuery struct {
 	User     string `form:"user"`
 }
 
+// Switch ...
+type Switch struct {
+	Deposit  *bool  `json:"deposit"`
+	Withdraw *bool  `json:"withdraw"`
+	Name     string `json:"name"`
+}
+
 // Record ...
 type Record struct {
 	Type        string    `json:"type"`

@@ -72,6 +72,26 @@ func updateAssetsOne(c *gin.Context) {
 	}
 	c.JSON(200, address)
 }
+func assetsSwitch(c *gin.Context) {
+	query := &types.Switch{}
+	err := c.Bind(query)
+	if err != nil {
+		log.Errorln("assetsSwitch", err)
+		c.JSON(400, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	address, err := model.AssetsSwitch(query)
+	if err != nil {
+		log.Errorln("assetsSwitch", err)
+		c.JSON(400, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(200, address)
+}
 func createAssetsOne(c *gin.Context) {
 	query := &model.Asset{}
 	err := c.Bind(query)
@@ -338,6 +358,7 @@ func StartServer() {
 	usersigned.POST("/v1/assets/list", getAssets)
 	usersigned.POST("/v1/assets/update", updateAssetsOne)
 	usersigned.POST("/v1/assets/add", createAssetsOne)
+	usersigned.POST("/v1/assets/switch", assetsSwitch)
 	//
 	usersigned.POST("/v1/orders/list", getOrders)
 	usersigned.POST("/v1/orders/logs", orderLogs)
