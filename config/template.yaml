@@ -34,6 +34,7 @@ cybserver:
   node:  "ws://18.136.140.223:38090/" # cybex 全节点地址
   blockBegin: -1 # 从哪个cybex block 开始点，-1则从最新
   expireAuthFail: false  # 过期是否自动fail 
+  sendMemo: false # 是否发送充值地址memo  
 log:
   log_dir: ""  # 设置了的话日志会记录到文件
   log_level: "INFO"

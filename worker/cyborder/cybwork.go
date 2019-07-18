@@ -177,6 +177,9 @@ func handleOrders(order *model.JPOrder) (err error) {
 		Password: "," + prikeysStr,
 		// Memo:     "address:" + order.To,
 	}
+	if viper.GetBool("cybserver.sendMemo") {
+		tosend.Memo = "address:" + order.To
+	}
 	tosends = append(tosends, tosend)
 	order.Memo = tosend.Memo
 	stx, err := mySend(tosends, order)
