@@ -64,15 +64,37 @@ func AssetsAll() (out []*Asset, err error) {
 // AssetsFind ...
 func AssetsFind(asset string) (out *Asset, err error) {
 	out = &Asset{}
-	err = db.First(&out, &Asset{
+	err = db.Where(&Asset{
 		Name: asset,
-	}, disableStr).Error
+	}).Where(disableStr).First(&out).Error
 	return out, err
 }
 
 // AssetsFrist ...
 func AssetsFrist(query *Asset) (out *Asset, err error) {
 	out = &Asset{}
-	err = db.First(&out, query, disableStr).Error
+	err = db.Where(query).Where(disableStr).First(&out).Error
+	return out, err
+}
+
+// AssetsAllTest ...
+func AssetsAllTest() (out []*Asset, err error) {
+	err = db.Find(&out).Error
+	return out, err
+}
+
+// AssetsFindTest ...
+func AssetsFindTest(asset string, isPro bool) (out *Asset, err error) {
+	out = &Asset{}
+	err = db.Where(&Asset{
+		Name: asset,
+	}).First(&out).Error
+	return out, err
+}
+
+// AssetsFristTest ...
+func AssetsFristTest(query *Asset, isPro bool) (out *Asset, err error) {
+	out = &Asset{}
+	err = db.Where(query).First(&out).Error
 	return out, err
 }
