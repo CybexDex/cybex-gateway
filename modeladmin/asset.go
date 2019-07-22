@@ -14,6 +14,7 @@ import (
 type Asset struct {
 	gorm.Model
 	Name         string `gorm:"unique" json:"name"`
+	JadeName     string `json:"jadeName"`
 	Blockchain   string `json:"blockchain"`
 	Projectname  string `json:"projectname"`
 	CYBName      string `json:"cybname"`
