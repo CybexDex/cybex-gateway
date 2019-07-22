@@ -112,11 +112,21 @@ func GetBBBAssets() (out []*types.UserResultBBB, err error) {
 // NewAddress ...
 func NewAddress(user string, asset string) (address *types.UserResultAddress, err error) {
 	address = &types.UserResultAddress{}
+	assetobj, err := model.AssetsFind(asset)
+	if err != nil {
+		errmsg := fmt.Sprintf("%s %s", asset, "不是合法币种")
+		log.Infoln(errmsg)
+		return address, err
+	}
+	assetName := assetobj.Name
+	if assetobj.JadeName != "" {
+		assetName = assetobj.JadeName
+	}
 	//找user,asset的address
 	//没有找到，获取，创建，返回
 	var newaddr *types.JPAddressResult
 
-	newaddr, err = jp.DepositAddress(asset)
+	newaddr, err = jp.DepositAddress(assetName)
 
 	if err != nil {
 		return address, err
@@ -134,33 +144,40 @@ func NewAddress(user string, asset string) (address *types.UserResultAddress, er
 	address.Address = address1.Address
 	address.Asset = address1.Asset
 	address.CreateAt = address1.CreatedAt
-	assetF, err := model.AssetsFrist(&model.Asset{
-		Name: asset,
-	})
-	if err != nil {
-		return address, err
-	}
-	if assetF == nil {
-		// UR
-		errmsg := fmt.Sprintf("%s %s", asset, "不是合法币种")
-		log.Infoln(errmsg)
-		err = fmt.Errorf("%s", errmsg)
-		return address, err
-	}
-	address.CybName = assetF.CYBName
+	address.CybName = assetobj.CYBName
 	return address, nil
 }
 
 // VerifyAddress ...
 func VerifyAddress(asset string, address string) (verifyRes *types.VerifyRes, err error) {
 	var res *types.VerifyRes
-	res, err = jp.VerifyAddress(asset, address)
+	assetobj, err := model.AssetsFind(asset)
+	if err != nil {
+		errmsg := fmt.Sprintf("%s %s", asset, "不是合法币种")
+		log.Infoln(errmsg)
+		return res, err
+	}
+	assetName := assetobj.Name
+	if assetobj.JadeName != "" {
+		assetName = assetobj.JadeName
+	}
+	res, err = jp.VerifyAddress(assetName, address)
 	return res, err
 }
 
 //GetAddress ...
 func GetAddress(user string, asset string) (address *types.UserResultAddress, err error) {
 	address = &types.UserResultAddress{}
+	assetobj, err := model.AssetsFind(asset)
+	if err != nil {
+		errmsg := fmt.Sprintf("%s %s", asset, "不是合法币种")
+		log.Infoln(errmsg)
+		return address, err
+	}
+	assetName := assetobj.Name
+	if assetobj.JadeName != "" {
+		assetName = assetobj.JadeName
+	}
 	//找user,asset的address
 	address1, err := model.AddressLast(user, asset)
 	if err != nil {
@@ -169,7 +186,7 @@ func GetAddress(user string, asset string) (address *types.UserResultAddress, er
 		}
 		//没有找到，获取，创建，返回
 		var newaddr *types.JPAddressResult
-		newaddr, err = jp.DepositAddress(asset)
+		newaddr, err = jp.DepositAddress(assetName)
 		if err != nil {
 			return address, err
 		}
@@ -188,19 +205,6 @@ func GetAddress(user string, asset string) (address *types.UserResultAddress, er
 	address.Address = address1.Address
 	address.Asset = address1.Asset
 	address.CreateAt = address1.CreatedAt
-	assetF, err := model.AssetsFrist(&model.Asset{
-		Name: asset,
-	})
-	if err != nil {
-		return address, fmt.Errorf("AssetFind %v", err)
-	}
-	if assetF == nil {
-		// UR
-		errmsg := fmt.Sprintf("%s %s", asset, "不是合法币种")
-		log.Infoln(errmsg)
-		err = fmt.Errorf("%s", errmsg)
-		return address, err
-	}
-	address.CybName = assetF.CYBName
+	address.CybName = assetobj.CYBName
 	return address, nil
 }

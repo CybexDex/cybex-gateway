@@ -74,7 +74,17 @@ func handleOrders(order *model.JPOrder) error {
 	// 订单序列号设置
 	evt := fmt.Sprintf("sequence:%d,%+v", order.ID*100+order.BNRetry, *order)
 	order.Log("提现开始", evt)
-	result, err := jpc.Withdraw(order.Asset, order.OutAddr, order.Amount.String(), order.ID*100+order.BNRetry)
+	assetobj, err := model.AssetsFind(order.Asset)
+	if err != nil {
+		errmsg := fmt.Sprintf("%s %s", order.Asset, "不是合法币种")
+		log.Infoln(errmsg)
+		return err
+	}
+	assetName := assetobj.Name
+	if assetobj.JadeName != "" {
+		assetName = assetobj.JadeName
+	}
+	result, err := jpc.Withdraw(assetName, order.OutAddr, order.Amount.String(), order.ID*100+order.BNRetry)
 	if err != nil {
 		errstr := fmt.Sprintf("jpc.Withdraw:%v", err)
 		log.Errorf("order:%d,%s:%+v\n", order.ID, "jpc.Withdraw", err)
