@@ -66,6 +66,7 @@ type JPOrder struct {
 
 	Link string `json:"link"`
 
+	CYBRetry uint    `json:"-"` // cyb retry 次数
 	CYBHash  *string `gorm:"unique;index;type:varchar(128)" json:"-"`
 	CYBHash2 string  `gorm:"index;type:varchar(128)" json:"-"`
 	Sig      string  `json:"-"`

@@ -33,7 +33,9 @@ func HoldOne() (*model.JPOrder, error) {
 
 // UpdateExpire ...
 func UpdateExpire() {
-	log.Infoln("UpdateExpire...")
+	allToFail := viper.GetBool("cybserver.allToFail")
+
+	log.Debugln("UpdateExpire... allToFail", allToFail)
 	current, err := model.EasyFrist("cybLastBlockNum")
 	if err != nil {
 		log.Errorln("updateExpire", err)
@@ -45,11 +47,38 @@ func UpdateExpire() {
 		return
 	}
 	for _, order := range res {
+		if !allToFail {
+			asset, err := model.AssetsFind(order.Asset)
+			if err != nil {
+				log.Errorln("updateExpire找不到资产", "order:", order.ID)
+				continue
+			}
+			if order.Amount.GreaterThan(asset.CybAutoValue) {
+				reason := fmt.Sprintf("大于asset.CybAutoValue不自动发 expire %s to terminate", order.CurrentState)
+				order.SetCurrent("cyborder", model.JPOrderStatusTerminate, reason)
+				err = order.Save()
+				if err != nil {
+					log.Errorln("UpdateExpire save", err)
+				}
+				continue
+			}
+		}
+		if order.CYBRetry >= 1 {
+			reason := fmt.Sprintf("重试次数 >= 1 expire %s to terminate", order.CurrentState)
+			order.SetCurrent("cyborder", model.JPOrderStatusTerminate, reason)
+			err = order.Save()
+			if err != nil {
+				log.Errorln("UpdateExpire save", err)
+			}
+			continue
+		}
 		switch order.CurrentState {
 		case model.JPOrderStatusPending:
+			order.CYBRetry = order.CYBRetry + 1
 			order.SetCurrent("cyborder", model.JPOrderStatusFailed, "expire Pending to fail")
 		case model.JPOrderStatusProcessing:
 			// 如果sig不存在,有sig了才会发
+			order.CYBRetry = order.CYBRetry + 1
 			order.SetCurrent("cyborder", model.JPOrderStatusFailed, "expire processing to fail")
 		}
 		err = order.Save()

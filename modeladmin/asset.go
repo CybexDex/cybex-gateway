@@ -36,6 +36,8 @@ type Asset struct {
 	WithdrawFee decimal.Decimal `gorm:"type:numeric" json:"withdrawFee"`
 	DepositFee  decimal.Decimal `gorm:"type:numeric" json:"depositFee"`
 
+	CybAutoValue decimal.Decimal `gorm:"type:numeric" json:"cybAutoValue"`
+
 	Precision string         `json:"precision"`
 	ImgURL    string         `json:"imgURL"`
 	HashLink  string         `json:"hashLink"`
