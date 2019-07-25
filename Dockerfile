@@ -14,4 +14,4 @@ EXPOSE 8081 8082 8182 8183
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.5.0/wait /wait
 RUN chmod +x /wait
 
-CMD ["sh", "-c", "/wait && env=uat go run cmd/all/main.go"]
+CMD ["sh", "-c", "/wait && env=uat ./bin/all"]

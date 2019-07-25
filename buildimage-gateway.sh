@@ -21,6 +21,7 @@ docker rmi gateway-backend:${VERSION}
 echo -e "2 build executable files"
 echo `pwd`
 git pull
+make buildAll
 
 echo -e "3 build docker image"
 docker build --force-rm --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') --build-arg VERSION=$VERSION -t gateway-backend:$VERSION -f ./Dockerfile .
