@@ -80,6 +80,12 @@ type JPOrder struct {
 	Adds          string    `json:"-"`
 }
 
+// JPOrderFindUpdate ...
+func JPOrderFindUpdate(j *JPOrder, tx *gorm.DB) (res []*JPOrder, err error) {
+	err = tx.Set("gorm:query_option", "FOR UPDATE").Where(j).Find(&res).Error
+	return res, err
+}
+
 // JPOrderFind ...
 func JPOrderFind(j *JPOrder) (res []*JPOrder, err error) {
 	err = db.Where(j).Find(&res).Error
@@ -150,6 +156,11 @@ func (j *JPOrder) Update(i *JPOrder) error {
 // Save ...
 func (j *JPOrder) Save() error {
 	return db.Save(j).Error
+}
+
+// SaveTx ...
+func (j *JPOrder) SaveTx(tx *gorm.DB) error {
+	return tx.Save(j).Error
 }
 
 // SetStatus ...
@@ -227,7 +238,7 @@ func HoldDepositNotify(BNid string) (*JPOrder, error) {
 				select id 
 				from jp_orders 
 				where bn_order_id = '%s'
-				and current_reason != 'PROCESSING'
+				and current_reason = ''
 				and current_state != 'DONE' 
 				and current_state != 'FAILED' 
 				and current = 'jp'

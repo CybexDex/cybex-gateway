@@ -20,11 +20,21 @@ import (
 )
 
 // HandleWithdraw ...
-func HandleWithdraw(result types.JPOrderResult) error {
-	res, err := model.JPOrderFind(&model.JPOrder{
+func HandleWithdraw(result types.JPOrderResult) (err error) {
+	tx := model.GetDB().Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			// log.Errorf("%v, stack: %s", r, debug.Stack())
+			log.Errorf("%v, stack: %s", r)
+			err = fmt.Errorf("send Error")
+			tx.Rollback()
+		}
+	}()
+	defer tx.Commit()
+	res, err := model.JPOrderFindUpdate(&model.JPOrder{
 		BNOrderID: &result.ID,
-		Current:   "jpsended",
-	})
+		// Current:   "jpsended",
+	}, tx)
 	if err != nil {
 		return utils.ErrorAdd(err, "HandleWithdraw")
 	}
@@ -32,7 +42,7 @@ func HandleWithdraw(result types.JPOrderResult) error {
 	var ordernow *model.JPOrder
 	if lenRes == 1 {
 		order := res[0]
-		if order.Status == model.JPOrderStatusDone || order.Status == model.JPOrderStatusFailed {
+		if order.Status == model.JPOrderStatusDone || order.Status == model.JPOrderStatusFailed || order.Current != "jpsended" {
 			// 如果已经是done或者fail,记录一条日志,返回错误
 			log.Errorln("final order cannot change", order.ID)
 			return fmt.Errorf("final order cannot change %d", order.ID)
@@ -42,13 +52,6 @@ func HandleWithdraw(result types.JPOrderResult) error {
 		if orderSequence != result.Sequence {
 			return nil
 		}
-		orderChange, err := model.HoldWithdrawNotify(result.ID)
-		orderChange.CurrentReason = "" // 将reason置空，save后可以再处理
-		if err != nil {
-			log.Errorln("HandleWithdraw 已经在处理", order.ID)
-			return fmt.Errorf("HandleWithdraw 已经在处理 %d", order.ID)
-		}
-		order = orderChange
 		order.Hash = result.Txid
 		order.UUHash = fmt.Sprintf("%s_%s_%d", result.Type, result.Txid, result.N)
 		order.Confirmations = result.Confirmations
@@ -83,15 +86,25 @@ func HandleWithdraw(result types.JPOrderResult) error {
 		ordernow.SetCurrent("done", model.JPOrderStatusDone, "")
 		ordernow.SetStatus(model.JPOrderStatusDone)
 	}
-	return ordernow.Save()
+	return ordernow.SaveTx(tx)
 }
 
 // HandleDeposit ...
 func HandleDeposit(result types.JPOrderResult) (err error) {
-	res, err := model.JPOrderFind(&model.JPOrder{
+	tx := model.GetDB().Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			// log.Errorf("%v, stack: %s", r, debug.Stack())
+			log.Errorf("%v, stack: %s", r)
+			err = fmt.Errorf("send Error")
+			tx.Rollback()
+		}
+	}()
+	defer tx.Commit()
+	res, err := model.JPOrderFindUpdate(&model.JPOrder{
 		BNOrderID: &result.ID,
-		Current:   "jp",
-	})
+		// Current:   "jp",
+	}, tx)
 	if err != nil {
 		return utils.ErrorAdd(err, "HandleDeposit")
 	}
@@ -99,20 +112,14 @@ func HandleDeposit(result types.JPOrderResult) (err error) {
 	var ordernow *model.JPOrder
 	if lenRes == 1 {
 		order := res[0]
-		if order.Status == model.JPOrderStatusDone || order.Status == model.JPOrderStatusFailed {
+		if order.Status == model.JPOrderStatusDone || order.Status == model.JPOrderStatusFailed || order.Current != "jp" {
 			// 如果已经是done或者fail,记录一条日志,返回错误
 			log.Errorln("final order cannot change", order.ID)
 			return fmt.Errorf("final order cannot change %d", order.ID)
 		}
-		orderChange, err := model.HoldDepositNotify(result.ID)
-		orderChange.CurrentReason = "" // 将reason置空，save后可以再处理
-		if err != nil {
-			log.Errorln("HandleDeposit 已经在处理", order.ID)
-			return fmt.Errorf("HandleDeposit 已经在处理 %d", order.ID)
-		}
-		orderChange.Confirmations = result.Confirmations
-		orderChange.CurrentState = strings.ToUpper(result.State)
-		ordernow = orderChange
+		order.Confirmations = result.Confirmations
+		order.CurrentState = strings.ToUpper(result.State)
+		ordernow = order
 	} else if lenRes == 0 {
 		// 创建订单,充值用户
 		ordernow, err = createJPOrderWithDeposit(result)
@@ -125,7 +132,7 @@ func HandleDeposit(result types.JPOrderResult) (err error) {
 	if ordernow.CurrentState == model.JPOrderStatusDone {
 		ordernow.SetCurrent("order", model.JPOrderStatusInit, "")
 	}
-	return ordernow.Save()
+	return ordernow.SaveTx(tx)
 }
 func createJPOrderWithDeposit(result types.JPOrderResult) (*model.JPOrder, error) {
 	as, err := model.AddressFetch(&model.Address{
