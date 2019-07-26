@@ -42,6 +42,13 @@ func HandleWithdraw(result types.JPOrderResult) error {
 		if orderSequence != result.Sequence {
 			return nil
 		}
+		orderChange, err := model.HoldWithdrawNotify(result.ID)
+		orderChange.CurrentReason = "" // 将reason置空，save后可以再处理
+		if err != nil {
+			log.Errorln("HandleWithdraw 已经在处理", order.ID)
+			return fmt.Errorf("HandleWithdraw 已经在处理 %d", order.ID)
+		}
+		order = orderChange
 		order.Hash = result.Txid
 		order.UUHash = fmt.Sprintf("%s_%s_%d", result.Type, result.Txid, result.N)
 		order.Confirmations = result.Confirmations
@@ -100,7 +107,6 @@ func HandleDeposit(result types.JPOrderResult) (err error) {
 		orderChange, err := model.HoldDepositNotify(result.ID)
 		orderChange.CurrentReason = "" // 将reason置空，save后可以再处理
 		if err != nil {
-			orderChange.Save()
 			log.Errorln("HandleDeposit 已经在处理", order.ID)
 			return fmt.Errorf("HandleDeposit 已经在处理 %d", order.ID)
 		}

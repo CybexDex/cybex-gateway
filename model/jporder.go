@@ -195,6 +195,28 @@ func JPOrderCreate(j *JPOrder) error {
 // 		CurrentState: JPOrderStatusInit,
 // 	})
 // }
+// HoldWithdrawNotify ...
+func HoldWithdrawNotify(BNid string) (*JPOrder, error) {
+	var order1 JPOrder
+	s := `update jp_orders 
+	set current_reason = 'PROCESSING' 
+	where id = (
+				select id 
+				from jp_orders 
+				where bn_order_id = '%s'
+				and current_reason != 'PROCESSING'
+				and current_state != 'DONE' 
+				and current_state != 'FAILED' 
+				and current = 'jpsended'
+				and type = 'WITHDRAW'
+				order by id
+				limit 1
+			)
+	returning *`
+	s = fmt.Sprintf(s, BNid)
+	err := db.Raw(s).Scan(&order1).Error
+	return &order1, err
+}
 
 // HoldDepositNotify ...
 func HoldDepositNotify(BNid string) (*JPOrder, error) {
