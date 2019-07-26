@@ -97,9 +97,16 @@ func HandleDeposit(result types.JPOrderResult) (err error) {
 			log.Errorln("final order cannot change", order.ID)
 			return fmt.Errorf("final order cannot change %d", order.ID)
 		}
-		order.Confirmations = result.Confirmations
-		order.CurrentState = strings.ToUpper(result.State)
-		ordernow = order
+		orderChange, err := model.HoldDepositNotify(result.ID)
+		orderChange.CurrentReason = "" // 将reason置空，save后可以再处理
+		if err != nil {
+			orderChange.Save()
+			log.Errorln("HandleDeposit 已经在处理", order.ID)
+			return fmt.Errorf("HandleDeposit 已经在处理 %d", order.ID)
+		}
+		orderChange.Confirmations = result.Confirmations
+		orderChange.CurrentState = strings.ToUpper(result.State)
+		ordernow = orderChange
 	} else if lenRes == 0 {
 		// 创建订单,充值用户
 		ordernow, err = createJPOrderWithDeposit(result)
