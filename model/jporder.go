@@ -66,6 +66,7 @@ type JPOrder struct {
 
 	Link string `json:"link"`
 
+	CYBRetry uint    `json:"-"` // cyb retry 次数
 	CYBHash  *string `gorm:"unique;index;type:varchar(128)" json:"-"`
 	CYBHash2 string  `gorm:"index;type:varchar(128)" json:"-"`
 	Sig      string  `json:"-"`
@@ -77,6 +78,12 @@ type JPOrder struct {
 	CurrentReason string    `json:"currentReason"`
 	ExpireTime    time.Time `json:"-"`
 	Adds          string    `json:"-"`
+}
+
+// JPOrderFindUpdate ...
+func JPOrderFindUpdate(j *JPOrder, tx *gorm.DB) (res []*JPOrder, err error) {
+	err = tx.Set("gorm:query_option", "FOR UPDATE").Where(j).Find(&res).Error
+	return res, err
 }
 
 // JPOrderFind ...
@@ -151,6 +158,11 @@ func (j *JPOrder) Save() error {
 	return db.Save(j).Error
 }
 
+// SaveTx ...
+func (j *JPOrder) SaveTx(tx *gorm.DB) error {
+	return tx.Save(j).Error
+}
+
 // SetStatus ...
 func (j *JPOrder) SetStatus(status string) {
 	j.Status = status
@@ -194,6 +206,51 @@ func JPOrderCreate(j *JPOrder) error {
 // 		CurrentState: JPOrderStatusInit,
 // 	})
 // }
+// HoldWithdrawNotify ...
+func HoldWithdrawNotify(BNid string) (*JPOrder, error) {
+	var order1 JPOrder
+	s := `update jp_orders 
+	set current_reason = 'PROCESSING' 
+	where id = (
+				select id 
+				from jp_orders 
+				where bn_order_id = '%s'
+				and current_reason != 'PROCESSING'
+				and current_state != 'DONE' 
+				and current_state != 'FAILED' 
+				and current = 'jpsended'
+				and type = 'WITHDRAW'
+				order by id
+				limit 1
+			)
+	returning *`
+	s = fmt.Sprintf(s, BNid)
+	err := db.Raw(s).Scan(&order1).Error
+	return &order1, err
+}
+
+// HoldDepositNotify ...
+func HoldDepositNotify(BNid string) (*JPOrder, error) {
+	var order1 JPOrder
+	s := `update jp_orders 
+	set current_reason = 'PROCESSING' 
+	where id = (
+				select id 
+				from jp_orders 
+				where bn_order_id = '%s'
+				and current_reason = ''
+				and current_state != 'DONE' 
+				and current_state != 'FAILED' 
+				and current = 'jp'
+				and type = 'DEPOSIT'
+				order by id
+				limit 1
+			)
+	returning *`
+	s = fmt.Sprintf(s, BNid)
+	err := db.Raw(s).Scan(&order1).Error
+	return &order1, err
+}
 
 // HoldJPWithdrawOne ...
 func HoldJPWithdrawOne() (*JPOrder, error) {
