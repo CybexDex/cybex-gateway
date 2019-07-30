@@ -34,6 +34,22 @@ func AddressLast(user string, asset string) (address *Address, err error) {
 	return address, nil
 }
 
+// AddressLastBlockChain ...
+func AddressLastBlockChain(user string, BlockChain string) (address *Address, err error) {
+	address = &Address{}
+	if db == nil {
+		return address, fmt.Errorf("no db init")
+	}
+	err = db.Where(&Address{
+		BlockChain: BlockChain,
+		User:       user,
+	}).Last(&address).Error
+	if err != nil {
+		return address, err
+	}
+	return address, nil
+}
+
 // AddressFetch ...
 func AddressFetch(a *Address) (as []*Address, err error) {
 	if strings.Contains(a.Address, "[") {

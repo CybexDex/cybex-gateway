@@ -135,7 +135,7 @@ func NewAddress(user string, asset string) (address *types.UserResultAddress, er
 		Address:    newaddr.Address,
 		User:       user,
 		Asset:      asset,
-		BlockChain: "",
+		BlockChain: assetobj.Blockchain,
 	}
 	err = model.AddrssCreate(address1)
 	if err != nil {
@@ -179,7 +179,7 @@ func GetAddress(user string, asset string) (address *types.UserResultAddress, er
 		assetName = assetobj.JadeName
 	}
 	//找user,asset的address
-	address1, err := model.AddressLast(user, asset)
+	address1, err := model.AddressLastBlockChain(user, assetobj.Blockchain)
 	if err != nil {
 		if err.Error() != "record not found" {
 			return address, err
@@ -194,7 +194,7 @@ func GetAddress(user string, asset string) (address *types.UserResultAddress, er
 			Address:    newaddr.Address,
 			User:       user,
 			Asset:      asset,
-			BlockChain: "",
+			BlockChain: assetobj.Blockchain,
 		}
 		err = model.AddrssCreate(address1)
 		if err != nil {
