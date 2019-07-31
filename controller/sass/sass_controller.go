@@ -117,10 +117,21 @@ func createJPOrderWithDeposit(result *OrderInfo) (*model.JPOrder, error) {
 		return nil, err
 	}
 	asset := result.CoinName
+	out, err := model.AssetsFrist(&model.Asset{
+		JadeName: asset,
+	})
+	if err != nil {
+		out, err = model.AssetsFrist(&model.Asset{
+			Name: asset,
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
 	fromArr := strings.Split(result.From, ",")
 	theFrom := fromArr[0]
 	jporder := &model.JPOrder{
-		Asset:      asset,
+		Asset:      out.Name,
 		BlockChain: result.Type,
 		BNOrderID:  &result.ID,
 		CybUser:    user,
@@ -140,10 +151,6 @@ func createJPOrderWithDeposit(result *OrderInfo) (*model.JPOrder, error) {
 		Status:       model.JPOrderStatusPending,
 		Current:      "jp",
 		CurrentState: strings.ToUpper(result.State),
-	}
-	out, err := model.AssetsFind(asset)
-	if err != nil {
-
 	}
 	jporder.CybAsset = out.CYBName
 	// jporder.create
