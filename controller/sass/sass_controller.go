@@ -32,11 +32,20 @@ func ParseSassNoti(noti []byte) (*OrderInfo, error) {
 }
 
 // HandleWithdraw ...
-func HandleWithdraw(result *OrderInfo) error {
-	res, err := model.JPOrderFind(&model.JPOrder{
+func HandleWithdraw(result *OrderInfo) (err error) {
+	tx := model.GetDB().Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			// log.Errorf("%v, stack: %s", r, debug.Stack())
+			log.Errorf("%v, stack: %s", r)
+			err = fmt.Errorf("send Error")
+			tx.Rollback()
+		}
+	}()
+	defer tx.Commit()
+	res, err := model.JPOrderFindUpdate(&model.JPOrder{
 		BNOrderID: &result.ID,
-		Current:   "jpsended",
-	})
+	}, tx)
 	if err != nil {
 		return utils.ErrorAdd(err, "HandleDeposit")
 	}
@@ -44,7 +53,7 @@ func HandleWithdraw(result *OrderInfo) error {
 	var ordernow *model.JPOrder
 	if lenRes == 1 {
 		order := res[0]
-		if order.Status == model.JPOrderStatusDone || order.Status == model.JPOrderStatusFailed {
+		if order.Status == model.JPOrderStatusDone || order.Status == model.JPOrderStatusFailed || order.Current != "jpsended" {
 			// 如果已经是done或者fail,记录一条日志,返回错误
 			log.Errorln("final order cannot change", order.ID)
 			return fmt.Errorf("final order cannot change %d", order.ID)
@@ -63,15 +72,25 @@ func HandleWithdraw(result *OrderInfo) error {
 		ordernow.SetCurrent("done", model.JPOrderStatusDone, "")
 		ordernow.SetStatus(model.JPOrderStatusDone)
 	}
-	return ordernow.Save()
+	return ordernow.SaveTx(tx)
 }
 
 // HandleDeposit ...
 func HandleDeposit(result *OrderInfo) (err error) {
-	res, err := model.JPOrderFind(&model.JPOrder{
+	tx := model.GetDB().Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			// log.Errorf("%v, stack: %s", r, debug.Stack())
+			log.Errorf("%v, stack: %s", r)
+			err = fmt.Errorf("send Error")
+			tx.Rollback()
+		}
+	}()
+	defer tx.Commit()
+	res, err := model.JPOrderFindUpdate(&model.JPOrder{
 		BNOrderID: &result.ID,
-		Current:   "jp",
-	})
+		// Current:   "jp",
+	}, tx)
 	if err != nil {
 		return utils.ErrorAdd(err, "HandleDeposit")
 	}
@@ -79,7 +98,7 @@ func HandleDeposit(result *OrderInfo) (err error) {
 	var ordernow *model.JPOrder
 	if lenRes == 1 {
 		order := res[0]
-		if order.Status == model.JPOrderStatusDone || order.Status == model.JPOrderStatusFailed {
+		if order.Status == model.JPOrderStatusDone || order.Status == model.JPOrderStatusFailed || order.Current != "jp" {
 			// 如果已经是done或者fail,记录一条日志,返回错误
 			log.Errorln("final order cannot change", order.ID)
 			return fmt.Errorf("final order cannot change %d", order.ID)
@@ -99,7 +118,7 @@ func HandleDeposit(result *OrderInfo) (err error) {
 	if ordernow.CurrentState == model.JPOrderStatusDone {
 		ordernow.SetCurrent("order", model.JPOrderStatusInit, "")
 	}
-	return ordernow.Save()
+	return ordernow.SaveTx(tx)
 }
 func createJPOrderWithDeposit(result *OrderInfo) (*model.JPOrder, error) {
 	as, err := model.AddressFetch(&model.Address{
