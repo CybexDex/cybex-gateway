@@ -117,13 +117,15 @@ func createJPOrderWithDeposit(result *OrderInfo) (*model.JPOrder, error) {
 		return nil, err
 	}
 	asset := result.CoinName
+	fromArr := strings.Split(result.From, ",")
+	theFrom := fromArr[0]
 	jporder := &model.JPOrder{
 		Asset:      asset,
 		BlockChain: result.Type,
 		BNOrderID:  &result.ID,
 		CybUser:    user,
-		OutAddr:    result.From,
-		From:       result.From,
+		OutAddr:    theFrom,
+		From:       theFrom,
 		To:         result.To,
 		Memo:       result.Memo,
 
