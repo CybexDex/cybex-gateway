@@ -53,4 +53,62 @@ git clone 到 GOPATH之外
 提现
 
   jp 子状态 fail 可以安全重试。但是可能是瑶池钱不够，或者提币数额高于瑶池配置等重试也无效的原因。所以最好除了网络fail就人工排查下。
-  
+
+### 部署
+#### 依赖项
+- go(v1.12.1+)
+- 瑶池
+- postgres(v11.2+)
+- seed(需要限定访问IP)
+
+### 配置文件说明
+配置文件路径./config/prod.yaml
+```
+database:
+  host: localhost
+  port: 5432
+  name: xxxx
+  user: xxxx
+  pass: xxxx
+  type: postgres
+jpserver:
+  port: ":8081"
+  ecc: true
+  bnhost: "http://127.0.0.1:7001" # 瑶池地址
+  eccPri: seed__gatewayEccPriv # 网关私钥存在seed中,key为gatewayEccPriv, value为网关ecc私钥
+  eccPub: seed__bnEccPub # 瑶池公钥存在seed中，key为bnEccPub, value为瑶池公钥
+  appid: "cybex" # 需要在瑶池中配置相应的appid
+userserver:
+  auth: true # user server验签开关
+  port: ":8182" # user server端口 
+cybserver:
+  node:  "wss://shanghai.51nebula.com/" # cybex链
+  blockBegin: -1 # 从哪个快开始扫链
+log:
+  log_dir: "/data/logs-gateway" # 日志路径
+  log_level: "ERROR" # 日志级别
+seed:
+  server: "http://127.0.0.1:8899"    
+  cmdkey: "xxxx"
+wx:
+  corpid: "xxxx"
+  corpsecret: "xxxx"
+  agentid: xxxx
+  users: "@all"
+```
+
+#### 启动
+```
+cd ~/cybex-gateway
+pm2 start pm2/gateway-prod.yml
+```
+#### 在瑶池中配置网关对应的appid
+- 在瑶池admin系统配置中增加cybex
+- 配置瑶池和网关的通信公钥
+- 配置回调地址
+
+#### 修改配置文件中的blockBegin
+需要将blockBegin设置为停服前cybex链扫块的高度
+
+#### 增加asset
+可以使用cybex-admin增加asset
