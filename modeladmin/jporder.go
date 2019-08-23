@@ -99,6 +99,17 @@ func (j *JPOrder) Failit() error {
 	return fmt.Errorf("不能改变此状态")
 }
 
+// ReWithdraw ...
+func (j *JPOrder) ReWithdraw(reason string) error {
+	if j.Current == "jpsended" && j.CurrentState == JPOrderStatusFailed && j.Type == JPOrderTypeWithdraw {
+		j.BNRetry = j.BNRetry + 1
+		j.SetCurrent("jp", JPOrderStatusInit, fmt.Sprintf("man resend jpsended to jp =>%s", reason))
+		err := j.Save()
+		return err
+	}
+	return fmt.Errorf("不能改变此状态")
+}
+
 // JPOrderFind ...
 func JPOrderFind(j *JPOrder) (res []*JPOrder, err error) {
 	err = db.Where(j).Find(&res).Error

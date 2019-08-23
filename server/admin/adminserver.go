@@ -158,6 +158,29 @@ func failOrder(c *gin.Context) {
 	}
 	c.JSON(200, address)
 }
+func reWithdraw(c *gin.Context) {
+	query := &model.JPOrder{}
+	err := c.Bind(query)
+	query2 := &model.JPOrder{}
+	query2.ID = query.ID
+	address, err := model.JPOrderFind(query2)
+	if len(address) != 1 {
+		c.JSON(400, gin.H{
+			"message": "未找到id",
+		})
+		return
+	}
+	order := address[0]
+	err = order.ReWithdraw(query.CurrentReason)
+	if err != nil {
+		log.Errorln("failOrder", err)
+		c.JSON(400, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(200, address)
+}
 func orderLogs(c *gin.Context) {
 	query := &model.OrderLog{}
 	err := c.Bind(query)
@@ -363,6 +386,7 @@ func StartServer() {
 	usersigned.POST("/v1/orders/list", getOrders)
 	usersigned.POST("/v1/orders/logs", orderLogs)
 	usersigned.POST("/v1/orders/failed", failOrder)
+	usersigned.POST("/v1/orders/rewithdraw", reWithdraw)
 	//
 	usersigned.GET("/v1/record/undone/:interval", notDone)
 	usersigned.GET("/v1/users/:user/assets/:asset/address", getAddress)
