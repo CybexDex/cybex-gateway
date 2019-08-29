@@ -33,7 +33,7 @@ func GetRecordAsset(user string) ([]*model.RecordAsset, error) {
 
 //GetRecord ...
 func GetRecord(query *types.RecordsQuery) ([]*model.JPOrder, int, error) {
-	res, count, err := model.JPOrderRecord(query.User, query.Asset, query.FundType, query.Size, query.LastID, query.Offset)
+	res, count, err := model.JPOrderRecord(query.User, query.Asset, query.FundType, query.Size, query.LastID, query.Offset, query.Sig)
 	return res, count, err
 }
 

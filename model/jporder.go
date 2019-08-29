@@ -69,7 +69,7 @@ type JPOrder struct {
 	CYBRetry uint    `json:"-"` // cyb retry 次数
 	CYBHash  *string `gorm:"unique;index;type:varchar(128)" json:"-"`
 	CYBHash2 string  `gorm:"index;type:varchar(128)" json:"-"`
-	Sig      string  `json:"-"`
+	Sig      string  `gorm:"index;" json:"-"`
 
 	Sig2 string `json:"-"`
 
@@ -133,11 +133,12 @@ func JPOrderRecordAsset(user string) (out []*RecordAsset, err error) {
 }
 
 // JPOrderRecord ...
-func JPOrderRecord(user string, asset string, bizType string, size string, lastID string, offset string) (res []*JPOrder, count int, err error) {
+func JPOrderRecord(user string, asset string, bizType string, size string, lastID string, offset string, sig string) (res []*JPOrder, count int, err error) {
 	dbpre := db.Where(&JPOrder{
 		CybUser: user,
 		Type:    bizType,
 		Asset:   asset,
+		Sig:     sig,
 	}).Where("id < ?", lastID).Order("id desc")
 	err = dbpre.Offset(offset).Limit(size).Find(&res).Error
 	if err != nil {

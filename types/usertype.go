@@ -72,6 +72,7 @@ type RecordsQuery struct {
 	Offset   string `form:"offset"`
 	Asset    string `form:"asset"`
 	User     string `form:"user"`
+	Sig      string `form:"sig"`
 }
 
 // Switch ...
