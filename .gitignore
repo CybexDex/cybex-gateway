@@ -7,3 +7,4 @@ config/*.yaml
 
 test/node_modules
 test/package-lock.json
+log
