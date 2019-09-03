@@ -8,12 +8,39 @@ import (
 	// jpc "cybex-gateway/controller/sass"
 	"cybex-gateway/model"
 	"cybex-gateway/utils/log"
+
+	"github.com/spf13/viper"
 )
+
+func updateAllUnDone() {
+	// log.Infoln("jp fail => init")
+	res, err := model.JPWithdrawFailed("1m", 0, 10)
+	if err != nil {
+		log.Errorln("updateAllUnDone", err)
+		return
+	}
+	for _, order := range res {
+		switch order.CurrentState {
+		case model.JPOrderStatusFailed:
+			order.SetCurrent("jp", model.JPOrderStatusInit, "fail to init")
+		case model.JPOrderStatusProcessing:
+			order.SetCurrent("jp", model.JPOrderStatusInit, "processing to init")
+		}
+		err = order.Save()
+		if err != nil {
+			log.Errorln("updateAllUnDone", err)
+		}
+	}
+}
 
 // HandleWorker ...
 func HandleWorker(seconds int) {
 	log.Infoln("sass worker start")
 	for {
+		isfail2init := viper.GetBool("sassserver.isfail2init")
+		if isfail2init {
+			updateAllUnDone()
+		}
 		for {
 			ret := HandleOneTime()
 			if ret != 0 {
