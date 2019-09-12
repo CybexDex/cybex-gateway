@@ -16,6 +16,7 @@ jpserver: # 使用网关可以不配置
   appid: "bbb"
 sassserver: # 从saas获取appkey appsecret
   port: ":8082"
+  isfail2init: true
   host:   "http://47.244.248.121:8092"
   appKey:    "OXYpiJivn28GDCIi2ziA0PoV"
   appSecret: "RK30krPe5iEwQ0PEzJ9e9d5WozBzzko3V7LBtlMZPDHQ4vPbyT64h9hkEdbWNsiV"
