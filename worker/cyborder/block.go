@@ -340,9 +340,9 @@ func readBlock(cnum int, handler types.HandleInterface) ([]string, error) {
 					continue
 				}
 				if opt.From.String() != "" {
-					ok := handler.HandleTR(&opt, &tx, fmt.Sprintf("%d:%d:%d", cnum, txnum, opnum))
+					ok := handler.HandleTR(&opt, &tx, fmt.Sprintf("%d:%d:%d:%d", cnum, txnum, opnum, len(tx.Operations)))
 					if !ok {
-						handler.CheckUR(&opt, &tx, fmt.Sprintf("%d:%d:%d", cnum, txnum, opnum))
+						handler.CheckUR(&opt, &tx, fmt.Sprintf("%d:%d:%d:%d", cnum, txnum, opnum, len(tx.Operations)))
 					}
 				}
 			}
