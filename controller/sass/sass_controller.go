@@ -198,8 +198,8 @@ func VerifyAddress(asset string, address string) (res *types.VerifyRes, err erro
 func InitAPI() {
 	api = &API{
 		APIAddr:   viper.GetString("sassserver.host"),
-		AppKey:    viper.GetString("sassserver.appKey"),
-		AppSecret: viper.GetString("sassserver.appSecret"),
+		AppKey:    utils.SeedString(viper.GetString("sassserver.appKey")),
+		AppSecret: utils.SeedString(viper.GetString("sassserver.appSecret")),
 	}
 }
 
