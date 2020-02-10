@@ -15,7 +15,7 @@ type GatewayAccount struct {
 
 // HandleInterface ...
 type HandleInterface interface {
-	HandleTR(op *operations.TransferOperation, tx *cybTypes.SignedTransaction, prefix string) bool
+	HandleTR(op *operations.TransferOperation,op2 *operations.TransferOperation, tx *cybTypes.SignedTransaction, prefix string) bool
 	CheckUR(op *operations.TransferOperation, tx *cybTypes.SignedTransaction, prefix string)
 }
 

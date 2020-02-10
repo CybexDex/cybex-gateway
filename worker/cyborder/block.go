@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"strings"
+	// "strings"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -94,8 +94,18 @@ func (a *BBBHandler) CheckUR(op *operations.TransferOperation, tx *cybTypes.Sign
 }
 
 // HandleTR ...
-func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.SignedTransaction, prefix string) bool {
+func (a *BBBHandler) HandleTR(op *operations.TransferOperation,op2 *operations.TransferOperation, tx *cybTypes.SignedTransaction, prefix string) bool {
 	// 是否在币种中，不是的话，是否是gateway账号的UR。
+	bbbAsset := viper.GetString("bbb.bbb_asset")
+	op2Asset, err := api.GetAsset(op2.Amount.Asset.String())
+	if bbbAsset != op2Asset.Symbol {
+		log.Infof("not bbb symbol")
+		return false
+	}
+	if op.From != op2.To || op.Amount.Amount != op2.Amount.Amount {
+		log.Infof("not bbb to or amount")
+		return false
+	}
 	toid := op.To.String()
 	fromid := op.From.String()
 	assetid := op.Amount.Asset.String()
@@ -174,7 +184,7 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 			MemoPri: gatewayMemoPri,
 		}
 		log.Infof("HandleTX:,to:%s,op:%+v,tx.sig:%v\n", gatewayTo.Account.Name, op, tx.Signatures)
-		fromUsers, err := api.GetAccounts(op.From)
+		fromUsers, err := api.GetAccounts(op2.From)
 		fromUser := fromUsers[0]
 		assetChain, err := api.GetAsset(op.Amount.Asset.String())
 		if err != nil {
@@ -215,18 +225,7 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation, tx *cybTypes.Sig
 			}
 		}
 		// log.Infoln(memoout, *op)
-		gatewayPrefix := assetConf.WithdrawPrefix
-		if !strings.HasPrefix(memoout, gatewayPrefix) {
-			log.Infoln("UR:1 ", "memo:", memoout)
-			return false
-		}
-		s := strings.TrimPrefix(memoout, gatewayPrefix)
-		s2 := strings.Split(s, ":")
-		if len(s2) < 3 {
-			log.Infoln("UR:2", "memo:", memoout)
-			return false
-		}
-		addr := strings.Join(s2[2:], ":")
+		addr := memoout
 		// log.Infoln("withdraw:", addr, *op)
 		// 创建jporder对象
 		realAmount := amountToReal(op.Amount.Amount, assetChain.Precision)
@@ -325,6 +324,10 @@ func readBlock(cnum int, handler types.HandleInterface) ([]string, error) {
 		return nil, err
 	}
 	for txnum, tx := range block.Transactions {
+		if len(tx.Operations)!=2 {
+			continue
+		}
+		var fristOpt operations.TransferOperation
 		for opnum, op := range tx.Operations {
 			if op == nil {
 				// cancel all 等无法识别的type就会解析不到 op
@@ -340,10 +343,14 @@ func readBlock(cnum int, handler types.HandleInterface) ([]string, error) {
 					continue
 				}
 				if opt.From.String() != "" {
-					ok := handler.HandleTR(&opt, &tx, fmt.Sprintf("%d:%d:%d:%d", cnum, txnum, opnum, len(tx.Operations)))
-					if !ok {
-						handler.CheckUR(&opt, &tx, fmt.Sprintf("%d:%d:%d:%d", cnum, txnum, opnum, len(tx.Operations)))
+					if opnum == 0 {
+						fristOpt = opt
+						continue
 					}
+					handler.HandleTR(&opt,&fristOpt, &tx, fmt.Sprintf("%d:%d:%d:%d", cnum, txnum, opnum, len(tx.Operations)))
+					// if !ok {
+					// 	handler.CheckUR(&opt, &tx, fmt.Sprintf("%d:%d:%d:%d", cnum, txnum, opnum, len(tx.Operations)))
+					// }
 				}
 			}
 		}

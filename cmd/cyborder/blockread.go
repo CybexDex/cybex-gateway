@@ -27,7 +27,7 @@ func main() {
 	cyborder.InitAsset()
 	// go cyborder.HandleWorker(5)
 	// go cyborder.BlockRead()
-	cyborder.HandleBlockNum(9024999)
+	cyborder.HandleBlockNum(20369746)
 	// select {}
 	// fmt.Println(s)
 }

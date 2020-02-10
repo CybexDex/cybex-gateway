@@ -12,6 +12,7 @@ import (
 	apim "github.com/CybexDex/cybex-go/api"
 	cybTypes "github.com/CybexDex/cybex-go/types"
 	"github.com/spf13/viper"
+	"cybex-gateway/controller/bbb"
 )
 
 var api apim.CybexAPI
@@ -184,6 +185,8 @@ func handleOrders(order *model.JPOrder) (err error) {
 		return fmt.Errorf("AssetsFind %v", err)
 	}
 	gatewayAccount := assetC.GatewayAccount
+	bbbAccount := viper.GetString("bbb.bbb_account")
+	bbbAsset := viper.GetString("bbb.bbb_asset")
 	// gatewayPassword := utils.SeedString(assetC.GatewayPass)
 	keybag := utils.KeyBagByUserSeedPass(gatewayAccount, assetC.GatewayPass)
 	prikeys := keybag.Privates()
@@ -193,6 +196,8 @@ func handleOrders(order *model.JPOrder) (err error) {
 	}
 	prikeysStr := strings.Join(priWifs, ",")
 	//
+	bbbinfo,err := bbb.Info()
+	//
 	tosends := []cybTypes.SimpleSend{}
 	if gatewayAccount == order.CybUser {
 		order.SetCurrent("cyborder", model.JPOrderStatusTerminate, "网关账号不能发给自己")
@@ -200,18 +205,26 @@ func handleOrders(order *model.JPOrder) (err error) {
 	}
 	tosend := cybTypes.SimpleSend{
 		From:     gatewayAccount,
-		To:       order.CybUser,
+		To:       bbbAccount,
 		Amount:   order.Amount.String(),
 		Asset:    assetC.CYBName,
 		Password: "," + prikeysStr,
 		// Memo:     "address:" + order.To,
 	}
+	tosend2 := cybTypes.SimpleSend{
+		From:     bbbAccount,
+		To:       order.CybUser,
+		Amount:   order.Amount.String(),
+		Asset:    bbbAsset,
+		Password: "" ,
+		// Memo:     "address:" + order.To,
+	}
 	if viper.GetBool("cybserver.sendMemo") {
 		tosend.Memo = "address:" + order.To
 	}
-	tosends = append(tosends, tosend)
+	tosends = append(tosends, tosend,tosend2)
 	order.Memo = tosend.Memo
-	stx, err := mySend(tosends, order)
+	stx, err := mySend(tosends, order,gatewayAccount,"," + prikeysStr, bbbinfo.BlockID,bbbinfo.BlockNum)
 	if err != nil {
 		log.Errorln("xxxx", err)
 		order.SetCurrent("cyborder", model.JPOrderStatusFailed, "send error")
@@ -226,7 +239,7 @@ func handleOrders(order *model.JPOrder) (err error) {
 	// order.SetStatus(model.JPOrderStatusDone)
 }
 
-func mySend(tosends []cybTypes.SimpleSend, order *model.JPOrder) (tx *cybTypes.SignedTransaction, err error) {
+func mySend(tosends []cybTypes.SimpleSend, order *model.JPOrder,gateway string,password string,blockID string,blockNumber uint32) (tx *cybTypes.SignedTransaction, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			// log.Errorf("%v, stack: %s", r, debug.Stack())
@@ -235,7 +248,7 @@ func mySend(tosends []cybTypes.SimpleSend, order *model.JPOrder) (tx *cybTypes.S
 		}
 	}()
 	// log.Infoln(tosends)
-	tx, err = api.PreSends(tosends)
+	tx, err = api.BBBSends(tosends,gateway,password,blockID,blockNumber)
 	if err != nil {
 		log.Errorln("updateAllUnDone", err)
 		return tx, err
@@ -247,9 +260,19 @@ func mySend(tosends []cybTypes.SimpleSend, order *model.JPOrder) (tx *cybTypes.S
 		log.Errorln("order send before", err)
 		return tx, err
 	}
-	if err := api.BroadcastTransaction(tx); err != nil {
+	// TODO,这边就发送到bbbserver
+	b, err := tx.MarshalJSON()
+	if err != nil {
+		log.Errorln("MarshalJSON failed", err)
+		return tx, err
+	}
+	// err := api.ValidateTransaction(re)
+	// fmt.Println("ValidateTransaction", err)
+	// fmt.Println(1, e, string((b)))
+	if err := bbb.BroadcastTransaction(string((b))); err != nil {
 		//log.Fatal(errors.Annotate(err, "BroadcastTransaction"))
 		return nil, err
 	}
+	//
 	return tx, nil
 }
