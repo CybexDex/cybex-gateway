@@ -197,6 +197,10 @@ func handleOrders(order *model.JPOrder) (err error) {
 	prikeysStr := strings.Join(priWifs, ",")
 	//
 	bbbinfo,err := bbb.Info()
+	if err != nil {
+		log.Errorln("bbbinfo", err)
+		return fmt.Errorf("bbbinfo %v", err)
+	}
 	//
 	tosends := []cybTypes.SimpleSend{}
 	if gatewayAccount == order.CybUser {
@@ -220,10 +224,11 @@ func handleOrders(order *model.JPOrder) (err error) {
 		// Memo:     "address:" + order.To,
 	}
 	if viper.GetBool("cybserver.sendMemo") {
-		tosend.Memo = "address:" + order.To
+		tosend.Memo =  order.To
 	}
 	tosends = append(tosends, tosend,tosend2)
 	order.Memo = tosend.Memo
+	// fmt.Println(bbbinfo)
 	stx, err := mySend(tosends, order,gatewayAccount,"," + prikeysStr, bbbinfo.BlockID,bbbinfo.BlockNum)
 	if err != nil {
 		log.Errorln("xxxx", err)
