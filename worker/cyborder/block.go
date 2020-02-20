@@ -94,15 +94,15 @@ func (a *BBBHandler) CheckUR(op *operations.TransferOperation, tx *cybTypes.Sign
 }
 
 // HandleTR ...
-func (a *BBBHandler) HandleTR(op *operations.TransferOperation,op2 *operations.TransferOperation, tx *cybTypes.SignedTransaction, prefix string) bool {
+func (a *BBBHandler) HandleTR(op *operations.TransferOperation,bbbOp *operations.TransferOperation, tx *cybTypes.SignedTransaction, prefix string) bool {
 	// 是否在币种中，不是的话，是否是gateway账号的UR。
 	bbbAsset := viper.GetString("bbb.bbb_asset")
-	op2Asset, err := api.GetAsset(op2.Amount.Asset.String())
+	op2Asset, err := api.GetAsset(bbbOp.Amount.Asset.String())
 	if bbbAsset != op2Asset.Symbol {
-		log.Infof("not bbb symbol")
+		log.Infoln("not bbb symbol",bbbAsset,op2Asset.Symbol,prefix)
 		return false
 	}
-	if op.From != op2.To || op.Amount.Amount != op2.Amount.Amount {
+	if (op.From != bbbOp.To  && op.To != bbbOp.From )|| op.Amount.Amount != bbbOp.Amount.Amount {
 		log.Infof("not bbb to or amount")
 		return false
 	}
@@ -184,7 +184,7 @@ func (a *BBBHandler) HandleTR(op *operations.TransferOperation,op2 *operations.T
 			MemoPri: gatewayMemoPri,
 		}
 		log.Infof("HandleTX:,to:%s,op:%+v,tx.sig:%v\n", gatewayTo.Account.Name, op, tx.Signatures)
-		fromUsers, err := api.GetAccounts(op2.From)
+		fromUsers, err := api.GetAccounts(bbbOp.From)
 		fromUser := fromUsers[0]
 		assetChain, err := api.GetAsset(op.Amount.Asset.String())
 		if err != nil {
@@ -323,11 +323,16 @@ func readBlock(cnum int, handler types.HandleInterface) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	bbbAsset := viper.GetString("bbb.bbb_asset")
+	bbbAssetChain, _ := api.GetAsset(bbbAsset)
+	fmt.Println("bbbAssetChain",bbbAssetChain.ID)
 	for txnum, tx := range block.Transactions {
 		if len(tx.Operations)!=2 {
 			continue
 		}
-		var fristOpt operations.TransferOperation
+		var bbbOpt operations.TransferOperation
+		var gatewayOpt operations.TransferOperation
+		var gatewayOpNum int
 		for opnum, op := range tx.Operations {
 			if op == nil {
 				// cancel all 等无法识别的type就会解析不到 op
@@ -343,17 +348,16 @@ func readBlock(cnum int, handler types.HandleInterface) ([]string, error) {
 					continue
 				}
 				if opt.From.String() != "" {
-					if opnum == 0 {
-						fristOpt = opt
-						continue
+					if opt.Amount.Asset == bbbAssetChain.ID {
+						bbbOpt = opt
+					}else {
+						gatewayOpt = opt
+						gatewayOpNum = opnum
 					}
-					handler.HandleTR(&opt,&fristOpt, &tx, fmt.Sprintf("%d:%d:%d:%d", cnum, txnum, opnum, len(tx.Operations)))
-					// if !ok {
-					// 	handler.CheckUR(&opt, &tx, fmt.Sprintf("%d:%d:%d:%d", cnum, txnum, opnum, len(tx.Operations)))
-					// }
 				}
 			}
 		}
+		handler.HandleTR(&gatewayOpt,&bbbOpt, &tx, fmt.Sprintf("%d:%d:%d:%d", cnum, txnum, gatewayOpNum, len(tx.Operations)))
 	}
 	return nil, nil
 }
