@@ -232,8 +232,8 @@ func handleOrders(order *model.JPOrder) (err error) {
 	stx, err := mySend(tosends, order,gatewayAccount,"," + prikeysStr, bbbinfo.BlockID,bbbinfo.BlockNum)
 	if err != nil {
 		log.Errorln("xxxx", err)
-		order.SetCurrent("cyborder", model.JPOrderStatusFailed, "send error")
 		errmsg := fmt.Sprintf("id:%d\nerr:%v", order.ID, err)
+		order.SetCurrent("cyborder", model.JPOrderStatusFailed, "send error:"+ errmsg)
 		model.WxSendTaskCreate("cybex充值失败", errmsg)
 		return err
 	}
