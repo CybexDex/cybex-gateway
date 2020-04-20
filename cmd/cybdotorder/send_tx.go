@@ -24,5 +24,13 @@ func main() {
 	model.INITFromViper()
 	cybdotorder.InitNode()
 
-	cybdotorder.HandleBlockNum(417020)
+	extrinsic, err := cybdotorder.MakeTransfer("5HQXLYqiiisunFjNvc164QSajMyytzgaqJJSd7bCx82bxi6W", 1000)
+	if err != nil {
+		log.Errorln(err)
+	}
+	txHash, err := cybdotorder.SignAndSendTransfer(extrinsic, "staff mammal myself patrol notice neglect pass shine scale cliff nominee popular")
+	if err != nil {
+		log.Errorln(err)
+	}
+	log.Debugln(txHash)
 }
