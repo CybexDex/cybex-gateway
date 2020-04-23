@@ -1,7 +1,9 @@
 module cybex-gateway
 
+go 1.14
+
 require (
-	github.com/CybexDex/cybex-go v0.1.9-0.20200220060134-b8ec0b3b1a15
+	github.com/CybexDex/cybex-go v0.0.0-20200423031101-5c32fcc368ae
 	github.com/allegro/bigcache v1.2.1 // indirect
 	github.com/aristanetworks/goarista v0.0.0-20190712234253-ed1100a1c015 // indirect
 	github.com/btcsuite/btcd v0.0.0-20190418232430-6867ff32788a
