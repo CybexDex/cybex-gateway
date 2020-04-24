@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cybex-gateway/worker/cybdotorder"
 	"os"
 
 	"github.com/spf13/viper"
@@ -10,9 +11,7 @@ import (
 	"cybex-gateway/server/jpselect"
 	"cybex-gateway/server/user"
 	"cybex-gateway/utils/log"
-	"cybex-gateway/worker/cyborder"
 	jpworker "cybex-gateway/worker/jpselect"
-	"cybex-gateway/worker/order"
 	"cybex-gateway/worker/wx"
 )
 
@@ -28,13 +27,10 @@ func main() {
 	log.InitLog(logDir, logLevel, "")
 	model.INITFromViper()
 
-	cyborder.InitNode()
-	cyborder.InitAsset()
-	// start worker and server
-	go cyborder.HandleWorker(5)
-	go cyborder.BlockRead()
+	cybdotorder.InitNode()
+	go cybdotorder.HandleWorker(5)
+	go cybdotorder.BlockRead()
 
-	go order.HandleWorker(5)
 	go user.StartServer()
 	iswx := viper.GetBool("wx.enable")
 	if iswx {

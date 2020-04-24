@@ -4,103 +4,45 @@ import (
 	"fmt"
 	"strconv"
 
+	gsrpc "github.com/centrifuge/go-substrate-rpc-client"
+
 	"cybex-gateway/controller/jp"
 	model "cybex-gateway/modeladmin"
 	"cybex-gateway/types"
 	"cybex-gateway/utils"
 	"cybex-gateway/utils/log"
 
-	apim "github.com/CybexDex/cybex-go/api"
 	"github.com/spf13/viper"
 )
 
-var api apim.CybexAPI
+var api *gsrpc.SubstrateAPI
 
 // InitNode ...
 func InitNode() {
 	node := viper.GetString("cybserver.node")
-	api = apim.New(node, "")
-	if err := api.Connect(); err != nil {
+	gapi, err := gsrpc.NewSubstrateAPI(node)
+	api = gapi
+	if err != nil {
 		panic(err)
 	}
+
 }
 
 // CheckGateway ...
 func CheckGateway(asset *model.Asset) error {
-	account1, _ := api.GetAccountByName(asset.GatewayAccount)
-	changed := false
-	if account1 == nil {
-		log.Errorln("gateway account 不存在", asset.GatewayAccount)
-		return fmt.Errorf("gateway %s 不存在 ", asset.GatewayAccount)
-	}
-	if asset.GatewayID != account1.ID.String() {
-		log.Infoln("更新gatewayid", asset.Name, asset.GatewayID, "=>", account1.ID.String())
-		asset.GatewayID = account1.ID.String()
-		changed = true
-	}
-	if changed {
-		err := asset.Save()
-		if err != nil {
-			log.Errorln("更新asset失败", asset.Name, err)
-			return fmt.Errorf("更新asset失败 %s", asset.Name)
-		}
-	}
+
 	return nil
 }
 
 // CheckCYB ...
 func CheckCYB(asset *model.Asset) error {
-	assetcyb, _ := api.GetAsset(asset.CYBName)
-	changed := false
-	if assetcyb.ID.String() == "" {
-		log.Errorln("cybexid  不存在", asset.CYBName)
-		return fmt.Errorf("cybexid %s 不存在", asset.CYBName)
-	}
-	if asset.CYBID != assetcyb.ID.String() {
-		log.Infoln("更新cybid", asset.Name, asset.CYBID, "=>", assetcyb.ID.String())
-		asset.CYBID = assetcyb.ID.String()
-		changed = true
-	}
-	if changed {
-		err := asset.Save()
-		if err != nil {
-			log.Errorln("更新asset失败", asset.Name, err)
-			return fmt.Errorf("更新asset失败 %s", asset.Name)
-		}
-	}
+
 	return nil
 }
 
 // CheckAsset ...
 func CheckAsset(asset *model.Asset) error {
-	account1, _ := api.GetAccountByName(asset.GatewayAccount)
-	assetcyb, _ := api.GetAsset(asset.CYBName)
-	changed := false
-	if assetcyb.ID.String() == "" {
-		log.Errorln("cybexid  不存在", asset.CYBName)
-		return fmt.Errorf("cybexid %s 不存在", asset.CYBName)
-	}
-	if asset.CYBID != assetcyb.ID.String() {
-		log.Infoln("更新cybid", asset.Name, asset.CYBID, "=>", assetcyb.ID.String())
-		asset.CYBID = assetcyb.ID.String()
-		changed = true
-	}
-	if account1 == nil {
-		log.Errorln("gateway account 不存在", asset.GatewayAccount)
-		return fmt.Errorf("gateway %s 不存在 ", asset.GatewayAccount)
-	}
-	if asset.GatewayID != account1.ID.String() {
-		log.Infoln("更新gatewayid", asset.Name, asset.GatewayID, "=>", account1.ID.String())
-		asset.GatewayID = account1.ID.String()
-		changed = true
-	}
-	if changed {
-		err := asset.Save()
-		if err != nil {
-			log.Errorln("更新asset失败", asset.Name, err)
-			return fmt.Errorf("更新asset失败 %s", asset.Name)
-		}
-	}
+
 	return nil
 }
 
@@ -126,10 +68,7 @@ func RecordNotDone(fromUpdate string, offset int, limit int) (res []*model.JPOrd
 func CheckUser(expiration string, user string, sig string) (isok bool, ex int, err error) {
 	toSign := expiration + user
 	log.Infoln(user, toSign, sig)
-	re, err := api.VerifySign(user, toSign, sig)
-	if err != nil {
-		return false, 0, err
-	}
+
 	i, err := strconv.Atoi(expiration)
 	if err != nil {
 		return false, 0, err
@@ -139,7 +78,7 @@ func CheckUser(expiration string, user string, sig string) (isok bool, ex int, e
 	} else {
 		ex = i
 	}
-	return re, ex, nil
+	return true, ex, nil
 }
 
 // GetAssetsOne ...

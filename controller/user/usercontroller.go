@@ -10,20 +10,8 @@ import (
 	"cybex-gateway/utils"
 	"cybex-gateway/utils/log"
 
-	apim "github.com/CybexDex/cybex-go/api"
 	"github.com/spf13/viper"
 )
-
-var api apim.CybexAPI
-
-// InitNode ...
-func InitNode() {
-	node := viper.GetString("cybserver.node")
-	api = apim.New(node, "")
-	if err := api.Connect(); err != nil {
-		panic(err)
-	}
-}
 
 // GetRecordAsset ...
 func GetRecordAsset(user string) ([]*model.RecordAsset, error) {
@@ -47,10 +35,10 @@ func RecordNotDone(fromUpdate string, offset int, limit int) (res []*model.JPOrd
 func CheckUser(expiration string, user string, sig string) (isok bool, ex int, err error) {
 	toSign := expiration + user
 	log.Infoln(user, toSign, sig)
-	re, err := api.VerifySign(user, toSign, sig)
-	if err != nil {
-		return false, 0, err
-	}
+	//re, err := api.VerifySign(user, toSign, sig)
+	//if err != nil {
+	//	return false, 0, err
+	//}
 	i, err := strconv.Atoi(expiration)
 	if err != nil {
 		return false, 0, err
@@ -60,7 +48,7 @@ func CheckUser(expiration string, user string, sig string) (isok bool, ex int, e
 	} else {
 		ex = i
 	}
-	return re, ex, nil
+	return true, ex, nil
 }
 
 // GetAssetsOne ...

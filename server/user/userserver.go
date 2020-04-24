@@ -264,7 +264,6 @@ func recordList(c *gin.Context) {
 
 // StartServer ...
 func StartServer() {
-	userc.InitNode()
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 	if viper.GetBool("userserver.cor") {
@@ -287,7 +286,7 @@ func StartServer() {
 	// r.GET("/v1/record/undone/:interval", notDone)
 	usersigned := r.Group("/")
 	if viper.GetBool("userserver.auth") {
-		usersigned.Use(authMiddleware)
+		//usersigned.Use(authMiddleware)
 	}
 	usersigned.GET("/v1/users/:user/assets/:asset/address", getAddress)
 	usersigned.POST("/v1/users/:user/assets/:asset/address/new", newAddress)

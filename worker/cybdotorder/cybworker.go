@@ -1,14 +1,20 @@
 package cybdotorder
 
 import (
+	"cybex-gateway/model"
+	"cybex-gateway/utils/log"
 	"encoding/hex"
 	"fmt"
+	"math/big"
 	"os/exec"
 	"regexp"
+	"strconv"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
 	gsrpc "github.com/centrifuge/go-substrate-rpc-client"
+	"github.com/centrifuge/go-substrate-rpc-client/types"
 	gsTypes "github.com/centrifuge/go-substrate-rpc-client/types"
 
 	"github.com/centrifuge/go-substrate-rpc-client/signature"
@@ -28,14 +34,85 @@ func InitNode() {
 
 }
 
-func MakeTransfer(toAccountAddress string, amount uint64) (*gsTypes.Extrinsic, error) {
-	keyringPair, err := keyringPairFromSecret(toAccountAddress)
+func HandleWorker(seconds int) {
+	for {
+		for {
+			ret := HandleDepositOneTime()
+			if ret != 0 {
+				break
+			}
+		}
+
+		time.Sleep(time.Second * time.Duration(seconds))
+	}
+}
+
+func HandleDepositOneTime() int {
+	order1, _ := HoldOne()
+	if order1.ID == 0 {
+		return 1
+	}
+	if order1.Current == "cyborder" {
+		handleOrders(order1)
+	}
+	order1.Save()
+	return 0
+	// check order to process it
+}
+
+// HoldOne ...
+func HoldOne() (*model.JPOrder, error) {
+	order, err := model.HoldCYBOrderOne()
+	return order, err
+}
+
+func handleOrders(order *model.JPOrder) (err error) {
+	// 是否可处理的asset
+	log.Infoln("start handle order", order.ID)
+	assetC, err := model.AssetsFind(order.Asset)
 	if err != nil {
-		return nil, err
+		log.Errorln("AssetsFind", err)
+		return fmt.Errorf("AssetsFind %v", err)
+	}
+	gatewayAccount := assetC.GatewayAccount
+
+	if gatewayAccount == order.CybUser {
+		order.SetCurrent("cyborder", model.JPOrderStatusTerminate, "网关账号不能发给自己")
+		return nil
 	}
 
-	to, err := gsTypes.NewAddressFromHexAccountID(hexutil.Encode(keyringPair.PublicKey[:]))
+	// TODO:
+	if viper.GetBool("cybserver.sendMemo") {
+	}
 
+	amount, err := strconv.ParseInt(order.Amount.String(), 10, 64)
+	if err != nil {
+		log.Errorln(err)
+	}
+	hash, err := gsTypes.NewHashFromHexString(assetC.CYBID)
+	if err != nil {
+		log.Errorln(err)
+	}
+	extrinsic, err := CreateTransfer(order.CybUser, amount, hash, "")
+	if err != nil {
+		log.Errorln(err)
+	}
+
+	txHash, err := SignAndSendTransfer(extrinsic, assetC.GatewayPass)
+	if err != nil {
+		log.Errorln(err)
+		order.SetCurrent("cyborder", model.JPOrderStatusFailed, "send error")
+		errmsg := fmt.Sprintf("id:%d\nerr:%v", order.ID, err)
+		model.WxSendTaskCreate("cybex充值失败", errmsg)
+	}
+
+	log.Infof("order:%d,%s:%+v\n", order.ID, "sendorder", txHash)
+	order.SetCurrent("cyborder", model.JPOrderStatusPending, "")
+	return nil
+}
+
+func CreateTransfer(toAccountAddress string, amount int64, tokenHash types.Hash, memo string) (*gsTypes.Extrinsic, error) {
+	keyringPair, err := keyringPairFromSecret(toAccountAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -45,13 +122,34 @@ func MakeTransfer(toAccountAddress string, amount uint64) (*gsTypes.Extrinsic, e
 		return nil, err
 	}
 
-	c, err := gsTypes.NewCall(meta, "Balances.transfer", to, gsTypes.UCompact(amount))
-	if err != nil {
-		return nil, err
-	}
+	var ext gsTypes.Extrinsic
+	if (tokenHash == types.Hash{}) {
+		to, err := gsTypes.NewAddressFromHexAccountID(hexutil.Encode(keyringPair.PublicKey[:]))
 
-	// Create the extrinsic
-	ext := gsTypes.NewExtrinsic(c)
+		if err != nil {
+			return nil, err
+		}
+
+		c, err := gsTypes.NewCall(meta, "Balance.transfer", to, gsTypes.UCompact(amount))
+		if err != nil {
+			return nil, err
+		}
+
+		// Create the extrinsic
+		ext = gsTypes.NewExtrinsic(c)
+	} else {
+		to := gsTypes.NewAccountID(keyringPair.PublicKey[:])
+		var memoBytes [8]byte
+		copy(memoBytes[:], memo)
+		c, err := gsTypes.NewCall(meta, "TokenModule.transfer", tokenHash, to, gsTypes.NewU128(*big.NewInt(amount)), gsTypes.NewOptionBytes(gsTypes.NewBytes([]byte(memo))))
+
+		if err != nil {
+			return nil, err
+		}
+
+		// Create the extrinsic
+		ext = gsTypes.NewExtrinsic(c)
+	}
 
 	return &ext, nil
 }

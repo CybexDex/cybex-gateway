@@ -20,7 +20,7 @@ func main() {
 	config.LoadConfig(env)
 	logDir := viper.GetString("log.log_dir")
 	logLevel := viper.GetString("log.log_level")
-	log.InitLog(logDir, logLevel, "[bbb]")
+	log.InitLog(logDir, logLevel, "[cybexdot]")
 	model.INITFromViper()
 	go jpworker.HandleWorker(5)
 	jpselect.StartServer()
