@@ -2,6 +2,7 @@ package main
 
 import (
 	"cybex-gateway/worker/cybdotorder"
+	"cybex-gateway/worker/order"
 	"os"
 
 	"github.com/spf13/viper"
@@ -31,6 +32,7 @@ func main() {
 	go cybdotorder.HandleWorker(5)
 	go cybdotorder.BlockRead()
 
+	go order.HandleWorker(5)
 	go user.StartServer()
 	iswx := viper.GetBool("wx.enable")
 	if iswx {

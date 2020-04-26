@@ -44,6 +44,7 @@ func sassNotify(c *gin.Context) {
 		err = sass.HandleDeposit(result)
 		if err != nil {
 			log.Errorln("Error", err)
+
 			errorRes(c, 400, gin.H{
 				"message": "HandleDeposit Error",
 			})

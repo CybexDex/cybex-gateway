@@ -3,11 +3,17 @@ package cybdotorder
 import (
 	"cybex-gateway/model"
 	types "cybex-gateway/types/cybexdot"
+	"cybex-gateway/utils"
 	"cybex-gateway/utils/log"
 	"cybex-gateway/utils/ss58"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
+
+	"golang.org/x/crypto/blake2b"
+
+	"github.com/shopspring/decimal"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
@@ -17,12 +23,19 @@ import (
 )
 
 type TransferOperation struct {
-	from   string
-	to     string
-	token  string
-	amount string
-	memo   string
-	sig    gsTypes.MultiSignature
+	from     string
+	to       string
+	token    string
+	amount   string
+	memo     string
+	hash     string
+	identity string
+}
+
+func amountToReal(amountin int64, prercison int64) decimal.Decimal {
+	d := decimal.New(amountin, int32(-1*prercison))
+	// log.Infoln(d.String())
+	return d
 }
 
 func BlockRead() {
@@ -179,8 +192,24 @@ func readBlock(num uint64) (time.Time, error) {
 			if ext.Signature.Signer.IsAccountID {
 				from := ss58.Encode(hexutil.Encode(ext.Signature.Signer.AsAccountID[:]))
 				to := ss58.Encode(hexutil.Encode(args.To[:]))
+				ok, value := args.Memo.Unwrap()
+				var memo string
+				if ok {
+					memo = string(value)
+				} else {
+					memo = ""
+				}
 
-				operations[i] = TransferOperation{from, to, hexutil.Encode(args.TokenHash[:]), args.Amount.String(), "", ext.Signature.Signature}
+				encodedBytes, err := gsTypes.EncodeToBytes(ext)
+				if err != nil {
+					return time.Time{}, err
+				}
+
+				checksum, _ := blake2b.New(32, []byte{})
+				checksum.Write(encodedBytes)
+				h := checksum.Sum(nil)
+				extrinsicHash := "0x" + utils.BytesToHex(h)
+				operations[i] = TransferOperation{from, to, hexutil.Encode(args.TokenHash[:]), args.Amount.String(), memo, extrinsicHash, fmt.Sprintf("%d:%d:%d", num, i, len(block.Block.Extrinsics))}
 			}
 			log.Debugf("\tTransfer Extrinsics:: (index=%#v)(module=%#v)(method=%#v)(args=%v)\n", i, moduleName, fmeta.Name, args)
 		}
@@ -216,24 +245,109 @@ func readBlock(num uint64) (time.Time, error) {
 	return time.Unix(int64(timestamp)/1000, 0), err
 }
 
-func handlerTransfer(op TransferOperation) (bool, error) {
+func handlerTransfer(op TransferOperation) bool {
 	log.Debugf("handler transfer op (%#v)", op)
 	findasset, err := model.AssetsFrist(&model.Asset{
 		CYBID: op.token,
 	})
 
 	if err != nil {
-		return false, err
+		log.Errorln(op.token, err)
+		return false
 	}
 
-	if findasset.GatewayID == op.from { // deposit
-		return true, nil
+	if findasset.GatewayAccount == op.from { // deposit
+		log.Infof("HandleTX 从gateway账号打出:,from:%s, asset:%s, op:%+v\n", findasset.GatewayAccount, findasset.Name,
+			op)
+		// 直接看sig,能不能找到,找到就更新。没有找到的话。先不管
+		orders, err := model.JPOrderFind(&model.JPOrder{
+			Sig:          op.hash,
+			CurrentState: model.JPOrderStatusPending,
+		})
+		if err != nil {
+			log.Errorln("JPOrderFind error", err)
+			return false
+		}
+		if len(orders) == 1 {
+			order := orders[0]
+			if order.Type == model.JPOrderTypeDeposit {
+				order.CYBHash = &op.identity
+				order.SetCurrent("done", model.JPOrderStatusDone, "")
+				order.SetStatus(model.JPOrderStatusDone)
+			}
+			if order.Type == model.JPOrderTypeWithdraw {
+				order.SetCurrent("order", model.JPOrderStatusInit, "")
+			}
+			err := order.Save()
+			if err != nil {
+				log.Errorln("save error", err)
+			}
+		} else if len(orders) > 1 {
+			log.Errorln("sig len ", len(orders))
+		} else {
+			log.Errorln(op.identity, "没有需要更新的充值订单")
+		}
+		return true
 
-	} else if findasset.GatewayID == op.to { // withdraw
-		return true, nil
+	} else if findasset.GatewayAccount == op.to { // withdraw
+		memo := op.memo
+		if memo == "" {
+			log.Infoln("UR Memo", op)
+			return false
+		}
+
+		gatewayPrefix := findasset.WithdrawPrefix
+		if !strings.HasPrefix(memo, gatewayPrefix) {
+			log.Infoln("UR:1 ", "memo:", memo)
+			return false
+		}
+		s := strings.TrimPrefix(memo, gatewayPrefix)
+		s2 := strings.Split(s, ":")
+		if len(s2) < 2 {
+			log.Infoln("UR:2", "memo:", memo)
+			return false
+		}
+		addr := s2[1]
+
+		n, err := strconv.ParseInt(op.amount, 10, 64)
+		if err != nil {
+			log.Errorln(op.amount, err)
+			return false
+		}
+
+		np, err := strconv.ParseInt(findasset.Precision, 10, 64)
+		if err != nil {
+			log.Errorln(findasset.Precision, err)
+			return false
+		}
+
+		realAmount := amountToReal(n, np)
+
+		jporder := &model.JPOrder{
+			Asset:      findasset.Name,
+			CybAsset:   findasset.CYBName,
+			BlockChain: findasset.Blockchain,
+			// BNOrderID:  "",
+			CybUser:      op.from,
+			OutAddr:      addr,
+			Memo:         memo,
+			TotalAmount:  realAmount,
+			Type:         "WITHDRAW",
+			Status:       model.JPOrderStatusPending,
+			Current:      "order",
+			CurrentState: model.JPOrderStatusInit,
+			Sig:          op.hash,
+			CYBHash:      &op.identity,
+		}
+		err = jporder.Save()
+		if err != nil {
+			log.Errorln("save jporder error", err)
+		}
+		log.Infof("order:%d,%s:%+v\n", jporder.ID, "save_withdraw", *jporder)
+		return true
 	}
 
-	return false, nil
+	return false
 }
 
 func functionMeta(m *gsTypes.Metadata, call gsTypes.Call) (gsTypes.Text, gsTypes.FunctionMetadataV4) {

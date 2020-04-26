@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/shopspring/decimal"
+
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
 	gsrpc "github.com/centrifuge/go-substrate-rpc-client"
@@ -85,7 +87,12 @@ func handleOrders(order *model.JPOrder) (err error) {
 	if viper.GetBool("cybserver.sendMemo") {
 	}
 
-	amount, err := strconv.ParseInt(order.Amount.String(), 10, 64)
+	amount, err := strconv.ParseFloat(order.Amount.String(), 64)
+	if err != nil {
+		log.Errorln(err)
+	}
+	precision, err := strconv.ParseInt(assetC.Precision, 10, 32)
+
 	if err != nil {
 		log.Errorln(err)
 	}
@@ -93,12 +100,19 @@ func handleOrders(order *model.JPOrder) (err error) {
 	if err != nil {
 		log.Errorln(err)
 	}
-	extrinsic, err := CreateTransfer(order.CybUser, amount, hash, "")
+
+	d := decimal.NewFromFloat(amount)
+	p := decimal.New(1, int32(precision))
+
+	a := d.Mul(p)
+	extrinsic, err := CreateTransfer(order.CybUser, a.IntPart(), hash, "")
 	if err != nil {
 		log.Errorln(err)
 	}
 
 	txHash, err := SignAndSendTransfer(extrinsic, assetC.GatewayPass)
+	order.Sig = txHash
+
 	if err != nil {
 		log.Errorln(err)
 		order.SetCurrent("cyborder", model.JPOrderStatusFailed, "send error")
@@ -106,7 +120,7 @@ func handleOrders(order *model.JPOrder) (err error) {
 		model.WxSendTaskCreate("cybex充值失败", errmsg)
 	}
 
-	log.Infof("order:%d,%s:%+v\n", order.ID, "sendorder", txHash)
+	log.Infof("order:%d,%s:%+v, amount: %d\n", order.ID, "sendorder", txHash, a.IntPart())
 	order.SetCurrent("cyborder", model.JPOrderStatusPending, "")
 	return nil
 }

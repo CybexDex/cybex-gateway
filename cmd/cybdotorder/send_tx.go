@@ -30,11 +30,13 @@ func main() {
 	if err != nil {
 		log.Errorln(err)
 	}
-	extrinsic, err := cybdotorder.CreateTransfer("5ELsycSf2vVGN4whjWA176J2TWzJY52PDGxTC89APeuTcbvB", 1000, hash, "xxx")
+	extrinsic, err := cybdotorder.CreateTransfer("5GEEs5iCp57AgNTfDujEa6x8c6qF3LcX1WY6QEMDvHJ2n4tB", 600, hash,
+		"withdrawprefix:0x282f9ffe9E41652447F4BE130e39429895f5EE05")
+
 	if err != nil {
 		log.Errorln(err)
 	}
-	txHash, err := cybdotorder.SignAndSendTransfer(extrinsic, "evil person wolf innocent blast panther someone police rhythm target sheriff toddler")
+	txHash, err := cybdotorder.SignAndSendTransfer(extrinsic, "")
 	if err != nil {
 		log.Errorln(err)
 	}

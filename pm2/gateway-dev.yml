@@ -1,0 +1,24 @@
+apps:
+  - cwd: ./
+    name: gateway-all
+    script: ./cmd/all/main.go
+    interpreter: go
+    interpreter_args: run
+    watch: false
+    error_file : /data/gateway/gateway-all-error.log
+    out_file : /data/gateway/gateway-all-out.log
+    env:
+      GO111MODULE: "on"
+      env: "dev"
+
+  - cwd: ./
+    name: gateway-admin
+    script: ./cmd/admin/main.go
+    interpreter: go
+    interpreter_args: run
+    watch: false
+    error_file : /data/gateway/gateway-admin-error.log
+    out_file : /data/gateway/gateway-admin-out.log
+    env:
+      GO111MODULE: "on"
+      env: "dev"
