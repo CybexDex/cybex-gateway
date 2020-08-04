@@ -78,7 +78,7 @@ func BuildMsg(val interface{}, keyValSeparator, groupSeparator string) string {
 		for _, key := range keys {
 			groupStrs = append(groupStrs, key+keyValSeparator+keyVals[key])
 		}
-		msg += strings.Join(groupStrs, groupSeparator)
+		msg = strings.Join(groupStrs, groupSeparator)
 	case reflect.Slice:
 		arr := val.([]interface{})
 		keyVals := make(map[string]string)
@@ -95,7 +95,7 @@ func BuildMsg(val interface{}, keyValSeparator, groupSeparator string) string {
 		for _, key := range keys {
 			groupStrs = append(groupStrs, key+keyValSeparator+keyVals[key])
 		}
-		msg += strings.Join(groupStrs, groupSeparator)
+		msg = strings.Join(groupStrs, groupSeparator)
 	default:
 		msg = fmt.Sprintf("%v", val)
 	}
