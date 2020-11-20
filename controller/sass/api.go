@@ -153,24 +153,23 @@ type WithdrawRequest struct {
 
 // OrderInfo ...
 type OrderInfo struct {
-	ID            string `json:"id"`
-	From          string `json:"from"`
-	To            string `json:"to"`
-	Value         string `json:"value"`
-	Type          string `json:"type"`
-	CoinName      string `json:"coinName"`
-	BizType       string `json:"bizType"`
-	Hash          string `json:"txid"`
-	Fee           string `json:"fee"`
-	Confirmations int    `json:"confirmations"`
-	N             int    `json:"n"`
-	Memo          string `json:"memo"`
-	State         string `json:"state"`
-	Block         int    `json:"block"`
-	Sign          string `json:"sign,omitempty"`
-	// WithdrawID              string `json:"withdrawID"`
+	ID                      string `json:"id"`
+	From                    string `json:"from"`
+	To                      string `json:"to"`
+	Value                   string `json:"value"`
+	Type                    string `json:"type"`
+	CoinName                string `json:"coinName"`
+	BizType                 string `json:"bizType"`
+	Hash                    string `json:"txid"`
+	Fee                     string `json:"fee"`
+	Confirmations           int    `json:"confirmations"`
+	N                       int    `json:"n"`
+	Memo                    string `json:"memo"`
+	State                   string `json:"state"`
+	Block                   int    `json:"block"`
+	Sign                    string `json:"sign,omitempty"`
+	WithdrawID              string `json:"withdrawID"`
 	AffirmativeConfirmation int    `json:"affirmativeConfirmation"`
-	WithdrawID              string `json:"withdrawID,omitempty"`
 }
 
 // Withdraw ...
