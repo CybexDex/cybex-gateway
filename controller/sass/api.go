@@ -169,7 +169,8 @@ type OrderInfo struct {
 	Block         int    `json:"block"`
 	Sign          string `json:"sign,omitempty"`
 	// WithdrawID              string `json:"withdrawID"`
-	AffirmativeConfirmation int `json:"affirmativeConfirmation"`
+	AffirmativeConfirmation int    `json:"affirmativeConfirmation"`
+	WithdrawID              string `json:"withdrawID,omitempty"`
 }
 
 // Withdraw ...
